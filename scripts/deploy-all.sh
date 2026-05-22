@@ -25,10 +25,18 @@ run_step() {
   echo ""
 }
 
-run_step "00-check-env.sh"       "Environment check"
-run_step "01-init-dirs.sh"       "Initialize directories"
+run_step "00-check-env.sh"        "Environment check"
+run_step "01-init-dirs.sh"        "Initialize directories"
 run_step "02-generate-reality.sh" "Generate REALITY keys"
-run_step "03-issue-certs.sh"     "Issue TLS certificates"
+
+# ── Certificate step: real or self-signed ─────────────────────────────────────
+# Set CERTBOT_SKIP=true in .env to use self-signed certs (no DNS required).
+# Replace later: rm -rf $DATA_DIR/letsencrypt && bash scripts/03-issue-certs.sh
+if [[ "${CERTBOT_SKIP:-false}" == "true" ]]; then
+  run_step "03-self-signed.sh"    "Generate self-signed certificates (debug)"
+else
+  run_step "03-issue-certs.sh"    "Issue TLS certificates"
+fi
 
 log_step "[04] Render configuration templates"
 python3 "$SCRIPT_DIR/04-render-configs.py" || {

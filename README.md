@@ -99,6 +99,7 @@ Runs all steps in order — idempotent, safe to re-run:
 | 01 | `01-init-dirs.sh` | Create data directory structure |
 | 02 | `02-generate-reality.sh` | Generate REALITY x25519 keypair *(skips if exists)* |
 | 03 | `03-issue-certs.sh` | Issue Let's Encrypt certs via Certbot *(skips if valid >30d)* |
+| 03 | `03-self-signed.sh` | Self-signed certs for debugging without DNS *(set `CERTBOT_SKIP=true`)* |
 | 04 | `04-render-configs.py` | Render all templates → `DATA_DIR` |
 | 05 | `05-up.sh` | Pull images and start all containers |
 | 06 | `06-verify.sh` | Verify endpoints, containers, certs, databases |
