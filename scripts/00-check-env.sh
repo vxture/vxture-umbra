@@ -82,9 +82,15 @@ fi
 # ── Port availability ─────────────────────────────────────────────────────────
 log_step "Checking port availability..."
 
+NGINX_CONTAINER="${NGINX_CONTAINER:-umbra-nginx}"
 for port in 80 443; do
   if ss -tlnp 2>/dev/null | grep -q ":$port "; then
-    fail "Port $port is already in use — stop the conflicting service first"
+    # Port in use — OK if it's our own nginx container
+    if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${NGINX_CONTAINER}$"; then
+      log_ok "Port $port in use by $NGINX_CONTAINER (expected)"
+    else
+      fail "Port $port is already in use — stop the conflicting service first"
+    fi
   else
     log_ok "Port $port is free"
   fi
