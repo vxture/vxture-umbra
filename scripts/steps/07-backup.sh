@@ -70,7 +70,7 @@ log_ok "Crontab saved → $(basename "$CRON_FILE")"
 
 # ── Retention: delete archives older than 30 days ─────────────────────────────
 log_step "Cleaning up archives older than 30 days..."
-DELETED=$(find "$BACKUP_DIR" -name "*.tar.gz" -o -name "*.sql.gz" -o -name "*.txt" \
+DELETED=$(find "$BACKUP_DIR" -name "*.tar.gz" -o -name "*.sqlite3" -o -name "*.txt" \
   | xargs -I{} sh -c 'test $(( ($(date +%s) - $(stat -c %Y {} 2>/dev/null || stat -f %m {})) / 86400 )) -gt 30 && echo {}' 2>/dev/null || true)
 
 if [[ -n "$DELETED" ]]; then

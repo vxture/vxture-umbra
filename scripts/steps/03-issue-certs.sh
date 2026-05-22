@@ -27,6 +27,12 @@ DOMAINS=(
 # ── Start temporary Nginx for ACME challenge ──────────────────────────────────
 log_step "Starting temporary Nginx for ACME webroot challenge..."
 
+# Clean up any stale container from a previous interrupted run
+if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^certbot-nginx-tmp$"; then
+  docker rm -f certbot-nginx-tmp &>/dev/null
+  log_info "Removed stale certbot-nginx-tmp container"
+fi
+
 # If umbra-nginx is already running, use it; otherwise start a temp one
 if docker ps --format '{{.Names}}' | grep -q "^umbra-nginx$"; then
   log_info "umbra-nginx is running — using it for ACME challenge"

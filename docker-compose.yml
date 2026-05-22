@@ -54,7 +54,6 @@ services:
       SUBSCRIPTION_URL_PREFIX: "${SUBSCRIPTION_URL_PREFIX}"
       CUSTOM_TEMPLATES_DIRECTORY: "/var/lib/marzban/templates"
       CLASH_SUBSCRIPTION_TEMPLATE: "clash/default.yml"
-      VLESS_SUBSCRIPTION_TEMPLATE: "v2ray/default.json"
     volumes:
       - ${DATA_DIR}/marzban:/var/lib/marzban
     networks:
