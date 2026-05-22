@@ -73,8 +73,10 @@ else
       log_ok "$domain → $resolved"
     elif [[ -z "$resolved" ]]; then
       fail "$domain → (no A record found)"
+    elif [[ "${CERTBOT_SKIP:-false}" == "true" ]]; then
+      log_warn "$domain → $resolved (expected $PUBLIC_IP) — OK, self-signed mode"
     else
-      log_warn "$domain → $resolved (expected $PUBLIC_IP) — update DNS before issuing certs"
+      fail "$domain → $resolved (expected $PUBLIC_IP) — fix DNS or set CERTBOT_SKIP=true"
     fi
   done
 fi
