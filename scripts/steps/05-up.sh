@@ -22,14 +22,24 @@ sleep 15
 log_step "Container status:"
 docker compose ps
 
-# Quick health check: fail if any service exited
-EXITED=$(docker compose ps --status exited --format json 2>/dev/null \
-  | python3 -c "import sys,json; data=json.load(sys.stdin); [print(s['Name']) for s in data]" 2>/dev/null || echo "")
+# Health check: fail if any service exited or is crash-looping
+PROBLEMS=""
 
-if [[ -n "$EXITED" ]]; then
-  log_error "The following containers exited unexpectedly:"
-  echo "$EXITED"
-  log_info "Check logs with: docker compose logs <container-name>"
+for container in umbra-nginx umbra-marzban umbra-vaultwarden umbra-uptime umbra-portal umbra-docs umbra-shortlink; do
+  state=$(docker inspect "$container" --format '{{.State.Status}}' 2>/dev/null || echo "missing")
+  restarts=$(docker inspect "$container" --format '{{.RestartCount}}' 2>/dev/null || echo "0")
+
+  if [[ "$state" == "exited" ]]; then
+    PROBLEMS="$PROBLEMS\n  $container: exited unexpectedly"
+  elif [[ "$state" == "restarting" ]] || [[ "$restarts" -gt 2 ]]; then
+    PROBLEMS="$PROBLEMS\n  $container: crash-looping (restarts=$restarts)"
+  fi
+done
+
+if [[ -n "$PROBLEMS" ]]; then
+  log_error "Container health check failed:"
+  echo -e "$PROBLEMS"
+  log_info "Diagnose with: docker compose logs <container-name>"
   exit 1
 fi
 

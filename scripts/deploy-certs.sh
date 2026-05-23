@@ -86,6 +86,13 @@ if [[ "$MODE" == "--upgrade" ]]; then
   docker exec "$NGINX_CONTAINER" nginx -s reload
   log_ok "Nginx reloaded with real certificates"
 
+  log_step "Restarting Marzban (picks up new cert on startup)..."
+  if docker compose -f "$REPO_DIR/docker-compose.yml" restart umbra-marzban 2>/dev/null; then
+    log_ok "Marzban restarted"
+  else
+    log_warn "Marzban restart failed — check: docker compose ps"
+  fi
+
   echo ""
   log_ok "TLS upgrade complete. All domains now use trusted certificates."
   exit 0
@@ -103,14 +110,20 @@ docker run --rm \
     --webroot \
     --webroot-path /var/www/certbot \
     --non-interactive \
-    --quiet \
-    --post-hook "echo 'Renewal complete'"
+    --quiet
 
 log_step "Reloading Nginx..."
 if docker exec "$NGINX_CONTAINER" nginx -s reload 2>/dev/null; then
   log_ok "Nginx reloaded"
 else
   log_warn "Nginx reload failed — container may not be running"
+fi
+
+log_step "Restarting Marzban (picks up renewed cert on startup)..."
+if docker compose -f "$REPO_DIR/docker-compose.yml" restart umbra-marzban 2>/dev/null; then
+  log_ok "Marzban restarted"
+else
+  log_warn "Marzban restart failed — container may not be running"
 fi
 
 log_ok "Certificate renewal check complete."
