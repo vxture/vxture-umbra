@@ -9,6 +9,10 @@ services:
     image: nginx:alpine
     container_name: umbra-nginx
     restart: always
+    depends_on:
+      - umbra-marzban
+      - umbra-vaultwarden
+      - umbra-portal
     ports:
       - "80:80"
       - "443:443"
