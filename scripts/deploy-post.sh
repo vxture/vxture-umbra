@@ -50,6 +50,43 @@ echo ""
 log_info "Creating $USER_COUNT users with prefix '$USER_PREFIX'..."
 echo ""
 
+# Ensure Marzban admin user exists.
+# SUDO_USERNAME/SUDO_PASSWORD env vars create the admin on first startup with an
+# empty DB, but this is unreliable across Marzban versions. We explicitly check
+# and create the admin via Python+passlib (available inside the container) so
+# that deploy-post.sh is idempotent regardless of Marzban startup behaviour.
+log_info "Ensuring Marzban admin user exists..."
+docker exec -i umbra-marzban python3 - <<PYEOF
+import os, sys, sqlite3
+try:
+    from passlib.context import CryptContext
+except ImportError:
+    print("passlib not available — skipping admin pre-create", file=sys.stderr)
+    sys.exit(0)
+
+db = sqlite3.connect('/var/lib/marzban/db.sqlite3')
+username = os.environ.get('SUDO_USERNAME', '')
+password = os.environ.get('SUDO_PASSWORD', '')
+
+if not username or not password:
+    print("SUDO_USERNAME/SUDO_PASSWORD not set — skipping", file=sys.stderr)
+    sys.exit(0)
+
+count = db.execute("SELECT COUNT(*) FROM admins WHERE username=?", (username,)).fetchone()[0]
+if count > 0:
+    print(f"Admin '{username}' already exists.")
+else:
+    pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed = pwd.hash(password)
+    db.execute(
+        "INSERT INTO admins (username, hashed_password, is_sudo) VALUES (?, ?, 1)",
+        (username, hashed)
+    )
+    db.commit()
+    print(f"Admin '{username}' created.")
+db.close()
+PYEOF
+
 # Authenticate with Marzban API
 MARZBAN_TOKEN=$(docker exec -i umbra-marzban python3 - <<PYEOF
 import urllib.request, urllib.parse, json, sys
@@ -71,7 +108,9 @@ PYEOF
 
 if [[ -z "$MARZBAN_TOKEN" ]]; then
   log_error "Could not authenticate with Marzban API"
-  log_info  "Is umbra-marzban running? Check: docker compose ps"
+  log_error "Admin user: ${MARZBAN_ADMIN_USER}"
+  log_info  "Check container: docker compose logs umbra-marzban --tail=20"
+  log_info  "Reset admin:     docker exec -it umbra-marzban marzban admin create"
   exit 1
 fi
 
