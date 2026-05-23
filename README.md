@@ -23,7 +23,7 @@ Production VPN edge node — SNI routing, VLESS+REALITY proxy, subscription deli
 
 | Requirement | Notes |
 |-------------|-------|
-| Ubuntu 22.04 LTS | Vultr or similar; 1C1G / 25GB SSD |
+| Ubuntu 26.04 LTS | Vultr or similar; 1C1G / 25GB SSD |
 | SSH key access | Key-based login as root (Vultr adds this at provision time) |
 | DNS A records | All 7 domains → server IP, propagated **before** running deploy |
 | Open ports | 80 (ACME) and 443 (HTTPS + REALITY) |
@@ -70,26 +70,32 @@ nano .env
 Required values to fill in:
 
 ```bash
-# Domains — adjust subdomain prefix as needed
+# ── Node Identity ──────────────────────────────────────
+NODE_NAME=vx-tokyo                    # label shown in subscription config
+
+# ── Domains ────────────────────────────────────────────
 APEX_DOMAIN=ruyin.ai
-EDGE_DOMAIN=proxy.ruyin.ai      # VPN user portal
-SUB_DOMAIN=sub.ruyin.ai         # subscription endpoint
+WWW_DOMAIN=www.ruyin.ai
+EDGE_DOMAIN=vpn.ruyin.ai             # VPN user portal
+SUB_DOMAIN=sub.ruyin.ai              # subscription endpoint
 CONSOLE_DOMAIN=console.ruyin.ai
-# ... (see .env.example for all domains)
+PASS_DOMAIN=pass.ruyin.ai
+VAULT_DOMAIN=vault.ruyin.ai
 
-# Marzban admin credentials
+# ── Marzban admin credentials ──────────────────────────
 MARZBAN_ADMIN_USER=admin
-MARZBAN_ADMIN_PASSWORD=<generate: openssl rand -base64 32>
-CONSOLE_HTPASSWD_PASSWORD=<same or different strong password>
+MARZBAN_ADMIN_PASSWORD=              # openssl rand -base64 32
+CONSOLE_HTPASSWD_PASSWORD=           # Nginx Basic Auth for console (bcrypt)
 
-# Vaultwarden admin token
-VAULTWARDEN_ADMIN_TOKEN=<generate: openssl rand -base64 48>
+# ── Vaultwarden ─────────────────────────────────────────
+VAULTWARDEN_ADMIN_TOKEN=             # openssl rand -base64 48
 
-# Let's Encrypt
+# ── Let's Encrypt ───────────────────────────────────────
 CERTBOT_EMAIL=your@email.com
 
-# Subscription URL prefix — no trailing slash
-SUBSCRIPTION_URL_PREFIX=https://sub.ruyin.ai
+# ── VPN Users (created by deploy-post.sh) ───────────────
+USER_COUNT=10
+USER_PREFIX=user
 ```
 
 Run the one-command deployment:
@@ -100,7 +106,7 @@ bash scripts/deploy-all.sh
 
 | Step | Script | Action |
 |------|--------|--------|
-| 00 | `00-check-env.sh` | Validate env vars, Docker, ports |
+| 00 | `00-check-env.sh` | Validate env vars, Docker, DNS, ports |
 | 01 | `01-init-dirs.sh` | Create data directory structure |
 | 02 | `02-generate-reality.sh` | Generate REALITY x25519 keypair *(skip if exists)* |
 | 03 | `03-issue-certs.sh` | Issue Let's Encrypt certs via certbot webroot *(skip if valid LE cert >30d)* |
@@ -109,41 +115,57 @@ bash scripts/deploy-all.sh
 | 06 | `06-verify.sh` | Verify all endpoints, containers, certs, databases |
 | 07 | `07-backup.sh` | Create initial config backup |
 
-After the deploy completes, run the post-deploy wizard to create VPN users and get subscription URLs:
+After the deploy completes, run the post-deploy wizard:
 
 ```bash
 bash scripts/deploy-post.sh
 ```
 
+The wizard automatically:
+1. Authenticates with the Marzban API and configures the inbound REALITY host
+2. Creates VPN users (`USER_COUNT` × `USER_PREFIX` from `.env`)
+3. Prints and saves Clash subscription URLs for each user
+4. Checks that all 7 DNS records resolve to this server
+5. Guides you through Vaultwarden account creation
+
 ---
 
-## Post-Deploy: Manual Steps
+## Post-Deploy: Manual Tasks
 
-### 1. Configure Marzban Host
+### Lock Down Vaultwarden
 
-Connect to VPN first (console is IP-restricted to Docker network), then open `https://console.ruyin.ai`:
+Open `https://pass.ruyin.ai/admin`, enter your `VAULTWARDEN_ADMIN_TOKEN`, then go to **Users → Invite User** to create your account via email invite. Web registration is disabled by default — accounts must be created through the admin panel.
 
-- Go to **Hosts** → add a host
-- Address: `proxy.ruyin.ai` (or your `EDGE_DOMAIN`)
-- Port: `443`
-- SNI: `www.microsoft.com`
-- Allow Insecure: off
+### Optional: Harden SSH
 
-### 2. Lock Down Vaultwarden
+After confirming `stone` SSH login works, disable root login:
 
-Open `https://pass.ruyin.ai`, create your account, then set `SIGNUPS_ALLOWED=false` (already set in docker-compose) — no action needed; signups are disabled by default.
+```bash
+sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && systemctl reload sshd
+```
+
+### Optional: External Uptime Monitoring
+
+Add free monitors at [BetterStack](https://betterstack.com) or [UptimeRobot](https://uptimerobot.com):
+- TCP `vpn.ruyin.ai:443` — catches full-node outage
+- HTTPS `https://vpn.ruyin.ai` — catches nginx failures
 
 ---
 
 ## Operations
 
-### Logs and status
+### Unified dispatcher
 
 ```bash
-docker compose ps
-docker compose logs -f umbra-nginx
-docker compose logs -f umbra-marzban
-docker compose restart umbra-nginx
+bash scripts/deploy.sh <command>
+
+# Examples:
+bash scripts/deploy.sh status                    # container status
+bash scripts/deploy.sh logs umbra-nginx          # tail logs
+bash scripts/deploy.sh restart umbra-marzban     # restart one service
+bash scripts/deploy.sh config                    # re-render templates + nginx reload
+bash scripts/deploy.sh certs --status            # show cert expiry
+bash scripts/deploy.sh verify                    # run full verification suite
 ```
 
 ### Certificate management
@@ -219,9 +241,10 @@ Expected — the admin console is IP-restricted to the Docker network (VPN clien
 |--------|---------|
 | `server-init.sh` | Bootstrap server: Docker, admin user, SSH key copy *(root, once)* |
 | `server-reset.sh` | Stop or wipe deployment |
-| `deploy-all.sh` | Full deployment orchestrator |
+| `deploy.sh` | Unified dispatcher — run any step or operation by name |
+| `deploy-all.sh` | Full deployment orchestrator (steps 00–07 + cron setup) |
 | `deploy-certs.sh` | Certificate lifecycle: renew / upgrade / status |
-| `deploy-post.sh` | Post-deploy: create VPN users, show subscription URLs |
+| `deploy-post.sh` | Post-deploy wizard: host config, user creation, sub URLs |
 | `steps/06-verify.sh` | Verify all services and endpoints |
 | `steps/07-backup.sh` | Backup databases and config files |
 
@@ -245,4 +268,4 @@ Internet
                                                └─ vault.ruyin.ai    → placeholder
 ```
 
-See [`docs/agent.md`](docs/agent.md) for full design reference.
+See [`docs/architecture.md`](docs/architecture.md) for full design reference.
