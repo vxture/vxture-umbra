@@ -6,9 +6,11 @@ server {
     ssl_certificate     /etc/letsencrypt/live/{{ SUB_DOMAIN }}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/{{ SUB_DOMAIN }}/privkey.pem;
     include /etc/nginx/snippets/ssl-params.conf;
+    include /etc/nginx/snippets/security-headers.conf;
 
     # Only expose subscription paths — no admin UI leaked here
     location ~ ^/sub/ {
+        limit_req zone=sub_limit burst=10 nodelay;
         proxy_pass http://umbra-marzban:8000;
         include /etc/nginx/snippets/proxy-headers.conf;
     }

@@ -1,10 +1,11 @@
 # console.ruyin.ai — Marzban admin panel
 # Access control:
-#   Layer 1: Stream proxy routes all 443 traffic via 127.0.0.1 — no public IP bypass possible
-#   Layer 2: Marzban handles its own session authentication (JWT)
-# Note: nginx auth_basic is intentionally omitted — it interferes with Marzban's
-# React frontend (browser returns 401 Basic challenge instead of Marzban's JSON 401,
-# causing the login form to never render).
+#   Layer 1: nginx Basic Auth (htpasswd) — first gate, stops unauthenticated browsers
+#   Layer 2: Marzban JWT session authentication — second gate inside the app
+# Note: stream proxy makes $remote_addr always 127.0.0.1 in the HTTP block,
+# so IP allowlist cannot distinguish VPN clients from public traffic here.
+# Basic Auth is the practical solution: nginx 401 uses WWW-Authenticate: Basic,
+# Marzban API uses WWW-Authenticate: Bearer — browsers handle them independently.
 
 server {
     listen 8443 ssl;
@@ -14,10 +15,13 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/{{ CONSOLE_DOMAIN }}/privkey.pem;
     include /etc/nginx/snippets/ssl-params.conf;
 
+    auth_basic           "Umbra Console";
+    auth_basic_user_file /etc/nginx/private/.htpasswd_console;
+
     # Marzban's React dashboard is at /dashboard/, not /
     # Use $http_host (client Host header, no port) to avoid leaking internal port 8443
     location = / {
-        return 302 https://$http_host/dashboard/;
+        return 301 https://$http_host/dashboard/;
     }
 
     location / {

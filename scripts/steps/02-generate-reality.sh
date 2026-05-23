@@ -35,9 +35,12 @@ fi
 log_ok "Private key generated"
 log_ok "Public key:  $PUBLIC_KEY"
 
-log_step "Generating shortId (${REALITY_SHORT_ID_LENGTH} hex chars)..."
-SHORT_ID=$(openssl rand -hex "$((REALITY_SHORT_ID_LENGTH / 2))")
-log_ok "ShortId: $SHORT_ID"
+log_step "Generating 4 shortIds (${REALITY_SHORT_ID_LENGTH} hex chars each)..."
+SID1=$(openssl rand -hex "$((REALITY_SHORT_ID_LENGTH / 2))")
+SID2=$(openssl rand -hex "$((REALITY_SHORT_ID_LENGTH / 2))")
+SID3=$(openssl rand -hex "$((REALITY_SHORT_ID_LENGTH / 2))")
+SID4=$(openssl rand -hex "$((REALITY_SHORT_ID_LENGTH / 2))")
+log_ok "ShortIds: $SID1  $SID2  $SID3  $SID4"
 
 log_step "Writing to $REALITY_FILE ..."
 
@@ -45,7 +48,8 @@ cat > "$REALITY_FILE" <<EOF
 {
   "private_key": "$PRIVATE_KEY",
   "public_key":  "$PUBLIC_KEY",
-  "short_id":    "$SHORT_ID",
+  "short_id":    "$SID1",
+  "short_ids":   ["$SID1", "$SID2", "$SID3", "$SID4"],
   "dest":        "$REALITY_DEST",
   "sni":         "$REALITY_SNI"
 }

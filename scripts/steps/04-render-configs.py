@@ -84,12 +84,17 @@ if not DATA_DIR:
 
 reality = load_reality(DATA_DIR / "private" / "reality.json")
 
+# Support both old single short_id and new short_ids array
+_short_ids = reality.get("short_ids") or [reality.get("short_id", "")]
+_short_ids_json = ", ".join(f'"{s}"' for s in _short_ids)
+
 # Build complete variable map
 variables = {
     **env,
     "REALITY_PRIVATE_KEY": reality["private_key"],
     "REALITY_PUBLIC_KEY":  reality["public_key"],
-    "REALITY_SHORT_ID":    reality["short_id"],
+    "REALITY_SHORT_ID":    _short_ids[0],
+    "REALITY_SHORT_IDS":   _short_ids_json,
 }
 
 configs_dir = REPO_DIR / "configs"

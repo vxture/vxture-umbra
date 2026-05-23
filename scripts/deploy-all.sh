@@ -75,6 +75,34 @@ python3 "$SCRIPT_DIR/steps/04-render-configs.py" || {
 }
 echo ""
 
+# ── Console htpasswd — must exist before nginx starts ─────────────────────────
+HTPASSWD_FILE="$DATA_DIR/nginx/private/.htpasswd_console"
+CONSOLE_USER="${MARZBAN_ADMIN_USER:-admin}"
+CONSOLE_PASS="${CONSOLE_HTPASSWD_PASSWORD:-}"
+
+if [[ ! -f "$HTPASSWD_FILE" ]]; then
+  log_step "Creating console Basic Auth credentials..."
+
+  if [[ -z "$CONSOLE_PASS" ]]; then
+    log_error "CONSOLE_HTPASSWD_PASSWORD is not set in .env"
+    log_error "Add it and re-run, or manually create: htpasswd -c $HTPASSWD_FILE $CONSOLE_USER"
+    exit 1
+  fi
+
+  if command -v htpasswd &>/dev/null; then
+    htpasswd -bc "$HTPASSWD_FILE" "$CONSOLE_USER" "$CONSOLE_PASS"
+  else
+    HASH=$(docker run --rm httpd:alpine htpasswd -nbB "$CONSOLE_USER" "$CONSOLE_PASS" | tr -d '\r')
+    echo "$HASH" > "$HTPASSWD_FILE"
+  fi
+
+  chmod 644 "$HTPASSWD_FILE"
+  log_ok "htpasswd_console created for user: $CONSOLE_USER"
+else
+  log_info "htpasswd_console already exists — skipping"
+fi
+echo ""
+
 run_step "05-up.sh"              "Start Docker services"
 
 if [[ "$SKIP_VERIFY" == "true" ]]; then
@@ -107,34 +135,6 @@ add_cron() {
 
 add_cron "$CRON_LINE"
 add_cron "$BACKUP_CRON_LINE"
-
-# ── Console htpasswd ──────────────────────────────────────────────────────────
-HTPASSWD_FILE="$DATA_DIR/nginx/private/.htpasswd_console"
-CONSOLE_USER="${MARZBAN_ADMIN_USER:-admin}"
-CONSOLE_PASS="${CONSOLE_HTPASSWD_PASSWORD:-}"
-
-if [[ ! -f "$HTPASSWD_FILE" ]]; then
-  log_step "Creating console Basic Auth credentials..."
-
-  if [[ -z "$CONSOLE_PASS" ]]; then
-    log_error "CONSOLE_HTPASSWD_PASSWORD is not set in .env"
-    log_error "Add it and re-run, or manually create: htpasswd -c $HTPASSWD_FILE $CONSOLE_USER"
-    exit 1
-  fi
-
-  if command -v htpasswd &>/dev/null; then
-    htpasswd -bc "$HTPASSWD_FILE" "$CONSOLE_USER" "$CONSOLE_PASS"
-  else
-    # Fallback: generate bcrypt hash via Docker (no host dependency)
-    HASH=$(docker run --rm httpd:alpine htpasswd -nbB "$CONSOLE_USER" "$CONSOLE_PASS" | tr -d '\r')
-    echo "$HASH" > "$HTPASSWD_FILE"
-  fi
-
-  chmod 644 "$HTPASSWD_FILE"
-  log_ok "htpasswd_console created for user: $CONSOLE_USER"
-else
-  log_info "htpasswd_console already exists — skipping"
-fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""
