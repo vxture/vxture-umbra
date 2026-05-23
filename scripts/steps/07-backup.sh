@@ -11,16 +11,15 @@ log_banner "Umbra — Backup"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 ARCHIVE="$BACKUP_DIR/umbra-config-${TIMESTAMP}.tar.gz"
 
-# ── SQLite database copies ────────────────────────────────────────────────────
+# ── SQLite database copies (Marzban + Shlink) ─────────────────────────────────
 log_step "Backing up SQLite databases..."
 
 declare -A SQLITE_DBS=(
   ["marzban"]="$DATA_DIR/marzban/db.sqlite3"
-  ["vaultwarden"]="$DATA_DIR/vaultwarden/data/db.sqlite3"
   ["shlink"]="$DATA_DIR/shortlink/data/database.sqlite"
 )
 
-for label in marzban vaultwarden shlink; do
+for label in marzban shlink; do
   db_path="${SQLITE_DBS[$label]}"
   dest="$BACKUP_DIR/${label}-db-${TIMESTAMP}.sqlite3"
   if [[ -f "$db_path" ]]; then
@@ -31,6 +30,22 @@ for label in marzban vaultwarden shlink; do
     log_warn "$label database not found at $db_path — skipping"
   fi
 done
+
+# ── Vaultwarden full data backup ───────────────────────────────────────────────
+# Must archive the whole directory: SQLite holds metadata, but attachments and
+# Send files are stored as blobs in data/attachments/ and data/sends/.
+# A DB-only backup leaves all file attachments unrecoverable.
+log_step "Backing up Vaultwarden data (DB + attachments + sends)..."
+VW_DATA="$DATA_DIR/vaultwarden/data"
+if [[ -d "$VW_DATA" ]]; then
+  VW_ARCHIVE="$BACKUP_DIR/vaultwarden-data-${TIMESTAMP}.tar.gz"
+  tar -czf "$VW_ARCHIVE" -C "$(dirname "$VW_DATA")" "$(basename "$VW_DATA")" 2>/dev/null
+  chmod 600 "$VW_ARCHIVE"
+  SIZE=$(du -sh "$VW_ARCHIVE" | cut -f1)
+  log_ok "Vaultwarden data → $(basename "$VW_ARCHIVE") ($SIZE)"
+else
+  log_warn "Vaultwarden data dir not found at $VW_DATA — skipping"
+fi
 
 # ── Config archive ─────────────────────────────────────────────────────────────
 log_step "Archiving configs and private data..."

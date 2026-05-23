@@ -11,6 +11,13 @@ server {
     # Vaultwarden needs larger client body for attachments
     client_max_body_size 525M;
 
+    # Admin panel: strict rate limit — prevents ADMIN_TOKEN brute-force
+    location ^~ /admin {
+        limit_req zone=vault_admin burst=5 nodelay;
+        proxy_pass http://umbra-vaultwarden:80;
+        include /etc/nginx/snippets/proxy-headers.conf;
+    }
+
     location / {
         proxy_pass http://umbra-vaultwarden:80;
         include /etc/nginx/snippets/proxy-headers.conf;
