@@ -109,7 +109,7 @@ for domain in "${DOMAINS[@]}"; do
       --agree-tos \
       --non-interactive \
       --no-eff-email \
-      -d "$domain" 2>&1 | tee -a /tmp/certbot-$domain.log; then
+      -d "$domain"; then
     log_ok "Cert issued for $domain"
     (( ++ISSUED ))
   else
