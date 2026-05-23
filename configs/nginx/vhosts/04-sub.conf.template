@@ -9,8 +9,7 @@ server {
 
     # Only expose subscription paths — no admin UI leaked here
     location ~ ^/sub/ {
-        proxy_pass https://umbra-marzban:8000;
-        proxy_ssl_verify off;
+        proxy_pass http://umbra-marzban:8000;
         include /etc/nginx/snippets/proxy-headers.conf;
     }
 

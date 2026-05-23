@@ -24,13 +24,6 @@ services:
       - ${DATA_DIR}/nginx/logs:/var/log/nginx
     networks:
       - umbra-net
-    depends_on:
-      - umbra-marzban
-      - umbra-vaultwarden
-      - umbra-uptime
-      - umbra-portal
-      - umbra-docs
-      - umbra-shortlink
     healthcheck:
       test: ["CMD", "nginx", "-t"]
       interval: 30s
@@ -38,6 +31,8 @@ services:
       retries: 3
 
   # ── Marzban: VPN manager (includes Xray-core subprocess) ─────────────────────
+  # TLS is terminated at nginx; Marzban runs plain HTTP on :8000 inside Docker.
+  # This avoids the self-signed cert catch-22 on first deploy.
   umbra-marzban:
     image: gozargah/marzban:latest
     container_name: umbra-marzban
@@ -54,11 +49,8 @@ services:
       XRAY_SUBSCRIPTION_URL_PREFIX: "${SUBSCRIPTION_URL_PREFIX}"
       CUSTOM_TEMPLATES_DIRECTORY: "/var/lib/marzban/templates"
       CLASH_SUBSCRIPTION_TEMPLATE: "clash/default.yml"
-      UVICORN_SSL_CERTFILE: "/etc/letsencrypt/live/${SUB_DOMAIN}/fullchain.pem"
-      UVICORN_SSL_KEYFILE: "/etc/letsencrypt/live/${SUB_DOMAIN}/privkey.pem"
     volumes:
       - ${DATA_DIR}/marzban:/var/lib/marzban
-      - ${DATA_DIR}/letsencrypt:/etc/letsencrypt:ro
     networks:
       - umbra-net
 

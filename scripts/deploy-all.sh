@@ -1,11 +1,24 @@
 #!/usr/bin/env bash
 # Full deployment: runs all steps in order.
 # Safe to re-run — each step is idempotent where possible.
+#
+# Options:
+#   --skip-verify    Skip the verification step (useful on re-deploys)
+#   --skip-backup    Skip the backup step
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/env.sh"
 source "$SCRIPT_DIR/lib/log.sh"
+
+SKIP_VERIFY=false
+SKIP_BACKUP=false
+for arg in "$@"; do
+  case "$arg" in
+    --skip-verify) SKIP_VERIFY=true ;;
+    --skip-backup) SKIP_BACKUP=true ;;
+  esac
+done
 
 if [[ "$EUID" -eq 0 ]]; then
   log_error "Do not run as root. Switch to the admin user: su - stone"
@@ -31,6 +44,17 @@ run_step() {
   echo ""
 }
 
+run_step_warn() {
+  local step="$1"
+  local label="$2"
+  log_step "[$step] $label"
+  bash "$SCRIPT_DIR/steps/$step" || {
+    log_warn "Step $step reported failures — services may still be running."
+    log_warn "Check manually: bash scripts/deploy.sh verify"
+  }
+  echo ""
+}
+
 run_step "00-check-env.sh"        "Environment check"
 run_step "01-init-dirs.sh"        "Initialize directories"
 run_step "02-generate-reality.sh" "Generate REALITY keys"
@@ -52,8 +76,18 @@ python3 "$SCRIPT_DIR/steps/04-render-configs.py" || {
 echo ""
 
 run_step "05-up.sh"              "Start Docker services"
-run_step "06-verify.sh"          "Verify deployment"
-run_step "07-backup.sh"          "Create backup"
+
+if [[ "$SKIP_VERIFY" == "true" ]]; then
+  log_info "Skipping verification (--skip-verify)"
+else
+  run_step_warn "06-verify.sh"   "Verify deployment"
+fi
+
+if [[ "$SKIP_BACKUP" == "true" ]]; then
+  log_info "Skipping backup (--skip-backup)"
+else
+  run_step_warn "07-backup.sh"   "Create backup"
+fi
 
 # ── Configure cert renewal and backup cron ────────────────────────────────────
 log_step "Configuring cron jobs..."

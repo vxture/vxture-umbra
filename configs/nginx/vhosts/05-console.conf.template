@@ -21,8 +21,7 @@ server {
     }
 
     location / {
-        proxy_pass https://umbra-marzban:8000;
-        proxy_ssl_verify off;
+        proxy_pass http://umbra-marzban:8000;
         include /etc/nginx/snippets/proxy-headers.conf;
     }
 }
