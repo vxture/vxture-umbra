@@ -236,7 +236,7 @@ bash scripts/deploy.sh post
 ```
 
 > `--full` uses Docker internally to remove root-owned certbot files.
-> `server.sh reset` prints a reset result and exits non-zero if Umbra containers are still running or ports 80/443 remain occupied.
+> `server.sh reset` prints separate execution and verification sections, and exits non-zero if Umbra containers are still running or ports 80/443 remain occupied.
 
 ### Manual backup
 

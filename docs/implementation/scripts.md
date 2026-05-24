@@ -30,7 +30,7 @@ Scripts are organized by lifecycle boundary.
 
 - Soft reset must leave `DATA_DIR` and `BACKUP_DIR` intact, stop Umbra containers, remove `certbot-nginx-tmp`, and free ports 80/443.
 - Full reset must stop Umbra containers, free ports 80/443, and remove `DATA_DIR` plus `BACKUP_DIR`.
-- Both modes print a `Reset result` summary and exit non-zero if containers are still running, required ports are still occupied, or full-reset data removal did not complete.
+- Both modes print separate execution and verification sections, then exit non-zero if containers are still running, required ports are still occupied, or full-reset data removal did not complete.
 
 ## Deploy Commands
 

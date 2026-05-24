@@ -22,7 +22,27 @@ PORTS=(80 443)
 
 container_state() {
   local name="$1"
-  docker inspect "$name" --format '{{.State.Status}}' 2>/dev/null || echo "absent"
+  local names
+  local state
+
+  if ! names="$(docker ps -a --format '{{.Names}}' 2>/dev/null)"; then
+    echo "unknown"
+    return 0
+  fi
+
+  if ! printf '%s\n' "$names" | grep -Fxq "$name"; then
+    echo "absent"
+    return 0
+  fi
+
+  state="$(docker inspect "$name" --format '{{.State.Status}}' 2>/dev/null || true)"
+  state="$(printf '%s' "$state" | sed '/^[[:space:]]*$/d' | tail -1 | tr -d '\r')"
+
+  if [[ -z "$state" ]]; then
+    echo "unknown"
+  else
+    echo "$state"
+  fi
 }
 
 port_owner() {
@@ -63,7 +83,7 @@ verify_runtime_stopped() {
   local failures=0
   local state owner
 
-  log_step "Reset result: containers"
+  log_info "Containers"
   for c in "${CONTAINERS[@]}"; do
     state="$(container_state "$c")"
     case "$state" in
@@ -80,7 +100,7 @@ verify_runtime_stopped() {
     esac
   done
 
-  log_step "Reset result: ports"
+  log_info "Ports"
   for port in "${PORTS[@]}"; do
     owner="$(port_owner "$port")"
     if [[ -z "$owner" ]]; then
@@ -101,7 +121,7 @@ verify_soft_reset() {
     failures=$(( failures + 1 ))
   fi
 
-  log_step "Reset result: preserved data"
+  log_info "Preserved data"
   if [[ -d "$DATA_DIR" ]]; then
     log_ok "DATA_DIR preserved: $DATA_DIR"
   else
@@ -129,7 +149,7 @@ verify_full_reset() {
     failures=$(( failures + 1 ))
   fi
 
-  log_step "Reset result: removed data"
+  log_info "Removed data"
   for target_dir in "$DATA_DIR" "$BACKUP_DIR"; do
     if [[ -e "$target_dir" ]]; then
       log_fail "Still exists: $target_dir"
@@ -168,6 +188,7 @@ if [[ "$MODE" == "--full" ]]; then
     exit 0
   fi
 
+  log_step "Execution phase"
   stop_containers
   free_ports
 
@@ -186,6 +207,7 @@ if [[ "$MODE" == "--full" ]]; then
   done
 
   echo ""
+  log_step "Verification phase"
   verify_full_reset
   echo ""
   log_info "To redeploy from scratch:"
@@ -203,10 +225,12 @@ log_banner "Umbra - Soft Reset"
 log_info "Stops containers and frees ports. Data and certs are preserved."
 echo ""
 
+log_step "Execution phase"
 stop_containers
 free_ports
 
 echo ""
+log_step "Verification phase"
 verify_soft_reset
 echo ""
 log_info "To redeploy:"
