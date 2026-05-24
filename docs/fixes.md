@@ -5,6 +5,15 @@ Goal: one-click deploy → fresh server operational with three commands.
 
 ---
 
+## Session 4 - 2026-05-24
+
+| File | Problem | Fix |
+|---|---|---|
+| `configs/nginx/vhosts/04-sub.conf.template` | Subscription endpoint was being rewritten to `/sub/<token>/clash-meta`; requested public format is Marzban native `/sub/<token>` only | Proxied `/sub/<token>` unchanged to Marzban and kept every other path, including `/sub/<token>/clash-meta`, at 404 |
+| `scripts/deploy-post.sh` | Post-deploy script had been converting API subscription URLs into custom username-token URLs | Kept Marzban API `subscription_url` as-is, so saved links stay in native `/sub/<token>` format |
+
+---
+
 ## Session 3 — 2026-05-23 (cont. 2)
 
 | File | Problem | Fix |

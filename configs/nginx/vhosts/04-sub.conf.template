@@ -8,26 +8,16 @@ server {
     include /etc/nginx/snippets/ssl-params.conf;
     include /etc/nginx/snippets/security-headers.conf;
 
-    # Clean URL format distributed to users: /sub/{username}-{token}
-    # $1 = username (sets profile-title), $2 = Marzban token.
-    location ~ "^/sub/([a-zA-Z0-9_]{1,32})-([^/\s]{20,})$" {
-        limit_req zone=sub_limit burst=10 nodelay;
-        proxy_pass https://umbra-marzban:8000/sub/$2/clash-meta;
-        proxy_ssl_verify off;
-        include /etc/nginx/snippets/proxy-headers.conf;
-        proxy_hide_header profile-title;
-        add_header profile-title "Ruyin-$1";
-    }
-
-    # Native Marzban format — keeps console URLs functional
-    location ~ ^/sub/ {
+    # Only Marzban's native subscription URL is public: /sub/{token}.
+    # /sub/{token}/clash-meta and all other variants return 404.
+    location ~ "^/sub/([^/\s]+)$" {
         limit_req zone=sub_limit burst=10 nodelay;
         proxy_pass https://umbra-marzban:8000;
         proxy_ssl_verify off;
         include /etc/nginx/snippets/proxy-headers.conf;
     }
 
-    # Block all other paths (/dashboard, /api/admin, etc.)
+    # Block /sub/{token}/clash-meta and everything else.
     location / {
         return 404;
     }
