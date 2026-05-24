@@ -278,39 +278,25 @@
       min-height: 116px;
       display: grid;
       grid-template-rows: auto auto auto;
+      align-content: start;
       gap: 10px;
       text-align: left;
     }
 
-    .service-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .service-mark {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: var(--radius);
-      border: 1px solid var(--line-strong);
-      background: rgba(86, 217, 255, 0.1);
-      color: var(--accent);
-      font-weight: 900;
-    }
-
     .service-badge {
-      width: 34px;
-      height: 34px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 32px;
+      height: 32px;
       display: block;
       object-fit: contain;
-      filter: drop-shadow(0 8px 18px rgba(86, 217, 255, 0.18));
+      pointer-events: none;
     }
 
     .service h2 {
       margin: 0;
+      padding-right: 44px;
       font-size: 1.08rem;
       line-height: 1.2;
     }
@@ -471,10 +457,7 @@
       <section class="services" aria-label="Ruyin services">
         <a class="service" href="https://hermes.vxture.com">
           <span class="service-inner">
-            <span class="service-top">
-              <span class="service-mark">H</span>
-              <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
-            </span>
+            <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
             <h2 data-i18n="hermesTitle">Hermes 智能工作台</h2>
             <p data-i18n="hermesText">任务编排与智能协作。</p>
             <span class="service-cta" data-i18n="openService">打开服务</span>
@@ -483,10 +466,7 @@
 
         <a class="service" href="https://{{ EDGE_DOMAIN }}">
           <span class="service-inner">
-            <span class="service-top">
-              <span class="service-mark">P</span>
-              <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
-            </span>
+            <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
             <h2 data-i18n="proxyTitle">Proxy 私有代理网络</h2>
             <p data-i18n="proxyText">订阅、节点与安全访问。</p>
             <span class="service-cta" data-i18n="openService">打开服务</span>
@@ -495,10 +475,7 @@
 
         <a class="service" href="https://{{ PASS_DOMAIN }}">
           <span class="service-inner">
-            <span class="service-top">
-              <span class="service-mark">K</span>
-              <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
-            </span>
+            <img class="service-badge" src="assets/icons/agent-icon-64.gif" alt="">
             <h2 data-i18n="passTitle">个人密码柜</h2>
             <p data-i18n="passText">账号、密钥与敏感信息。</p>
             <span class="service-cta" data-i18n="openService">打开服务</span>
