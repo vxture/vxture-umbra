@@ -163,6 +163,8 @@ curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://sub.ruyin.ai/sub/<token>'
 
 Expected: `200`. `curl -I` sends HEAD and Marzban responds `405 Method Not Allowed`.
 
+Clash subscription files include a profile header named `Ruyin-USERNAME`, for example `Ruyin-USER01`, while the proxy node name remains `NODE_NAME`.
+
 ---
 
 ## Post-Deploy: Manual Tasks

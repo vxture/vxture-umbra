@@ -126,7 +126,7 @@ The public subscription domain is intentionally narrow:
 
 ### Node Naming
 
-All users see node name `vx-tokyo` (from `NODE_NAME` env var). Real server hostname, user number, and UUID are never visible in subscription output.
+All users see node name `vx-tokyo` (from `NODE_NAME` env var). The Clash subscription file header sets the subscription profile title to `Ruyin-USERNAME`, for example `Ruyin-USER01`, so users can identify the service provider and their account. Real server hostname and UUID are never visible in subscription output.
 
 ---
 
