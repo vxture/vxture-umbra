@@ -163,6 +163,26 @@ https://sub.ruyin.ai/sub/<marzban-token>
 
 Users configure this URL in Clash Verge / V2RayN once. Refreshing the subscription gets the latest config including any node updates.
 
+Marzban may show a different `/sub/<marzban-token>` value after each console page refresh. This is expected: tokens are generated dynamically for the same user, and older tokens can remain valid. Use a GET request to verify a saved subscription URL:
+
+```bash
+curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://sub.ruyin.ai/sub/<marzban-token>'
+head -30 /tmp/sub.yaml
+```
+
+Expected status: `200`. Do not use `curl -I` for this endpoint; Marzban rejects HEAD requests with `405 Method Not Allowed` and `allow: GET`.
+
+The subscription domain is intentionally path-restricted by nginx:
+
+```bash
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/TESTTOKEN/clash-meta
+```
+
+Expected status for all four: `404`. Only native Marzban `GET /sub/<marzban-token>` is public.
+
 ### Adding a New Node (Multi-node, v1.1+)
 
 Marzban supports connecting multiple Xray nodes. Future edge nodes (edge-02, etc.) can be added via:

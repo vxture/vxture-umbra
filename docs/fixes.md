@@ -11,6 +11,8 @@ Goal: one-click deploy → fresh server operational with three commands.
 |---|---|---|
 | `configs/nginx/vhosts/04-sub.conf.template` | Subscription endpoint was being rewritten to `/sub/<token>/clash-meta`; requested public format is Marzban native `/sub/<token>` only | Proxied `/sub/<token>` unchanged to Marzban and kept every other path, including `/sub/<token>/clash-meta`, at 404 |
 | `scripts/deploy-post.sh` | Post-deploy script had been converting API subscription URLs into custom username-token URLs | Kept Marzban API `subscription_url` as-is, so saved links stay in native `/sub/<token>` format |
+| `scripts/steps/06-verify.sh` | Verification did not encode the subscription-domain edge cases discovered in live testing | Added explicit 404 checks for root, `/sub`, `/sub/`, and `/sub/<token>/clash-meta`; verifies a saved real subscription URL with GET when available |
+| Docs | Live tests showed two easy operator mistakes: running `04-render-configs.py` with bash, and testing subscriptions with HEAD (`curl -I`) | Documented `python3 scripts/steps/04-render-configs.py`, GET-only subscription testing, dynamic Marzban tokens, and expected nginx 404 boundaries |
 
 ---
 

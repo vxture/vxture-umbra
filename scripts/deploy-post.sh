@@ -279,6 +279,8 @@ SUB_FILE="$BACKUP_DIR/subscription-urls-$(date +%Y%m%d).txt"
 {
   echo "# Subscription URLs — generated $(date)"
   echo "# Server: $NODE_NAME ($EDGE_DOMAIN)"
+  echo "# Format: Marzban native /sub/<token>"
+  echo "# Marzban console may show a different token after refresh; old saved URLs remain usable while GET returns 200."
   echo ""
   for i in $(seq -w 1 "$USER_COUNT"); do
     username="${USER_PREFIX}${i}"
@@ -356,6 +358,7 @@ echo "       * HTTPS https://$EDGE_DOMAIN  (portal)"
 echo ""
 echo "  2. Distribute subscription URLs to users:"
 echo "     Saved in: $SUB_FILE"
+echo "     Note: Marzban may display fresh tokens in the console; saved URLs are valid while GET returns 200."
 echo ""
 
 log_ok "Post-deploy wizard complete."

@@ -38,6 +38,21 @@ check_http() {
   fi
 }
 
+check_http_exact() {
+  local desc="$1"
+  local url="$2"
+  local expected_code="$3"
+  local code
+  code=$(curl -sk --max-time 10 -o /dev/null -w "%{http_code}" "$url" 2>/dev/null || echo "000")
+  if [[ "$code" == "$expected_code" ]]; then
+    log_ok "$desc ($code)"
+    (( ++PASS ))
+  else
+    log_fail "$desc (got $code, expected $expected_code)"
+    (( ++FAIL ))
+  fi
+}
+
 # ── Container status ──────────────────────────────────────────────────────────
 log_step "Container health..."
 
@@ -67,14 +82,23 @@ check_http "$EDGE_DOMAIN"        "https://$EDGE_DOMAIN"
 check_http "$PASS_DOMAIN"        "https://$PASS_DOMAIN"
 check_http "$VAULT_DOMAIN"       "https://$VAULT_DOMAIN"
 
-# SUB_DOMAIN root returns 404 (only /sub/* paths are proxied)
-SUB_CODE=$(curl -sk --max-time 10 -o /dev/null -w "%{http_code}" "https://$SUB_DOMAIN/" || echo "000")
-if [[ "$SUB_CODE" == "404" ]] || [[ "$SUB_CODE" == "200" ]]; then
-  log_ok "$SUB_DOMAIN responding ($SUB_CODE)"
-  (( ++PASS ))
+# SUB_DOMAIN only exposes Marzban native GET /sub/{token}.
+# Marzban returns 405 to HEAD (-I), so verification must use GET.
+check_http_exact "$SUB_DOMAIN root blocked"              "https://$SUB_DOMAIN/" 404
+check_http_exact "$SUB_DOMAIN /sub blocked"             "https://$SUB_DOMAIN/sub" 404
+check_http_exact "$SUB_DOMAIN /sub/ blocked"            "https://$SUB_DOMAIN/sub/" 404
+check_http_exact "$SUB_DOMAIN clash-meta variant blocked" "https://$SUB_DOMAIN/sub/TESTTOKEN/clash-meta" 404
+
+latest_sub_file=$(ls -t "$BACKUP_DIR"/subscription-urls-*.txt 2>/dev/null | head -1 || true)
+if [[ -n "$latest_sub_file" ]]; then
+  latest_sub_url=$(awk 'NF >= 2 && $1 !~ /^#/ && $2 ~ /^https:\/\// {print $2; exit}' "$latest_sub_file")
+  if [[ -n "$latest_sub_url" ]]; then
+    check_http_exact "Saved Marzban subscription URL works (GET)" "$latest_sub_url" 200
+  else
+    log_warn "No subscription URL found in $latest_sub_file"
+  fi
 else
-  log_fail "$SUB_DOMAIN not responding (got $SUB_CODE)"
-  (( ++FAIL ))
+  log_warn "No saved subscription URL file found in $BACKUP_DIR; run deploy-post.sh after first deploy"
 fi
 
 # ── CONSOLE_DOMAIN access control ────────────────────────────────────────────

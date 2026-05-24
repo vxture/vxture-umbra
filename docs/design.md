@@ -112,6 +112,18 @@ https://sub.ruyin.ai/sub/<marzban-opaque-token>
 
 Marzban generates this token independently of the user's UUID. UUID is the proxy authentication credential; token is the subscription URL credential — they are separate.
 
+Marzban can generate a fresh-looking subscription token each time the admin console page is refreshed. This does not mean the user changed. Previously saved tokens can remain valid; verify with `GET /sub/<token>` returning `200`. The subscription endpoint does not support HEAD, so `curl -I` returning `405 Method Not Allowed` is expected.
+
+The public subscription domain is intentionally narrow:
+
+| Path | Expected |
+|------|----------|
+| `/` | `404` |
+| `/sub` | `404` |
+| `/sub/` | `404` |
+| `/sub/<token>/clash-meta` | `404` |
+| `/sub/<token>` | Marzban native subscription response |
+
 ### Node Naming
 
 All users see node name `vx-tokyo` (from `NODE_NAME` env var). Real server hostname, user number, and UUID are never visible in subscription output.

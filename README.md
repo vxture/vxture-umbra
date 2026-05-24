@@ -128,6 +128,14 @@ The wizard automatically:
 4. Checks that all 7 DNS records resolve to this server
 5. Guides you through Vaultwarden account creation
 
+Marzban subscription URLs use the native format `https://sub.ruyin.ai/sub/<token>`. The console may show a different token after refresh; older saved URLs can remain valid. Verify subscriptions with GET, not HEAD:
+
+```bash
+curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://sub.ruyin.ai/sub/<token>'
+```
+
+Expected: `200`. `curl -I` sends HEAD and Marzban responds `405 Method Not Allowed`.
+
 ---
 
 ## Post-Deploy: Manual Tasks
@@ -200,6 +208,16 @@ bash scripts/steps/07-backup.sh
 # Archives saved to BACKUP_DIR, 30-day retention
 ```
 
+### Re-render config only
+
+```bash
+python3 scripts/steps/04-render-configs.py
+# or
+bash scripts/deploy.sh config
+```
+
+`04-render-configs.py` is a Python script; do not run it with `bash`.
+
 ---
 
 ## Troubleshooting
@@ -262,7 +280,7 @@ Internet
                 └─ SNI = anything else     → nginx HTTP block (:8443)
                                                ├─ ruyin.ai          → landing page
                                                ├─ vpn.ruyin.ai      → VPN portal
-                                               ├─ sub.ruyin.ai      → Marzban /sub/*
+                                               ├─ sub.ruyin.ai      → Marzban /sub/<token>
                                                ├─ console.ruyin.ai  → Marzban dashboard (IP restricted)
                                                ├─ pass.ruyin.ai     → Vaultwarden
                                                └─ vault.ruyin.ai    → placeholder

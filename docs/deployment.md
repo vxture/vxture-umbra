@@ -191,6 +191,16 @@ chmod 700 BACKUP_DIR
 
 Renders all templates with variables from `.env` and `private/`:
 
+Run this step with Python, or via the deployment dispatcher:
+
+```bash
+python3 scripts/steps/04-render-configs.py
+# or
+bash scripts/deploy.sh config
+```
+
+Do not run it with `bash scripts/steps/04-render-configs.py`; it is a Python script.
+
 | Source | Output |
 |--------|--------|
 | `configs/nginx/stream.conf.template` | `DATA_DIR/nginx/stream.d/stream.conf` |
@@ -284,6 +294,21 @@ Must NOT contain:
 ```
 DOMAIN-SUFFIX,microsoft.com,PROXY
 ```
+
+Use GET for subscription tests. `curl -I` sends HEAD and Marzban returns `405 Method Not Allowed` with `allow: GET`; that is not a subscription failure.
+
+The subscription host should expose only native Marzban `/sub/<marzban-token>` URLs:
+
+```bash
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/TESTTOKEN/clash-meta
+```
+
+Expected: all four return `404`. A real `GET https://sub.ruyin.ai/sub/<marzban-token>` should return `200`.
+
+Marzban console may display a different subscription token after each refresh. That is expected; saved tokens can remain valid. Verify old and new URLs with GET and status `200` before replacing distributed links.
 
 ### SQLite Databases
 
