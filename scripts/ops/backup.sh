@@ -9,6 +9,9 @@ source "$SCRIPT_DIR/../lib/log.sh"
 log_banner "Umbra — Backup"
 
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+mkdir -p "$BACKUP_DIR"
+chmod 700 "$BACKUP_DIR"
+
 ARCHIVE="$BACKUP_DIR/umbra-config-${TIMESTAMP}.tar.gz"
 
 # ── SQLite database copies ────────────────────────────────────────────────────
@@ -83,14 +86,17 @@ log_ok "Crontab saved → $(basename "$CRON_FILE")"
 
 # ── Retention: delete archives older than 30 days ─────────────────────────────
 log_step "Cleaning up archives older than 30 days..."
-DELETED=$(find "$BACKUP_DIR" -name "*.tar.gz" -o -name "*.sqlite3" -o -name "*.txt" \
-  | xargs -I{} sh -c 'test $(( ($(date +%s) - $(stat -c %Y {} 2>/dev/null || stat -f %m {})) / 86400 )) -gt 30 && echo {}' 2>/dev/null || true)
+DELETED=0
+while IFS= read -r -d '' f; do
+  if rm -f -- "$f"; then
+    log_info "Removed: $(basename "$f")"
+    DELETED=1
+  fi
+done < <(
+  find "$BACKUP_DIR" -type f \( -name "*.tar.gz" -o -name "*.sqlite3" -o -name "*.txt" \) -mtime +30 -print0 2>/dev/null
+)
 
-if [[ -n "$DELETED" ]]; then
-  echo "$DELETED" | while read -r f; do
-    rm -f "$f" && log_info "Removed: $(basename "$f")"
-  done
-else
+if [[ "$DELETED" == "0" ]]; then
   log_info "No old archives to remove"
 fi
 

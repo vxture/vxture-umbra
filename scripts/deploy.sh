@@ -43,6 +43,42 @@ _usage() {
   echo ""
 }
 
+check_rendered_nginx_cert_paths() {
+  local conf_dir="$DATA_DIR/nginx/conf.d"
+  local cert_path host_path
+  local failures=0
+
+  if [[ ! -d "$conf_dir" ]]; then
+    log_warn "Rendered nginx vhost directory not found: $conf_dir"
+    return 0
+  fi
+
+  while IFS= read -r cert_path; do
+    [[ -z "$cert_path" ]] && continue
+    if [[ "$cert_path" != /etc/letsencrypt/* ]]; then
+      continue
+    fi
+
+    host_path="$DATA_DIR/letsencrypt/${cert_path#/etc/letsencrypt/}"
+    if [[ ! -f "$host_path" ]]; then
+      log_fail "Missing certificate file required by rendered nginx config: $host_path"
+      (( ++failures ))
+    fi
+  done < <(
+    grep -hE '^[[:space:]]*ssl_certificate(_key)?[[:space:]]+' "$conf_dir"/*.conf 2>/dev/null \
+      | awk '{print $2}' \
+      | sed 's/;//' \
+      | sort -u
+  )
+
+  if (( failures > 0 )); then
+    log_error "Rendered nginx config references missing certificate files."
+    log_info "Issue or upgrade certificates before reloading:"
+    log_info "  bash scripts/ops.sh certs --upgrade"
+    return 1
+  fi
+}
+
 case "$CMD" in
 
   all)
@@ -68,6 +104,8 @@ case "$CMD" in
   config)
     log_banner "Umbra — Render Configs"
     python3 "$SCRIPT_DIR/deploy/04-render-configs.py"
+    echo ""
+    check_rendered_nginx_cert_paths
     echo ""
     log_step "Reloading nginx..."
     if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${NGINX_CONTAINER}$"; then

@@ -50,6 +50,37 @@ port_owner() {
   ss -tlnp 2>/dev/null | grep ":${port} " | head -1 || true
 }
 
+resolve_reset_target() {
+  local target="$1"
+  local resolved root_resolved repo_resolved
+
+  if [[ -z "$target" || "$target" == "/" ]]; then
+    log_error "Refusing unsafe reset target: ${target:-<empty>}"
+    return 1
+  fi
+
+  resolved="$(realpath -m "$target")"
+  root_resolved="$(realpath -m "${ROOT_DIR:-/srv/vxture}")"
+  repo_resolved="$(realpath -m "$REPO_DIR")"
+
+  case "$resolved" in
+    "$root_resolved"/*) ;;
+    *)
+      log_error "Refusing reset target outside ROOT_DIR: $resolved"
+      return 1
+      ;;
+  esac
+
+  if [[ "$resolved" == "$root_resolved" ]] \
+     || [[ "$resolved" == "$repo_resolved" ]] \
+     || [[ "$resolved" == "$repo_resolved"/* ]]; then
+    log_error "Refusing reset target that would remove root or repo state: $resolved"
+    return 1
+  fi
+
+  printf '%s\n' "$resolved"
+}
+
 stop_containers() {
   log_step "Stopping Umbra containers..."
   cd "$REPO_DIR"
@@ -68,10 +99,15 @@ free_ports() {
     pid=$(ss -tlnp 2>/dev/null | grep ":${port} " | grep -oP 'pid=\K[0-9]+' | head -1 || echo "")
     if [[ -n "$pid" ]]; then
       proc=$(ps -p "$pid" -o comm= 2>/dev/null || echo "unknown")
-      if kill -9 "$pid" 2>/dev/null; then
-        log_ok "Freed port $port (killed $proc pid=$pid)"
+      if [[ "${FORCE_FREE_PORTS:-false}" == "true" ]]; then
+        if kill -9 "$pid" 2>/dev/null; then
+          log_ok "Freed port $port (killed $proc pid=$pid)"
+        else
+          log_warn "Could not kill $proc pid=$pid on port $port"
+        fi
       else
-        log_warn "Could not kill $proc pid=$pid on port $port"
+        log_warn "Port $port is still used by $proc pid=$pid; not killing automatically"
+        log_warn "Set FORCE_FREE_PORTS=true only if this process is safe to terminate"
       fi
     else
       log_ok "Port $port is free"
@@ -194,15 +230,16 @@ if [[ "$MODE" == "--full" ]]; then
 
   log_step "Removing all runtime data..."
   for target_dir in "$DATA_DIR" "$BACKUP_DIR"; do
-    if [[ -d "$target_dir" ]]; then
-      docker run --rm -v "$target_dir:/target" alpine sh -c 'rm -rf /target/*' 2>/dev/null || true
-      if rm -rf "$target_dir"; then
-        log_ok "Remove attempted: $target_dir"
+    resolved_target="$(resolve_reset_target "$target_dir")" || exit 1
+    if [[ -d "$resolved_target" ]]; then
+      docker run --rm -v "$resolved_target:/target" alpine sh -c 'rm -rf /target/*' 2>/dev/null || true
+      if rm -rf -- "$resolved_target"; then
+        log_ok "Remove attempted: $resolved_target"
       else
-        log_warn "Remove failed; verification will report this path: $target_dir"
+        log_warn "Remove failed; verification will report this path: $resolved_target"
       fi
     else
-      log_info "Already absent: $target_dir"
+      log_info "Already absent: $resolved_target"
     fi
   done
 

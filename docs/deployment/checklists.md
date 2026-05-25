@@ -296,6 +296,7 @@ Expected cleanup:
 [ ] Umbra containers stopped/removed by compose down
 [ ] `certbot-nginx-tmp` removed if present
 [ ] Ports 80 and 443 are free
+[ ] Foreign port owners are not killed unless `FORCE_FREE_PORTS=true` is set
 [ ] No runtime data directory is deleted
 ```
 
@@ -451,6 +452,7 @@ Run this before committing script changes.
 Validation commands:
 
 ```bash
+python3 scripts/deploy/08-check-script-contracts.py
 bash -n scripts/deploy.sh scripts/ops.sh scripts/server.sh
 bash -n scripts/deploy/*.sh scripts/ops/*.sh scripts/server/*.sh scripts/lib/*.sh
 python3 -m py_compile scripts/deploy/04-render-configs.py scripts/deploy/07-validate-clash-rules.py

@@ -438,11 +438,16 @@ log_step "Syncing Marzban TLS certificate..."
 sync_marzban_tls
 
 log_step "Testing and reloading Nginx..."
-if docker exec "$NGINX_CONTAINER" nginx -t >/dev/null 2>&1 \
-   && docker exec "$NGINX_CONTAINER" nginx -s reload >/dev/null 2>&1; then
-  log_ok "Nginx reloaded"
+if nginx_test_output="$(docker exec "$NGINX_CONTAINER" nginx -t 2>&1)"; then
+  printf '%s\n' "$nginx_test_output"
+  if docker exec "$NGINX_CONTAINER" nginx -s reload >/dev/null 2>&1; then
+    log_ok "Nginx reloaded"
+  else
+    log_warn "Nginx config is valid, but reload command failed"
+  fi
 else
-  log_warn "Nginx reload failed; container may not be running or config may be invalid"
+  printf '%s\n' "$nginx_test_output" >&2
+  log_warn "Nginx config test failed after renewal; nginx was not reloaded"
 fi
 
 log_step "Restarting Marzban (picks up renewed cert on startup)..."
