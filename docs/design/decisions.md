@@ -192,7 +192,7 @@ Cloudflare:  cloudflare.com, cloudflare-dns.com, cloudflareclient.com
              cloudflareinsights.com, cloudflareworkers.com, workers.dev
              pages.dev, trycloudflare.com, argotunnel.com, warp.dev
 
-Vultr:       vultr.com, vultrobjects.com, AS20473
+Vultr:       vultr.com, vultrobjects.com, 108.61.182.248/32, AS20473
 
 DeepSeek:    deepseek.com, deepseek.ai, api.deepseek.com
 ```
@@ -200,6 +200,7 @@ DeepSeek:    deepseek.com, deepseek.ai, api.deepseek.com
 **Reason:** Microsoft services are accessible from most networks without proxy; forcing them causes latency and auth degradation. DeepSeek is a Chinese domestic service; direct connection is faster and more stable.
 
 Cloudflare hosts DNS, tunnel, WARP, Workers, and Pages dependencies that should not loop through this proxy node. Vultr hosts the VPS control plane and provider storage domains; proxying them through the same node can create management loops.
+The exact VPN/VPS endpoint IP is pinned as `IP-CIDR,108.61.182.248/32,DIRECT,no-resolve` because ASN matching depends on the local Clash core and database.
 
 ### Full Rules Block
 
@@ -229,6 +230,7 @@ rules:
   - DOMAIN-SUFFIX,argotunnel.com,DIRECT
   - DOMAIN-SUFFIX,vultr.com,DIRECT
   - DOMAIN-SUFFIX,vultrobjects.com,DIRECT
+  - IP-CIDR,108.61.182.248/32,DIRECT,no-resolve
 
   # 1. Local, LAN, link-local, and fake-ip direct
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve

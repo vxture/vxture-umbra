@@ -90,6 +90,10 @@ validator `scripts/deploy/07-validate-clash-rules.py` fails config rendering if
 a must-direct domain is missing, appears after the first proxy boundary, or
 overlaps any `PROXY` rule.
 
+The current VPN/VPS public endpoint is also pinned as an exact `IP-CIDR` direct
+rule. Do not rely only on `IP-ASN,20473,DIRECT`; local Clash cores can miss ASN
+matches when the ASN database is unavailable, stale, or unsupported.
+
 For immediate local testing, mirror rule changes into the current Clash Verge
 profile YAML and keep an updated-profile backup next to it. Clash Verge can
 overwrite the active YAML on subscription refresh, so the repository template is

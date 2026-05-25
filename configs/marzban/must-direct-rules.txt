@@ -75,3 +75,7 @@ DOMAIN,one.one.one.one
 # protected later by IP-ASN,20473,DIRECT,no-resolve.
 DOMAIN-SUFFIX,vultr.com
 DOMAIN-SUFFIX,vultrobjects.com
+
+# Current VPN/VPS public endpoint. Keep an exact IP direct rule because some
+# Clash cores or local databases may not match IP-ASN reliably.
+IP-CIDR,108.61.182.248/32

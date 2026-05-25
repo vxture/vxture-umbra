@@ -7,13 +7,14 @@ must-direct domain is missing, forced to PROXY, or placed after the first PROXY
 or MATCH rule.
 """
 import argparse
+import ipaddress
 import re
 import sys
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-RULE_RE = re.compile(r"^\s*-\s*(DOMAIN|DOMAIN-SUFFIX),([^,]+),(DIRECT|PROXY)\b")
+RULE_RE = re.compile(r"^\s*-\s*(DOMAIN|DOMAIN-SUFFIX|IP-CIDR),([^,]+),(DIRECT|PROXY)\b")
 
 
 def load_env(env_path: Path) -> dict:
@@ -38,6 +39,8 @@ def render_placeholders(text: str, variables: dict) -> str:
 
 def load_must_direct_rules(rule_path: Path, variables: dict) -> list[tuple[str, str]]:
     expected = []
+    domain_rule_types = {"DOMAIN", "DOMAIN-SUFFIX"}
+    ip_rule_types = {"IP-CIDR"}
     with rule_path.open(encoding="utf-8") as f:
         for raw in f:
             line = raw.strip()
@@ -48,8 +51,13 @@ def load_must_direct_rules(rule_path: Path, variables: dict) -> list[tuple[str, 
             if len(parts) != 2:
                 raise ValueError(f"Invalid must-direct rule source: {raw.rstrip()}")
             rule_type, value = parts
-            if rule_type not in {"DOMAIN", "DOMAIN-SUFFIX"} or not value:
+            if rule_type not in domain_rule_types | ip_rule_types or not value:
                 raise ValueError(f"Invalid must-direct rule source: {raw.rstrip()}")
+            if rule_type in ip_rule_types:
+                try:
+                    value = str(ipaddress.ip_network(value, strict=False))
+                except ValueError as exc:
+                    raise ValueError(f"Invalid must-direct IP/CIDR source: {raw.rstrip()}") from exc
             expected.append((rule_type, value.lower()))
     return expected
 
@@ -77,6 +85,13 @@ def parse_rules(config_path: Path) -> tuple[list[tuple[int, str, str, str]], int
 
 
 def proxy_overlaps_must_direct(proxy_type: str, proxy_value: str, direct_type: str, direct_value: str) -> bool:
+    if direct_type == "IP-CIDR":
+        if proxy_type != "IP-CIDR":
+            return False
+        return ipaddress.ip_network(proxy_value, strict=False).overlaps(
+            ipaddress.ip_network(direct_value, strict=False)
+        )
+
     if direct_type == "DOMAIN":
         return proxy_type == "DOMAIN" and proxy_value == direct_value
 

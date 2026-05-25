@@ -6,6 +6,7 @@ Template syntax: {{ VARIABLE_NAME }}
 Variables sourced from: .env + DATA_DIR/private/reality.json
 """
 import json
+import ipaddress
 import os
 import re
 import shutil
@@ -72,6 +73,8 @@ def render(template_text: str, variables: dict) -> str:
 
 def render_clash_rule_lines(src: Path, variables: dict, policy: str) -> str:
     lines = []
+    domain_rule_types = {"DOMAIN", "DOMAIN-SUFFIX"}
+    ip_rule_types = {"IP-CIDR"}
     for raw in src.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
@@ -82,10 +85,18 @@ def render_clash_rule_lines(src: Path, variables: dict, policy: str) -> str:
             print(f"[ERROR] Invalid Clash rule source line: {raw}", file=sys.stderr)
             sys.exit(1)
         rule_type, value = parts
-        if rule_type not in {"DOMAIN", "DOMAIN-SUFFIX"} or not value:
+        if rule_type not in domain_rule_types | ip_rule_types or not value:
             print(f"[ERROR] Invalid Clash direct rule: {raw}", file=sys.stderr)
             sys.exit(1)
-        lines.append(f"  - {rule_type},{value},{policy}")
+        if rule_type in ip_rule_types:
+            try:
+                ipaddress.ip_network(value, strict=False)
+            except ValueError:
+                print(f"[ERROR] Invalid Clash IP/CIDR direct rule: {raw}", file=sys.stderr)
+                sys.exit(1)
+            lines.append(f"  - {rule_type},{value},{policy},no-resolve")
+        else:
+            lines.append(f"  - {rule_type},{value},{policy}")
     return "\n".join(lines)
 
 
