@@ -51,14 +51,6 @@ report_empty_renewal_configs() {
   done <<< "$empty"
 }
 
-remove_staged_certs() {
-  local staged_name="$1"
-  docker run --rm \
-    -v "$DATA_DIR:/data" \
-    -e STAGED_NAME="$staged_name" \
-    alpine sh -c 'rm -rf "/data/$STAGED_NAME"' >/dev/null 2>&1 || true
-}
-
 prepare_staged_certs() {
   local staged_name="$1"
 
@@ -68,8 +60,10 @@ prepare_staged_certs() {
     alpine sh -c '
       set -eu
       staged="/data/$STAGED_NAME"
-      rm -rf "$staged"
-      if [ -d /data/letsencrypt ]; then
+
+      if [ -d "$staged" ]; then
+        echo "Reusing existing staged certificate directory: $staged"
+      elif [ -d /data/letsencrypt ]; then
         cp -a /data/letsencrypt "$staged"
       else
         mkdir -p "$staged"
@@ -247,18 +241,19 @@ if [[ "$MODE" == "--upgrade" ]]; then
 
   STAMP="$(date +%Y%m%d-%H%M%S)"
   BACKUP_NAME="letsencrypt.backup.$STAMP"
-  STAGED_NAME="letsencrypt.new.$STAMP"
+  STAGED_NAME="letsencrypt.staged"
   FAILED_NAME="letsencrypt.failed.$STAMP"
 
   log_step "Issuing real Let's Encrypt certificates into staging directory..."
   log_info "Existing production certs remain untouched until all domains issue successfully."
   log_info "Existing trusted LE certs are reused; only missing or non-trusted certs are issued in the staged copy."
+  log_info "Partially issued staged certs are preserved for the next retry."
   prepare_staged_certs "$STAGED_NAME"
   umbra_clean_empty_renewal_configs "$DATA_DIR/$STAGED_NAME"
 
   if ! CERTBOT_STAGING=false CERTBOT_REPLACE_UNTRUSTED=true CERTBOT_CERT_DIR="$DATA_DIR/$STAGED_NAME" bash "$SCRIPT_DIR/../deploy/03-issue-certs.sh"; then
     log_error "Certificate issuance failed; existing production certificates were not touched."
-    remove_staged_certs "$STAGED_NAME"
+    log_info "Partial staged certs, if any, were kept at: $DATA_DIR/$STAGED_NAME"
     log_info "If Let's Encrypt rate-limited this host, wait until the retry-after time and run again."
     exit 1
   fi

@@ -70,14 +70,14 @@ Compatibility wrappers remain in the `scripts/` root for old server habits. Do n
 
 The required upgrade flow is:
 
-1. Copy the current `DATA_DIR/letsencrypt` into `DATA_DIR/letsencrypt.new.<timestamp>` so valid existing LE certs can be reused.
+1. Copy the current `DATA_DIR/letsencrypt` into `DATA_DIR/letsencrypt.staged` so valid existing LE certs can be reused. If this staged directory already exists from a prior failed attempt, keep it and resume from it.
 2. Remove invalid zero-byte renewal configs from the staged directory.
 3. Remove non-trusted domain state from the staged directory only.
 4. Reuse existing trusted LE certificates that are not near expiry.
 5. Issue only missing, expiring, or non-trusted certificates inside the staged directory.
-6. If any domain fails, delete the staged directory and leave production certs untouched.
+6. If any domain fails, keep the staged directory and leave production certs untouched. Keeping staged state preserves any domain certificates that were successfully issued before a later domain failed.
 7. If all domains succeed, move the existing `DATA_DIR/letsencrypt` to `DATA_DIR/letsencrypt.backup.<timestamp>`.
-8. Move the staged directory into `DATA_DIR/letsencrypt`.
+8. Move `DATA_DIR/letsencrypt.staged` into `DATA_DIR/letsencrypt`.
 9. Sync the edge certificate into `DATA_DIR/marzban/tls`.
 10. Restart nginx and Marzban.
 

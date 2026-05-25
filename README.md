@@ -213,7 +213,7 @@ bash scripts/deploy.sh verify                    # run full verification suite
 ```bash
 bash scripts/ops.sh certs --renew              # manual renewal check (also runs daily via cron)
 bash scripts/ops.sh certs --status     # show expiry for all domains
-bash scripts/ops.sh certs --upgrade    # staged upgrade to trusted LE certs
+bash scripts/ops.sh certs --upgrade    # staged upgrade to trusted LE certs; partial successes are kept
 bash scripts/ops.sh certs --clean-renewal-state  # remove invalid zero-byte renewal configs
 ```
 

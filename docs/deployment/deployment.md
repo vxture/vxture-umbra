@@ -197,6 +197,7 @@ chmod 700 BACKUP_DIR
 - Reuses existing trusted LE certs that are not near expiry
 - Verifies each cert was issued and trusted before proceeding
 - Removes invalid zero-byte renewal configs left by failed certbot attempts
+- When used by `certs --upgrade`, partial staged successes are kept for the next retry
 
 ### `04-render-configs.py`
 

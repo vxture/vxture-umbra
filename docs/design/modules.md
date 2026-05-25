@@ -397,7 +397,7 @@ Renewal delegates to `certbot renew`; it does not force reissue. Before renewal,
 
 Renewal uses certbot's deploy hook marker. If no certificate is renewed, nginx and Marzban are left untouched. If a renewal happens, nginx is config-tested and reloaded, and Marzban is restarted after the edge cert is synced into `DATA_DIR/marzban/tls`.
 
-Real-certificate upgrade must use `bash scripts/ops.sh certs --upgrade`. It copies existing certificate state into a staged directory, reuses trusted LE certs that are not near expiry, issues only missing/expiring/non-trusted domains in staging, and activates the staged directory only after every domain succeeds.
+Real-certificate upgrade must use `bash scripts/ops.sh certs --upgrade`. It copies existing certificate state into `DATA_DIR/letsencrypt.staged`, reuses trusted LE certs that are not near expiry, issues only missing/expiring/non-trusted domains in staging, keeps partial staged successes after a failed run, and activates the staged directory only after every domain succeeds.
 
 ### Cron
 

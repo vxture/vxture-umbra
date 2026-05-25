@@ -31,7 +31,7 @@ Public TLS certificates live under `DATA_DIR/letsencrypt`.
 
 Marzban also requires TLS files under `DATA_DIR/marzban/tls` so its HTTP service binds to `0.0.0.0` and nginx can proxy to it over HTTPS.
 
-Certificate replacement is a safety boundary. `ops.sh certs --upgrade` copies the current cert directory into a staged directory, removes non-trusted domain state only from the staged copy, and must leave the current `DATA_DIR/letsencrypt` untouched if any Let's Encrypt request fails.
+Certificate replacement is a safety boundary. `ops.sh certs --upgrade` copies the current cert directory into `DATA_DIR/letsencrypt.staged`, removes non-trusted domain state only from the staged copy, and must leave the current `DATA_DIR/letsencrypt` untouched if any Let's Encrypt request fails. A failed upgrade must keep the staged directory so successful partial issuance can be reused on the next retry.
 
 Existing trusted Let's Encrypt certificates must be reused unless they are due for renewal. Failed certbot runs may leave zero-byte `renewal/*.conf` files; scripts may remove only those invalid renewal configs and must not treat them as issued certificates.
 
