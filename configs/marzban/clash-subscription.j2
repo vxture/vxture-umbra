@@ -43,11 +43,11 @@ proxy-groups:
       - DIRECT
 
 rules:
-  # 0. Must-direct domain rules. Source of truth:
-  #    configs/marzban/must-direct-rules.txt
+  # 0. 自身服务 / Microsoft / Cloudflare 直连
+  #    来源：configs/marzban/must-direct-rules.txt
 {{ CLASH_MUST_DIRECT_RULES }}
 
-  # 1. Local, LAN, link-local, and fake-ip ranges must stay direct.
+  # 1. 本地 / 局域网 / fake-ip 直连
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
@@ -55,15 +55,15 @@ rules:
   - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
   - IP-CIDR,198.18.0.0/15,DIRECT,no-resolve
 
-  # 2. VPS provider ASN direct, to avoid looping traffic back through the node.
+  # 2. VPS 服务商 ASN 直连，避免流量绕回自身节点
   - IP-ASN,20473,DIRECT,no-resolve
 
-  # 3. Domestic AI service direct.
+  # 3. 国内 AI 服务直连
   - DOMAIN-SUFFIX,deepseek.com,DIRECT
   - DOMAIN-SUFFIX,deepseek.ai,DIRECT
   - DOMAIN-SUFFIX,api.deepseek.com,DIRECT
 
-  # 4. AI model providers -> proxy.
+  # 4. AI 大模型服务代理
   - DOMAIN-SUFFIX,openai.com,PROXY
   - DOMAIN-SUFFIX,chatgpt.com,PROXY
   - DOMAIN-SUFFIX,oaistatic.com,PROXY
@@ -85,7 +85,7 @@ rules:
   - DOMAIN-SUFFIX,cohere.com,PROXY
   - DOMAIN-SUFFIX,cohere.ai,PROXY
 
-  # 5. Model platforms and aggregators -> proxy.
+  # 5. 模型聚合 / 免费模型平台代理
   - DOMAIN-SUFFIX,openrouter.ai,PROXY
   - DOMAIN-SUFFIX,huggingface.co,PROXY
   - DOMAIN-SUFFIX,hf.co,PROXY
@@ -94,7 +94,7 @@ rules:
   - DOMAIN-SUFFIX,fireworks.ai,PROXY
   - DOMAIN-SUFFIX,poe.com,PROXY
 
-  # 6. Design and workspace tools -> proxy.
+  # 6. Figma / 设计工具 / 工作区代理
   - DOMAIN-SUFFIX,figma.com,PROXY
   - DOMAIN-SUFFIX,figma.site,PROXY
   - DOMAIN-SUFFIX,figma.app,PROXY
@@ -103,7 +103,7 @@ rules:
   - DOMAIN-SUFFIX,notion.so,PROXY
   - DOMAIN-SUFFIX,notion.com,PROXY
 
-  # 7. Developer toolchain -> proxy.
+  # 7. 开发工具链代理：GitHub / Docker / npm
   - DOMAIN-SUFFIX,github.com,PROXY
   - DOMAIN-SUFFIX,githubusercontent.com,PROXY
   - DOMAIN-SUFFIX,githubassets.com,PROXY
@@ -120,7 +120,7 @@ rules:
   - DOMAIN-SUFFIX,jsdelivr.net,PROXY
   - DOMAIN-SUFFIX,unpkg.com,PROXY
 
-  # 8. Streaming media -> proxy.
+  # 8. 流媒体代理
   - DOMAIN-SUFFIX,netflix.com,PROXY
   - DOMAIN-SUFFIX,netflix.net,PROXY
   - DOMAIN-SUFFIX,nflxext.com,PROXY
@@ -137,7 +137,7 @@ rules:
   - DOMAIN-SUFFIX,max.com,PROXY
   - DOMAIN-SUFFIX,twitch.tv,PROXY
 
-  # 9. Social and communication -> proxy.
+  # 9. 国外社交 / 通讯代理
   - DOMAIN-SUFFIX,x.com,PROXY
   - DOMAIN-SUFFIX,twitter.com,PROXY
   - DOMAIN-SUFFIX,twimg.com,PROXY
@@ -156,15 +156,15 @@ rules:
   - DOMAIN-SUFFIX,medium.com,PROXY
   - DOMAIN-SUFFIX,linkedin.com,PROXY
 
-  # 10. Google ecosystem -> proxy.
+  # 10. Google 生态代理
   - DOMAIN-SUFFIX,google.com,PROXY
   - DOMAIN-SUFFIX,googleapis.com,PROXY
   - DOMAIN-SUFFIX,googleusercontent.com,PROXY
   - DOMAIN-SUFFIX,gstatic.com,PROXY
   - DOMAIN-SUFFIX,g.co,PROXY
 
-  # 11. China IP direct.
+  # 11. 国内 IP 直连
   - GEOIP,CN,DIRECT
 
-  # 12. Fallback proxy.
+  # 12. 兜底代理
   - MATCH,PROXY
