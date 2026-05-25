@@ -128,7 +128,7 @@ Success criteria:
 [ ] `bash scripts/ops.sh certs --status` shows trusted LE certs, unless in self-signed mode
 [ ] `bash scripts/deploy.sh verify` completes or reports only documented auth-protected endpoints
 [ ] `bash scripts/deploy.sh post` creates or skips expected users
-[ ] Subscription URL uses `https://subscribe.ruyin.ai/sub/<token>`
+[ ] Subscription URL uses `https://sub.ruyin.ai/sub/<token>`
 ```
 
 ### S2 - Normal Redeploy, Keep All Runtime Data
@@ -232,7 +232,7 @@ Success criteria:
 [ ] `rg "old-domain"` returns no project reference, except historical docs explicitly retained
 [ ] `bash scripts/ops.sh certs --status` shows the new domain
 [ ] `docker exec umbra-nginx nginx -t` succeeds
-[ ] Real GET to `https://subscribe.ruyin.ai/sub/<token>` returns 200 for valid token
+[ ] Real GET to `https://sub.ruyin.ai/sub/<token>` returns 200 for valid token
 ```
 
 ### S5 - Recover After Failed Config Render or Reload
@@ -426,7 +426,7 @@ Checklist:
 [ ] Marzban admin exists or can be created
 [ ] Marzban API auth succeeds
 [ ] Host config points to EDGE_DOMAIN:443
-[ ] Subscription prefix is `https://subscribe.ruyin.ai`
+[ ] Subscription prefix is `https://sub.ruyin.ai`
 [ ] Saved subscription URL file is written to BACKUP_DIR
 [ ] Use GET for subscription testing; HEAD can return 405
 ```

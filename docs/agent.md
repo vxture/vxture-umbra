@@ -32,7 +32,7 @@ Purpose:    Production overseas edge entry node
 | Service | Container | Domain | Purpose |
 |---------|-----------|--------|---------|
 | Nginx | `umbra-nginx` | gateway | SNI stream + HTTP virtual hosts |
-| Marzban + Xray | `umbra-marzban` | subscribe.ruyin.ai, console.ruyin.ai, REALITY ingress | VPN user management, subscription, bundled Xray subprocess |
+| Marzban + Xray | `umbra-marzban` | sub.ruyin.ai, console.ruyin.ai, REALITY ingress | VPN user management, subscription, bundled Xray subprocess |
 | VPN Portal | `umbra-portal` | vpn.ruyin.ai | User onboarding, client downloads, docs |
 | Vaultwarden | `umbra-vaultwarden` | pass.ruyin.ai | Password manager |
 | Certbot | one-shot Docker container | ACME webroot | Let's Encrypt issue/renew automation |
@@ -46,7 +46,8 @@ Purpose:    Production overseas edge entry node
 | `ruyin.ai` | Nginx → static landing | Brand home, navigation to services |
 | `www.ruyin.ai` | Nginx → static content | Independent content from apex |
 | `vpn.ruyin.ai` | Nginx → umbra-portal | VPN user entry, onboarding, client DL |
-| `subscribe.ruyin.ai` | Nginx → umbra-marzban | Marzban subscription endpoint |
+| `sub.ruyin.ai` | Nginx -> umbra-marzban | Marzban subscription endpoint |
+| `subscribe.ruyin.ai` | reserved | Future user-facing subscription portal; do not use as `SUB_DOMAIN` |
 | `console.ruyin.ai` | Nginx → umbra-marzban (IP-restricted + Marzban login) | Marzban admin panel |
 | `pass.ruyin.ai` | Nginx → umbra-vaultwarden | Password manager |
 | `vault.ruyin.ai` | Nginx → static placeholder | Reserved for future use |
@@ -130,7 +131,7 @@ Phase 4 — Hardening
 [ ] HTTPS working on all 7 domains
 [ ] Xray REALITY connection functional (test with Clash Verge)
 [ ] Marzban admin accessible at console.ruyin.ai only when VPN-connected
-[ ] Marzban subscription URL functional at subscribe.ruyin.ai
+[ ] Marzban subscription URL functional at sub.ruyin.ai
 [ ] Subscription imports correctly into Clash Verge
 [ ] Node name shows vx-tokyo
 [ ] B++ rules present and correct (openai.com PROXY; microsoft.com, cloudflare.com, and vultr.com DIRECT)

@@ -153,6 +153,23 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             '[[ "$confirm" != "YES" ]]',
         ],
     ),
+    (
+        "native subscription domain defaults to sub.ruyin.ai",
+        Path(".env.example"),
+        [
+            "SUB_DOMAIN=sub.ruyin.ai",
+            "SUBSCRIPTION_URL_PREFIX=https://sub.ruyin.ai",
+        ],
+    ),
+    (
+        "subscription nginx vhost is variable-driven",
+        Path("configs/nginx/vhosts/04-sub.conf.template"),
+        [
+            "server_name {{ SUB_DOMAIN }}",
+            "/etc/letsencrypt/live/{{ SUB_DOMAIN }}/fullchain.pem",
+            "/etc/letsencrypt/live/{{ SUB_DOMAIN }}/privkey.pem",
+        ],
+    ),
 ]
 
 
@@ -163,9 +180,14 @@ FORBIDDEN: list[tuple[str, Path, str]] = [
         'nginx -t >/dev/null 2>&1',
     ),
     (
-        "retired subscription domain must not remain hard-coded",
+        "native subscription must not use subscribe portal domain",
         Path("."),
-        "sub" + ".ruyin.ai",
+        "https://subscribe" + ".ruyin.ai/sub",
+    ),
+    (
+        "subscribe portal domain must not be configured as SUB_DOMAIN",
+        Path(".env.example"),
+        "SUB_DOMAIN=subscribe" + ".ruyin.ai",
     ),
 ]
 

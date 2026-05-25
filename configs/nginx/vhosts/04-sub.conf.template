@@ -1,4 +1,4 @@
-# subscribe.ruyin.ai - Marzban subscription endpoint (public, path-restricted)
+# SUB_DOMAIN - Marzban subscription endpoint (public, path-restricted)
 server {
     listen 8443 ssl proxy_protocol;
     server_name {{ SUB_DOMAIN }};

@@ -17,7 +17,7 @@ Internet
                                       |-- ruyin.ai         -> static landing
                                       |-- www.ruyin.ai     -> static landing copy
                                       |-- EDGE_DOMAIN      -> umbra-portal:80
-                                      |-- subscribe.ruyin.ai     -> umbra-marzban:8000 /sub/<token>
+                                      |-- sub.ruyin.ai           -> umbra-marzban:8000 /sub/<token>
                                       |-- console.ruyin.ai -> umbra-marzban:8000
                                       |-- pass.ruyin.ai    -> umbra-vaultwarden:80
                                       `-- vault.ruyin.ai   -> placeholder
@@ -37,7 +37,7 @@ Client
 
 ```
 Clash client
-`-- HTTPS GET subscribe.ruyin.ai/sub/<token>
+`-- HTTPS GET sub.ruyin.ai/sub/<token>
     `-- umbra-nginx HTTP vhost
         `-- umbra-marzban:8000
             `-- Marzban renders DATA_DIR/marzban/templates/clash/default.yml

@@ -33,7 +33,7 @@ Nginx runs two listeners:
 | `01-ruyin.conf.template` | `ruyin.ai` | static files in `nginx/html/ruyin-landing/` |
 | `02-www.conf.template` | `www.ruyin.ai` | static files in `nginx/html/www-ruyin/` |
 | `03-vpn-portal.conf.template` | `EDGE_DOMAIN` | `umbra-portal:80` |
-| `04-sub.conf.template` | `subscribe.ruyin.ai` | native Marzban `/sub/<token>` only |
+| `04-sub.conf.template` | `sub.ruyin.ai` | native Marzban `/sub/<token>` only |
 | `05-console.conf.template` | `console.ruyin.ai` | `umbra-marzban:8000` + IP restriction + Marzban login |
 | `06-pass.conf.template` | `pass.ruyin.ai` | `umbra-vaultwarden:80` |
 | `07-vault.conf.template` | `vault.ruyin.ai` | placeholder static response |
@@ -235,7 +235,7 @@ XRAY_ASSETS_PATH=/usr/local/share/xray
 SUDO_USERNAME={{ MARZBAN_ADMIN_USER }}
 SUDO_PASSWORD={{ MARZBAN_ADMIN_PASSWORD }}
 
-SUBSCRIPTION_URL_PREFIX=https://subscribe.ruyin.ai
+SUBSCRIPTION_URL_PREFIX=https://sub.ruyin.ai
 
 CUSTOM_TEMPLATES_DIRECTORY=/var/lib/marzban/templates
 CLASH_SUBSCRIPTION_TEMPLATE=clash/default.yml
@@ -300,7 +300,7 @@ vpn.ruyin.ai/
 ├── /                  → landing (what is this, how to use)
 ├── /start             → quick start guide
 ├── /clients           → client download links (Clash Verge, V2RayN, etc.)
-└── /subscribe         → subscription instructions (link to subscribe.ruyin.ai)
+└── /subscribe         → subscription instructions (link to sub.ruyin.ai)
 ```
 
 ### Docker Config

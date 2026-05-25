@@ -7,10 +7,23 @@ Subscriptions must remain Marzban-native.
 The public URL format is:
 
 ```text
-https://subscribe.ruyin.ai/sub/<marzban-token>
+https://sub.ruyin.ai/sub/<marzban-token>
 ```
 
 Do not rewrite public URLs to `/clash-meta`, `/v2ray`, username-based tokens, or custom converter paths.
+
+## User-Facing Portal
+
+`subscribe.ruyin.ai` is reserved for a future user-facing subscription portal.
+Do not use it as the native subscription endpoint while `SUB_DOMAIN=sub.ruyin.ai`.
+
+Preferred portal options:
+
+1. Marzban-native subscription page/template, opened from the user's own token URL.
+2. A thin authenticated portal that calls Marzban API and displays only the
+   logged-in user's subscription URL.
+
+Do not generate a static public index of all user subscription URLs.
 
 ## nginx Boundary
 
@@ -36,7 +49,7 @@ Marzban may display a fresh-looking subscription token after a console refresh. 
 Use GET for verification:
 
 ```bash
-curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://subscribe.ruyin.ai/sub/<token>'
+curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://sub.ruyin.ai/sub/<token>'
 ```
 
 Do not use HEAD as the success test; Marzban can return `405 Method Not Allowed`.

@@ -194,7 +194,7 @@ Access is IP-restricted by nginx. Public internet requests return `403`; request
 ### Subscription URL Format
 
 ```
-https://subscribe.ruyin.ai/sub/<marzban-token>
+https://sub.ruyin.ai/sub/<marzban-token>
 ```
 
 Users configure this URL in Clash Verge / V2RayN once. Refreshing the subscription gets the latest config including any node updates.
@@ -202,7 +202,7 @@ Users configure this URL in Clash Verge / V2RayN once. Refreshing the subscripti
 Marzban may show a different `/sub/<marzban-token>` value after each console page refresh. This is expected: tokens are generated dynamically for the same user, and older tokens can remain valid. Use a GET request to verify a saved subscription URL:
 
 ```bash
-curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://subscribe.ruyin.ai/sub/<marzban-token>'
+curl -sk -o /tmp/sub.yaml -w "%{http_code}\n" 'https://sub.ruyin.ai/sub/<marzban-token>'
 head -30 /tmp/sub.yaml
 ```
 
@@ -211,10 +211,10 @@ Expected status: `200`. Do not use `curl -I` for this endpoint; Marzban rejects 
 The subscription domain is intentionally path-restricted by nginx:
 
 ```bash
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub/
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub/TESTTOKEN/clash-meta
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/TESTTOKEN/clash-meta
 ```
 
 Expected status for all four: `404`. Only native Marzban `GET /sub/<marzban-token>` is public.
@@ -304,7 +304,7 @@ External uptime monitoring (free tier sufficient):
 Recommended monitors:
 - TCP `vpn.ruyin.ai:443` — VPN port (primary health signal)
 - HTTPS `https://ruyin.ai` — portal
-- HTTPS `https://subscribe.ruyin.ai` — subscription endpoint
+- HTTPS `https://sub.ruyin.ai` — subscription endpoint
 
 ---
 

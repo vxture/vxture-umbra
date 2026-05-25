@@ -32,7 +32,7 @@ sudo apt install -y python3 python3-pip
 | `ruyin.ai` | A | server public IP |
 | `www.ruyin.ai` | A | server public IP |
 | `vpn.ruyin.ai` | A | server public IP |
-| `subscribe.ruyin.ai` | A | server public IP |
+| `sub.ruyin.ai` | A | server public IP |
 | `console.ruyin.ai` | A | server public IP |
 | `pass.ruyin.ai` | A | server public IP |
 | `vault.ruyin.ai` | A | server public IP |
@@ -40,7 +40,7 @@ sudo apt install -y python3 python3-pip
 Verify all resolve before running `deploy.sh all`:
 
 ```bash
-for d in ruyin.ai www.ruyin.ai vpn.ruyin.ai subscribe.ruyin.ai console.ruyin.ai pass.ruyin.ai vault.ruyin.ai; do
+for d in ruyin.ai www.ruyin.ai vpn.ruyin.ai sub.ruyin.ai console.ruyin.ai pass.ruyin.ai vault.ruyin.ai; do
   echo "$d → $(dig +short $d)"
 done
 ```
@@ -69,7 +69,7 @@ NODE_NAME=vx-tokyo
 APEX_DOMAIN=ruyin.ai
 WWW_DOMAIN=www.ruyin.ai
 EDGE_DOMAIN=vpn.ruyin.ai
-SUB_DOMAIN=subscribe.ruyin.ai
+SUB_DOMAIN=sub.ruyin.ai
 CONSOLE_DOMAIN=console.ruyin.ai
 PASS_DOMAIN=pass.ruyin.ai
 VAULT_DOMAIN=vault.ruyin.ai
@@ -92,7 +92,7 @@ XRAY_INTERNAL_PORT=10443
 # ── Marzban ─────────────────────────────────────────────
 MARZBAN_ADMIN_USER=<admin-username>
 MARZBAN_ADMIN_PASSWORD=<strong-password>
-SUBSCRIPTION_URL_PREFIX=https://subscribe.ruyin.ai
+SUBSCRIPTION_URL_PREFIX=https://sub.ruyin.ai
 
 # ── Vaultwarden ─────────────────────────────────────────
 VAULTWARDEN_ADMIN_TOKEN=<generate-with: openssl rand -base64 48>
@@ -254,7 +254,7 @@ Expected: all containers in `running` state.
 ### HTTPS Check (all domains)
 
 ```bash
-for d in ruyin.ai www.ruyin.ai vpn.ruyin.ai subscribe.ruyin.ai pass.ruyin.ai vault.ruyin.ai; do
+for d in ruyin.ai www.ruyin.ai vpn.ruyin.ai sub.ruyin.ai pass.ruyin.ai vault.ruyin.ai; do
   code=$(curl -sk -o /dev/null -w "%{http_code}" https://$d)
   echo "$d → $code"
 done
@@ -294,7 +294,7 @@ Expected: `200`
 Create a test user in Marzban, then:
 
 ```bash
-curl -sk https://subscribe.ruyin.ai/sub/<marzban-token> | grep -E "name: vx-tokyo|MATCH,PROXY|openai|microsoft.com,DIRECT|cloudflare.com,DIRECT|vultr.com,DIRECT|108.61.182.248/32,DIRECT"
+curl -sk https://sub.ruyin.ai/sub/<marzban-token> | grep -E "name: vx-tokyo|MATCH,PROXY|openai|microsoft.com,DIRECT|cloudflare.com,DIRECT|vultr.com,DIRECT|108.61.182.248/32,DIRECT"
 ```
 
 Expected output contains:
@@ -323,13 +323,13 @@ Use GET for subscription tests. `curl -I` sends HEAD and Marzban returns `405 Me
 The subscription host should expose only native Marzban `/sub/<marzban-token>` URLs:
 
 ```bash
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub/
-curl -sk -o /dev/null -w "%{http_code}\n" https://subscribe.ruyin.ai/sub/TESTTOKEN/clash-meta
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/
+curl -sk -o /dev/null -w "%{http_code}\n" https://sub.ruyin.ai/sub/TESTTOKEN/clash-meta
 ```
 
-Expected: all four return `404`. A real `GET https://subscribe.ruyin.ai/sub/<marzban-token>` should return `200`.
+Expected: all four return `404`. A real `GET https://sub.ruyin.ai/sub/<marzban-token>` should return `200`.
 
 Marzban console may display a different subscription token after each refresh. That is expected; saved tokens can remain valid. Verify old and new URLs with GET and status `200` before replacing distributed links.
 

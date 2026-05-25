@@ -3,9 +3,9 @@
 This document records certificate failure modes that must not regress. Each ID
 is referenced from certificate scripts as an implementation guardrail.
 
-## Current Evidence Pattern
+## Evidence Pattern
 
-Observed production state:
+Original observed production state:
 
 - `pass.ruyin.ai` has a trusted Let's Encrypt certificate.
 - `ruyin.ai`, `www.ruyin.ai`, `proxy.ruyin.ai`, `subscribe.ruyin.ai`,
@@ -16,6 +16,10 @@ Observed production state:
 This means the running system is mixed state: one valid Certbot-managed domain
 and six self-signed fallback domains. `certs --renew` cannot repair that state;
 the repair path is `certs --upgrade`.
+
+During recovery, the active native subscription endpoint was restored to
+`sub.ruyin.ai`. Any separately issued certificate for `subscribe.ruyin.ai` is
+staged/retry state until that hostname is assigned to a real user-facing portal.
 
 ## Failure Modes
 
