@@ -71,11 +71,19 @@ case "$CMD" in
     echo ""
     log_step "Reloading nginx..."
     if docker ps --format '{{.Names}}' 2>/dev/null | grep -q "^${NGINX_CONTAINER}$"; then
-      if docker exec "$NGINX_CONTAINER" nginx -t 2>/dev/null; then
+      if nginx_test_output="$(docker exec "$NGINX_CONTAINER" nginx -t 2>&1)"; then
+        printf '%s\n' "$nginx_test_output"
         docker exec "$NGINX_CONTAINER" nginx -s reload
         log_ok "Nginx reloaded"
       else
-        log_error "Nginx config test failed — fix the error above before reloading"
+        printf '%s\n' "$nginx_test_output" >&2
+        log_error "Nginx config test failed. Configs were rendered but nginx was not reloaded."
+        if printf '%s\n' "$nginx_test_output" | grep -q "/etc/letsencrypt/live/"; then
+          log_info "A referenced certificate may be missing. Check cert status:"
+          log_info "  bash scripts/ops.sh certs --status"
+          log_info "Then issue/upgrade certs before reloading:"
+          log_info "  bash scripts/ops.sh certs --upgrade"
+        fi
         exit 1
       fi
     else
