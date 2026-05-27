@@ -387,6 +387,9 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "display_name_key",
             "normalize_display_name",
             "Name is already used.",
+            "marzban_users",
+            "Pending binding",
+            "Generate invite",
         ],
     ),
     (

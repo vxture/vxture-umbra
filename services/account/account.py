@@ -291,6 +291,17 @@ def marzban_user(token: str, username: str) -> dict[str, Any]:
     return request_json(f"{MARZBAN_BASE_URL}/api/user/{safe}", token=token)
 
 
+def marzban_users(token: str) -> list[dict[str, Any]]:
+    payload = request_json(f"{MARZBAN_BASE_URL}/api/users?limit=1000&sort=username", token=token)
+    if isinstance(payload, list):
+        return [item for item in payload if isinstance(item, dict)]
+    for key in ("users", "items", "data", "results"):
+        value = payload.get(key)
+        if isinstance(value, list):
+            return [item for item in value if isinstance(item, dict)]
+    return []
+
+
 def token_path_from_url(subscription_url: str) -> str:
     parsed = urllib.parse.urlsplit(subscription_url)
     if not parsed.path.startswith("/sub/"):
@@ -742,50 +753,93 @@ class AccountHandler(BaseHTTPRequestHandler):
             self.html(200, self.admin_login_form())
             return
         with db() as conn:
-            invites = conn.execute("SELECT * FROM invites ORDER BY created_at DESC LIMIT 100").fetchall()
+            active_invites = conn.execute(
+                "SELECT * FROM invites WHERE used_at IS NULL AND disabled = 0 ORDER BY created_at DESC"
+            ).fetchall()
             accounts = conn.execute("SELECT username, display_name, created_at, last_login_at, disabled FROM accounts ORDER BY username").fetchall()
 
-        invite_rows = []
-        for inv in invites:
-            status = "used" if inv["used_at"] else "disabled" if inv["disabled"] else "active"
-            code = inv["code_plain"] or "-"
-            code_html = f'<code id="invite-{inv["id"]}">{html.escape(code)}</code>'
-            action = ""
-            if status == "active":
+        try:
+            users = marzban_users(str(sess["token"]))
+        except urllib.error.HTTPError as exc:
+            if exc.code in {401, 403}:
+                self.redirect("/invites/", cookies_to_clear=[(ADMIN_COOKIE, "/invites")])
+                return
+            users = []
+        except Exception:
+            users = []
+
+        accounts_by_user = {row["username"]: row for row in accounts}
+        invites_by_user = {row["username"]: row for row in active_invites}
+
+        def user_name(user: dict[str, Any]) -> str:
+            value = user.get("username")
+            return str(value or "")
+
+        users = sorted((user for user in users if user_name(user)), key=lambda item: user_name(item).upper())
+
+        user_rows = []
+        bound_count = 0
+        invite_count = 0
+        pending_count = 0
+
+        for user in users:
+            username = user_name(user)
+            account = accounts_by_user.get(username)
+            invite = invites_by_user.get(username)
+            status = str(user.get("status") or "-")
+            used = format_bytes(user.get("used_traffic"))
+            total = format_bytes(user.get("data_limit")) if user.get("data_limit") else "Unlimited"
+            expire = format_epoch(user.get("expire"))
+            online = format_datetime(user.get("online_at"))
+            if account:
+                bound_count += 1
+                binding = f"Bound: {html.escape(account['display_name'] or username)}"
+                invite_cell = "-"
+                action = '<button class="secondary" type="button" disabled>Bound</button>'
+            elif invite:
+                invite_count += 1
+                code_id = f"invite-{invite['id']}"
+                binding = "Invite pending"
+                invite_cell = f'<code id="{code_id}">{html.escape(invite["code_plain"] or "-")}</code>'
                 action = (
-                    f'<button class="secondary" type="button" data-copy="invite-{inv["id"]}">Copy</button>'
-                    f'<form method="post" action="/invites/revoke"><input type="hidden" name="id" value="{inv["id"]}"><button class="secondary" type="submit">Revoke</button></form>'
+                    f'<button class="secondary" type="button" data-copy="{code_id}">Copy</button>'
+                    f'<form method="post" action="/invites/revoke"><input type="hidden" name="id" value="{invite["id"]}"><button class="secondary" type="submit">Revoke</button></form>'
                 )
-            invite_rows.append(
+            else:
+                pending_count += 1
+                binding = "Pending binding"
+                invite_cell = "-"
+                action = (
+                    '<form method="post" action="/invites/create">'
+                    f'<input type="hidden" name="username" value="{html.escape(username)}">'
+                    '<button type="submit">Generate invite</button>'
+                    '</form>'
+                )
+            user_rows.append(
                 "<tr>"
-                f"<td>{html.escape(inv['username'])}</td>"
+                f"<td>{html.escape(username)}</td>"
                 f"<td>{html.escape(status)}</td>"
-                f"<td>{code_html}</td>"
-                f"<td>{html.escape(inv['expires_at'])}</td>"
+                f"<td>{html.escape(used)}</td>"
+                f"<td>{html.escape(total)}</td>"
+                f"<td>{html.escape(expire)}</td>"
+                f"<td>{html.escape(online)}</td>"
+                f"<td>{binding}</td>"
+                f"<td>{invite_cell}</td>"
                 f"<td>{action}</td>"
                 "</tr>"
             )
-
-        account_rows = [
-            "<tr>"
-            f"<td>{html.escape(row['display_name'] or row['username'])}</td>"
-            f"<td>{html.escape(row['username'])}</td>"
-            f"<td>{html.escape(row['created_at'])}</td>"
-            f"<td>{html.escape(row['last_login_at'] or '-')}</td>"
-            f"<td>{'disabled' if row['disabled'] else 'active'}</td>"
-            "</tr>"
-            for row in accounts
-        ]
 
         body = f"""
 <section class="split">
   <div class="panel">
     <h1>Invite Console</h1>
-    <p class="muted">Generate a random one-time invite for an existing Marzban user such as USER08.</p>
-    <form method="post" action="/invites/create" class="row">
-      <input name="username" placeholder="USER08" required>
-      <button type="submit">Generate invite</button>
-    </form>
+    <p class="muted">All existing Marzban users are listed below. Generate an invite only for users that are not yet bound.</p>
+    <div class="grid">
+      <div class="metric"><div class="muted">Users</div><div class="value">{len(users)}</div></div>
+      <div class="metric"><div class="muted">Bound</div><div class="value">{bound_count}</div></div>
+      <div class="metric"><div class="muted">Invite pending</div><div class="value">{invite_count}</div></div>
+      <div class="metric"><div class="muted">Pending binding</div><div class="value">{pending_count}</div></div>
+    </div>
   </div>
   <aside class="panel">
     <h2>Admin session</h2>
@@ -793,12 +847,8 @@ class AccountHandler(BaseHTTPRequestHandler):
   </aside>
 </section>
 <section class="panel" style="margin-top:16px">
-  <h2>Invites</h2>
-  <table><thead><tr><th>User</th><th>Status</th><th>Invite</th><th>Expires</th><th></th></tr></thead><tbody>{''.join(invite_rows) or '<tr><td colspan="5" class="muted">No invites yet.</td></tr>'}</tbody></table>
-</section>
-<section class="panel" style="margin-top:16px">
-  <h2>Bound accounts</h2>
-  <table><thead><tr><th>Name</th><th>User code</th><th>Created</th><th>Last login</th><th>Status</th></tr></thead><tbody>{''.join(account_rows) or '<tr><td colspan="5" class="muted">No bound accounts yet.</td></tr>'}</tbody></table>
+  <h2>Marzban users</h2>
+  <table><thead><tr><th>User code</th><th>Service status</th><th>Used</th><th>Total</th><th>Expire</th><th>Last online</th><th>Binding</th><th>Invite</th><th></th></tr></thead><tbody>{''.join(user_rows) or '<tr><td colspan="9" class="muted">No Marzban users returned.</td></tr>'}</tbody></table>
 </section>
 <script>
 document.addEventListener("click", function (event) {{

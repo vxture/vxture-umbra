@@ -22,4 +22,4 @@ Do not expose `/sub/<token>/clash-meta` publicly. nginx intentionally returns `4
 
 Do not publish a static page listing every user's subscription URL.
 
-Invite management lives at `https://console.ruyin.ai/invites/`. Admins generate one-time invite codes for existing Marzban users. The public account portal at `https://vpn.ruyin.ai` lets users choose a display name, activate the invite, set a password, and view only their own subscription data.
+Invite management lives at `https://console.ruyin.ai/invites/`. It lists existing Marzban users and shows each user's binding state: bound, invite pending, or pending binding. Admins generate one-time invite codes only for unbound users. The public account portal at `https://vpn.ruyin.ai` lets users choose a display name, activate the invite, set a password, and view only their own subscription data.

@@ -293,8 +293,8 @@ vpn.ruyin.ai/
 `-- /guide/            -> legacy static guide from umbra-portal
 
 console.ruyin.ai/invites/
-|-- /                  -> Marzban admin login and invite table
-|-- /create            -> creates a one-time invite for an existing Marzban user
+|-- /                  -> Marzban admin login and user binding table
+|-- /create            -> creates a one-time invite for an unbound Marzban user
 `-- /revoke            -> disables an unused invite
 ```
 
