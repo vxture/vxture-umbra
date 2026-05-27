@@ -135,9 +135,20 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         Path("scripts/ops/backup.sh"),
         [
             'mkdir -p "$BACKUP_DIR"',
+            'cp "$REPO_DIR/.env" "$ENV_BACKUP"',
+            'tar -czf "$ARCHIVE" -C "$DATA_DIR"',
             'find "$BACKUP_DIR" -type f',
             "-print0",
             "read -r -d ''",
+        ],
+    ),
+    (
+        "backup archives root-owned certificate state",
+        Path("scripts/ops/backup.sh"),
+        [
+            "Backing up Let's Encrypt state",
+            '$LE_DIR:/data/letsencrypt:ro',
+            "private_keys=$key_count",
         ],
     ),
     (
@@ -166,6 +177,14 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "Backup cron installed",
             "Certificate renewal cron missing",
             "Backup cron missing",
+        ],
+    ),
+    (
+        "deploy verify checks every active certificate domain",
+        Path("scripts/deploy/06-verify.sh"),
+        [
+            'for domain in "$APEX_DOMAIN" "$WWW_DOMAIN" "$EDGE_DOMAIN" "$SUB_DOMAIN" "$CONSOLE_DOMAIN" "$PASS_DOMAIN" "$VAULT_DOMAIN"; do',
+            "cert valid until",
         ],
     ),
     (

@@ -20,6 +20,7 @@ Runs automatically:
 
 ```bash
 # Config files
+REPO_DIR/.env
 DATA_DIR/nginx/conf.d/
 DATA_DIR/nginx/stream.d/
 DATA_DIR/marzban/templates/
@@ -40,8 +41,10 @@ crontab -l -> backup/root-crontab-<ts>.txt
 
 ```
 BACKUP_DIR/umbra-config-<YYYYMMDD-HHMMSS>.tar.gz        permissions: 600
+BACKUP_DIR/env-<YYYYMMDD-HHMMSS>.txt                    permissions: 600
 BACKUP_DIR/marzban-db-<YYYYMMDD-HHMMSS>.sqlite3         permissions: 600
 BACKUP_DIR/vaultwarden-data-<YYYYMMDD-HHMMSS>.tar.gz    permissions: 600
+BACKUP_DIR/letsencrypt-state-<YYYYMMDD-HHMMSS>.tar.gz   permissions: 600
 BACKUP_DIR/root-crontab-<YYYYMMDD-HHMMSS>.txt           permissions: 600
 BACKUP_DIR/                                               permissions: 700
 ```
@@ -71,7 +74,10 @@ Add to cron (runs after backup):
 docker compose down
 
 # 2. Restore config files
+cp BACKUP_DIR/env-<timestamp>.txt REPO_DIR/.env
+chmod 600 REPO_DIR/.env
 tar -xzf BACKUP_DIR/umbra-config-<timestamp>.tar.gz -C DATA_DIR/
+tar -xzf BACKUP_DIR/letsencrypt-state-<timestamp>.tar.gz -C DATA_DIR/
 
 # 3. Restore SQLite databases
 cp BACKUP_DIR/marzban-db-<timestamp>.sqlite3 DATA_DIR/marzban/db.sqlite3

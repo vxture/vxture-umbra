@@ -14,6 +14,17 @@ chmod 700 "$BACKUP_DIR"
 
 ARCHIVE="$BACKUP_DIR/umbra-config-${TIMESTAMP}.tar.gz"
 
+# -- Environment ---------------------------------------------------------------
+log_step "Backing up environment file..."
+ENV_BACKUP="$BACKUP_DIR/env-${TIMESTAMP}.txt"
+if [[ -f "$REPO_DIR/.env" ]]; then
+  cp "$REPO_DIR/.env" "$ENV_BACKUP"
+  chmod 600 "$ENV_BACKUP"
+  log_ok "Environment -> $(basename "$ENV_BACKUP")"
+else
+  log_warn "Environment file not found at $REPO_DIR/.env - skipping"
+fi
+
 # -- SQLite database copies ----------------------------------------------------
 log_step "Backing up SQLite databases..."
 
@@ -49,6 +60,39 @@ else
   log_warn "Vaultwarden data dir not found at $VW_DATA - skipping"
 fi
 
+# -- Let's Encrypt certificate state ------------------------------------------
+# Certbot writes private keys as root from inside Docker. Archive this tree from
+# a root container, then hand ownership back to the deploy user.
+log_step "Backing up Let's Encrypt state..."
+LE_DIR="$DATA_DIR/letsencrypt"
+if [[ -d "$LE_DIR" ]]; then
+  LE_ARCHIVE="$BACKUP_DIR/letsencrypt-state-${TIMESTAMP}.tar.gz"
+  HOST_UID="$(id -u)"
+  HOST_GID="$(id -g)"
+  docker run --rm \
+    -v "$LE_DIR:/data/letsencrypt:ro" \
+    -v "$BACKUP_DIR:/backup" \
+    -e OUT="/backup/$(basename "$LE_ARCHIVE")" \
+    -e HOST_UID="$HOST_UID" \
+    -e HOST_GID="$HOST_GID" \
+    alpine sh -c '
+      set -eu
+      tar -czf "$OUT" -C /data letsencrypt
+      chown "$HOST_UID:$HOST_GID" "$OUT"
+      chmod 600 "$OUT"
+    '
+  if tar -tzf "$LE_ARCHIVE" >/dev/null 2>&1; then
+    key_count=$(tar -tzf "$LE_ARCHIVE" | grep -Ec '^letsencrypt/(archive/.+/privkey[0-9]+\.pem|live/.+/privkey\.pem)$' || true)
+    SIZE=$(du -sh "$LE_ARCHIVE" | cut -f1)
+    log_ok "Let's Encrypt state -> $(basename "$LE_ARCHIVE") ($SIZE, private_keys=$key_count)"
+  else
+    log_error "Let's Encrypt archive failed integrity check: $LE_ARCHIVE"
+    exit 1
+  fi
+else
+  log_warn "Let's Encrypt state dir not found at $LE_DIR - skipping"
+fi
+
 # -- Config archive -------------------------------------------------------------
 log_step "Archiving configs and private data..."
 
@@ -65,11 +109,11 @@ BACKUP_ITEMS=(
 
 EXISTING_ITEMS=()
 for item in "${BACKUP_ITEMS[@]}"; do
-  [[ -e "$item" ]] && EXISTING_ITEMS+=("$item")
+  [[ -e "$item" ]] && EXISTING_ITEMS+=("${item#$DATA_DIR/}")
 done
 
 if [[ ${#EXISTING_ITEMS[@]} -gt 0 ]]; then
-  tar -czf "$ARCHIVE" "${EXISTING_ITEMS[@]}" 2>/dev/null
+  tar -czf "$ARCHIVE" -C "$DATA_DIR" "${EXISTING_ITEMS[@]}" 2>/dev/null
   chmod 600 "$ARCHIVE"
   SIZE=$(du -sh "$ARCHIVE" | cut -f1)
   log_ok "Config archive: $(basename "$ARCHIVE") ($SIZE)"
