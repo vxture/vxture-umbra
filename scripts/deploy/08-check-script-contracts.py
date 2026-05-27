@@ -354,7 +354,9 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         "vpn vhost serves account portal",
         Path("configs/nginx/vhosts/03-vpn-portal.conf.template"),
         [
-            "proxy_pass http://umbra-account:8081",
+            "resolver 127.0.0.11 valid=30s ipv6=off",
+            'set $account_upstream "umbra-account:8081"',
+            "proxy_pass http://$account_upstream",
             "location /guide/",
             "proxy_pass http://umbra-portal:80/",
         ],
@@ -365,7 +367,9 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         [
             "location = /invites",
             "location ^~ /invites/",
-            "proxy_pass http://umbra-account:8081",
+            "resolver 127.0.0.11 valid=30s ipv6=off",
+            'set $account_upstream "umbra-account:8081"',
+            "proxy_pass http://$account_upstream",
         ],
     ),
     (
