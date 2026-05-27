@@ -141,6 +141,16 @@ bash scripts/ops.sh certs --clean-renewal-state
 
 This removes only zero-byte `DATA_DIR/letsencrypt/renewal/*.conf` files left by failed or interrupted certbot runs. It does not contact Let's Encrypt, does not renew certificates, and does not delete `live/` or `archive/` certificate files.
 
+### Retired Certificate Lineage Cleanup
+
+```bash
+bash scripts/ops.sh certs --clean-retired-lineages
+```
+
+This removes Certbot lineages that are not active in `.env`. It deletes only matching non-active entries under `DATA_DIR/letsencrypt/live/`, `DATA_DIR/letsencrypt/archive/`, and `DATA_DIR/letsencrypt/renewal/*.conf`.
+
+It preserves active domains, Certbot accounts, renewal hooks, `DATA_DIR/letsencrypt.backup.*`, and certificate workdirs.
+
 ### Certificate Workdir Cleanup
 
 ```bash

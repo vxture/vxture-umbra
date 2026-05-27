@@ -7,6 +7,7 @@
 #   bash scripts/ops.sh certs --status     # show cert expiry for all domains
 #   bash scripts/ops.sh certs --clean-renewal-state
 #   bash scripts/ops.sh certs --clean-workdirs
+#   bash scripts/ops.sh certs --clean-retired-lineages
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -61,6 +62,60 @@ report_cert_workdirs() {
     [[ -n "$dir" ]] && log_warn "  $dir"
   done <<< "$workdirs"
   log_info "Only letsencrypt.staged is reused by upgrade; backups are retained for rollback."
+}
+
+clean_retired_cert_lineages() {
+  local active_domains
+  active_domains="${DOMAINS[*]}"
+
+  docker run --rm \
+    -v "$CERT_DIR:/certs" \
+    -e ACTIVE_CERT_DOMAINS="$active_domains" \
+    alpine sh -c '
+      set -eu
+
+      is_active() {
+        target="$1"
+        for domain in $ACTIVE_CERT_DOMAINS; do
+          [ "$target" = "$domain" ] && return 0
+        done
+        return 1
+      }
+
+      removed=0
+
+      for section in live archive; do
+        [ -d "/certs/$section" ] || continue
+        for path in /certs/$section/*; do
+          [ -d "$path" ] || continue
+          domain="${path##*/}"
+          if is_active "$domain"; then
+            echo "keep:$section/$domain"
+          else
+            rm -rf "$path"
+            echo "removed:$section/$domain"
+            removed=1
+          fi
+        done
+      done
+
+      if [ -d /certs/renewal ]; then
+        for path in /certs/renewal/*.conf; do
+          [ -f "$path" ] || continue
+          file="${path##*/}"
+          domain="${file%.conf}"
+          if is_active "$domain"; then
+            echo "keep:renewal/$file"
+          else
+            rm -f "$path"
+            echo "removed:renewal/$file"
+            removed=1
+          fi
+        done
+      fi
+
+      echo "__removed=$removed"
+    '
 }
 
 prepare_staged_certs() {
@@ -225,6 +280,38 @@ if [[ "$MODE" == "--clean-workdirs" ]]; then
   umbra_clean_obsolete_cert_workdirs "$DATA_DIR"
   report_cert_workdirs
   log_ok "Certificate workdir cleanup complete."
+  exit 0
+fi
+
+if [[ "$MODE" == "--clean-retired-lineages" ]]; then
+  log_banner "Umbra - Clean Retired Certificate Lineages"
+  validate_domains || exit 1
+  log_info "Active certificate domains:"
+  for domain in "${DOMAINS[@]}"; do
+    log_info "  $domain"
+  done
+  log_info "Only non-active entries under live/, archive/, and renewal/*.conf are removed."
+  log_info "Certificate backups and workdirs are preserved."
+  cleanup_output="$(clean_retired_cert_lineages)"
+  removed=0
+  while IFS= read -r line; do
+    case "$line" in
+      keep:*)
+        log_info "${line#keep:} kept"
+        ;;
+      removed:*)
+        log_warn "${line#removed:} removed"
+        ;;
+      __removed=1)
+        removed=1
+        ;;
+    esac
+  done <<< "$cleanup_output"
+  if [[ "$removed" == "1" ]]; then
+    log_ok "Retired certificate lineage cleanup complete."
+  else
+    log_ok "No retired certificate lineages found."
+  fi
   exit 0
 fi
 
@@ -398,7 +485,7 @@ fi
 
 if [[ -n "$MODE" ]] && [[ "$MODE" != "--renew" ]]; then
   log_error "Unknown certs mode: $MODE"
-  log_info "Usage: bash scripts/ops.sh certs [--renew|--status|--upgrade|--clean-renewal-state|--clean-workdirs]"
+  log_info "Usage: bash scripts/ops.sh certs [--renew|--status|--upgrade|--clean-renewal-state|--clean-workdirs|--clean-retired-lineages]"
   exit 1
 fi
 

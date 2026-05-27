@@ -111,6 +111,16 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "retired certificate cleanup preserves active domains",
+        Path("scripts/ops/certs.sh"),
+        [
+            "--clean-retired-lineages",
+            "clean_retired_cert_lineages",
+            "Only non-active entries under live/, archive/, and renewal/*.conf are removed.",
+            "Certificate backups and workdirs are preserved.",
+        ],
+    ),
+    (
         "certificate upgrade uses staged activation and rollback",
         Path("scripts/ops/certs.sh"),
         [

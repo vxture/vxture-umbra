@@ -39,6 +39,7 @@ _usage() {
   echo "    certs --upgrade                       Upgrade self-signed -> real LE certs"
   echo "    certs --clean-renewal-state           Remove invalid zero-byte renewal configs"
   echo "    certs --clean-workdirs                Remove obsolete certificate workdirs"
+  echo "    certs --clean-retired-lineages        Remove non-active certbot lineages"
   echo ""
 }
 
