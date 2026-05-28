@@ -439,14 +439,19 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         [
             "Authentication: Marzban JWT session only",
             "No nginx auth_basic",
-            "proxy_pass https://umbra-marzban:8000",
+            'set $marzban_upstream "umbra-marzban:8000"',
+            "proxy_pass https://$marzban_upstream",
+            "return 302 /dashboard/",
         ],
     ),
     (
         "deploy verify treats console as public Marzban login",
         Path("scripts/deploy/06-verify.sh"),
         [
+            "$CONSOLE_DOMAIN/",
+            "$CONSOLE_DOMAIN root redirects to dashboard",
             "$CONSOLE_DOMAIN/dashboard/",
+            "$CONSOLE_DOMAIN API reaches Marzban auth",
             "$CONSOLE_DOMAIN login reachable",
             "$CONSOLE_DOMAIN login not reachable",
         ],

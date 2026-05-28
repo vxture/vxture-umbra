@@ -188,12 +188,33 @@ fi
 # The console vhost must be publicly reachable. Marzban owns authentication.
 log_step "$CONSOLE_DOMAIN login..."
 check_http "$CONSOLE_DOMAIN invite console" "https://$CONSOLE_DOMAIN/invites/"
+
+console_root_headers="$(mktemp)"
+CONSOLE_ROOT_CODE=$(curl -sk --max-time 10 -D "$console_root_headers" -o /dev/null -w "%{http_code}" "https://$CONSOLE_DOMAIN/" || true)
+if [[ "$CONSOLE_ROOT_CODE" =~ ^(301|302|307|308)$ ]] && grep -Eiq '^location: /dashboard/?' "$console_root_headers"; then
+  log_ok "$CONSOLE_DOMAIN root redirects to dashboard ($CONSOLE_ROOT_CODE)"
+  (( ++PASS ))
+else
+  log_fail "$CONSOLE_DOMAIN root does not redirect to dashboard (got $CONSOLE_ROOT_CODE)"
+  (( ++FAIL ))
+fi
+rm -f "$console_root_headers"
+
 CONSOLE_CODE=$(curl -sk --max-time 10 -o /dev/null -w "%{http_code}" "https://$CONSOLE_DOMAIN/dashboard/" || echo "000")
 if [[ "$CONSOLE_CODE" =~ ^(200|301|302|307|308|401)$ ]]; then
   log_ok "$CONSOLE_DOMAIN login reachable ($CONSOLE_CODE)"
   (( ++PASS ))
 else
   log_fail "$CONSOLE_DOMAIN login not reachable (got $CONSOLE_CODE)"
+  (( ++FAIL ))
+fi
+
+CONSOLE_API_CODE=$(curl -sk --max-time 10 -o /dev/null -w "%{http_code}" "https://$CONSOLE_DOMAIN/api/admin" || echo "000")
+if [[ "$CONSOLE_API_CODE" =~ ^(401|403)$ ]]; then
+  log_ok "$CONSOLE_DOMAIN API reaches Marzban auth ($CONSOLE_API_CODE)"
+  (( ++PASS ))
+else
+  log_fail "$CONSOLE_DOMAIN API does not reach Marzban auth (got $CONSOLE_API_CODE)"
   (( ++FAIL ))
 fi
 

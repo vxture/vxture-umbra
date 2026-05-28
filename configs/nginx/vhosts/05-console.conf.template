@@ -16,6 +16,11 @@ server {
 
     resolver 127.0.0.11 valid=30s ipv6=off;
     set $account_upstream "umbra-account:8081";
+    set $marzban_upstream "umbra-marzban:8000";
+
+    location = / {
+        return 302 /dashboard/;
+    }
 
     location = /invites {
         return 302 /invites/;
@@ -27,7 +32,7 @@ server {
     }
 
     location / {
-        proxy_pass https://umbra-marzban:8000;
+        proxy_pass https://$marzban_upstream;
         proxy_ssl_verify off;
         include /etc/nginx/snippets/proxy-headers.conf;
         proxy_redirect https://umbra-marzban:8000 https://$http_host;
