@@ -187,7 +187,7 @@ fi
 # -- CONSOLE_DOMAIN login -----------------------------------------------------
 # The console vhost must be publicly reachable. Marzban owns authentication.
 log_step "$CONSOLE_DOMAIN login..."
-check_http "$CONSOLE_DOMAIN invite console" "https://$CONSOLE_DOMAIN/invites/"
+check_http "$CONSOLE_DOMAIN invite console" "https://$CONSOLE_DOMAIN/invites"
 
 console_root_headers="$(mktemp)"
 CONSOLE_ROOT_CODE=$(curl -sk --max-time 10 -D "$console_root_headers" -o /dev/null -w "%{http_code}" "https://$CONSOLE_DOMAIN/" || true)
