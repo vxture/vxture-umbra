@@ -30,7 +30,7 @@ Invite codes bind to an existing Marzban user code. The code itself is random an
 
 Admin access to invite generation is validated against Marzban admin login. The browser receives an opaque admin session cookie; the Marzban API token is stored server-side in `DATA_DIR/account/account.db`.
 
-The account dashboard renders the stored subscription URL without changing account state. When a user clicks `Update subscription URL`, the account service refreshes the current Marzban `subscription_url` server-side for the bound user code and updates the local cache. Marzban admin credentials are available only inside the account service container; the browser receives only the user's subscription URL and session cookie.
+The account dashboard renders the stored subscription URL without changing account state. When a user clicks `Update subscription URL`, or an admin clicks `Update URL` in the invite console, the account service refreshes the current Marzban `subscription_url` server-side for the bound user code and updates the local cache. Marzban admin credentials are available only inside the account service container; the browser receives only the user's subscription URL and session cookie.
 
 ## Certificates
 

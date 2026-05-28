@@ -316,6 +316,26 @@ def refresh_subscription_url(username: str) -> str | None:
     return sub_url
 
 
+def update_bound_account_subscription_url(username: str) -> str:
+    try:
+        fresh_sub_url = refresh_subscription_url(username)
+        if not fresh_sub_url:
+            return "failed"
+        with db() as conn:
+            account = conn.execute(
+                "SELECT subscription_url FROM accounts WHERE username = ? AND disabled = 0",
+                (username,),
+            ).fetchone()
+            if not account:
+                return "failed"
+            if fresh_sub_url != account["subscription_url"]:
+                conn.execute("UPDATE accounts SET subscription_url = ? WHERE username = ?", (fresh_sub_url, username))
+                return "updated"
+        return "current"
+    except Exception:
+        return "failed"
+
+
 def token_path_from_url(subscription_url: str) -> str:
     parsed = urllib.parse.urlsplit(subscription_url)
     if not parsed.path.startswith("/sub/"):
@@ -477,6 +497,8 @@ class AccountHandler(BaseHTTPRequestHandler):
             self.admin_logout()
         elif path == "/invites/create":
             self.admin_create_invite()
+        elif path == "/invites/update-subscription":
+            self.admin_update_subscription()
         elif path == "/invites/revoke":
             self.admin_revoke_invite()
         else:
@@ -780,19 +802,8 @@ document.addEventListener("click", function (event) {{
             self.redirect("/login", cookies_to_clear=[(SESSION_COOKIE, "/")])
             return
 
-        try:
-            fresh_sub_url = refresh_subscription_url(username)
-            if not fresh_sub_url:
-                self.redirect("/dashboard?subscription=failed")
-                return
-            if fresh_sub_url != account["subscription_url"]:
-                with db() as conn:
-                    conn.execute("UPDATE accounts SET subscription_url = ? WHERE username = ?", (fresh_sub_url, username))
-                self.redirect("/dashboard?subscription=updated")
-                return
-            self.redirect("/dashboard?subscription=current")
-        except Exception:
-            self.redirect("/dashboard?subscription=failed")
+        status = update_bound_account_subscription_url(username)
+        self.redirect(f"/dashboard?subscription={status}")
 
     def logout(self) -> None:
         self.redirect("/login", cookies_to_clear=[(SESSION_COOKIE, "/")])
@@ -821,7 +832,9 @@ document.addEventListener("click", function (event) {{
             active_invites = conn.execute(
                 "SELECT * FROM invites WHERE used_at IS NULL AND disabled = 0 ORDER BY created_at DESC"
             ).fetchall()
-            accounts = conn.execute("SELECT username, display_name, created_at, last_login_at, disabled FROM accounts ORDER BY username").fetchall()
+            accounts = conn.execute(
+                "SELECT username, display_name, subscription_url, created_at, last_login_at, disabled FROM accounts ORDER BY username"
+            ).fetchall()
 
         try:
             users = marzban_users(str(sess["token"]))
@@ -846,6 +859,16 @@ document.addEventListener("click", function (event) {{
         bound_count = 0
         invite_count = 0
         pending_count = 0
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+        update_status = query.get("subscription", [""])[0]
+        if update_status == "updated":
+            notice = '<div class="alert ok">Subscription URL updated.</div>'
+        elif update_status == "current":
+            notice = '<div class="alert ok">Subscription URL is already current.</div>'
+        elif update_status == "failed":
+            notice = '<div class="alert">Subscription URL could not be updated.</div>'
+        else:
+            notice = ""
 
         for user in users:
             username = user_name(user)
@@ -858,9 +881,16 @@ document.addEventListener("click", function (event) {{
             online = format_datetime(user.get("online_at"))
             if account:
                 bound_count += 1
+                sub_id = f"sub-{html.escape(username)}"
                 binding = f"Bound: {html.escape(account['display_name'] or username)}"
-                invite_cell = "-"
-                action = '<button class="secondary" type="button" disabled>Bound</button>'
+                invite_cell = f'<code id="{sub_id}">{html.escape(account["subscription_url"] or "-")}</code>'
+                action = (
+                    f'<button class="secondary" type="button" data-copy="{sub_id}">Copy URL</button>'
+                    '<form method="post" action="/invites/update-subscription">'
+                    f'<input type="hidden" name="username" value="{html.escape(username)}">'
+                    '<button class="secondary" type="submit">Update URL</button>'
+                    '</form>'
+                )
             elif invite:
                 invite_count += 1
                 code_id = f"invite-{invite['id']}"
@@ -899,6 +929,7 @@ document.addEventListener("click", function (event) {{
   <div class="panel">
     <h1>Invite Console</h1>
     <p class="muted">All existing Marzban users are listed below. Generate an invite only for users that are not yet bound.</p>
+    {notice}
     <div class="grid">
       <div class="metric"><div class="muted">Users</div><div class="value">{len(users)}</div></div>
       <div class="metric"><div class="muted">Bound</div><div class="value">{bound_count}</div></div>
@@ -913,7 +944,7 @@ document.addEventListener("click", function (event) {{
 </section>
 <section class="panel" style="margin-top:16px">
   <h2>Marzban users</h2>
-  <table><thead><tr><th>User code</th><th>Service status</th><th>Used</th><th>Total</th><th>Expire</th><th>Last online</th><th>Binding</th><th>Invite</th><th></th></tr></thead><tbody>{''.join(user_rows) or '<tr><td colspan="9" class="muted">No Marzban users returned.</td></tr>'}</tbody></table>
+  <table><thead><tr><th>User code</th><th>Service status</th><th>Used</th><th>Total</th><th>Expire</th><th>Last online</th><th>Binding</th><th>Subscription / Invite</th><th></th></tr></thead><tbody>{''.join(user_rows) or '<tr><td colspan="9" class="muted">No Marzban users returned.</td></tr>'}</tbody></table>
 </section>
 <script>
 document.addEventListener("click", function (event) {{
@@ -997,6 +1028,17 @@ document.addEventListener("click", function (event) {{
             )
             conn.commit()
         self.redirect("/invites/")
+
+    def admin_update_subscription(self) -> None:
+        if not self.admin_session():
+            self.redirect("/invites/")
+            return
+        username = self.form().get("username", "").upper()
+        if not USER_RE.match(username):
+            self.redirect("/invites/?subscription=failed")
+            return
+        status = update_bound_account_subscription_url(username)
+        self.redirect(f"/invites/?subscription={status}")
 
     def admin_revoke_invite(self) -> None:
         if not self.admin_session():
