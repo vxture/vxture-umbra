@@ -182,9 +182,15 @@ render_file(
 print("\n-- Rendering Nginx virtual host configs ---------------------------------")
 vhosts_src = configs_dir / "nginx" / "vhosts"
 vhosts_dst = DATA_DIR / "nginx" / "conf.d"
+rendered_vhosts = set()
 for tmpl in sorted(vhosts_src.glob("*.conf.template")):
     out_name = tmpl.name.replace(".template", "")
+    rendered_vhosts.add(out_name)
     render_file(tmpl, vhosts_dst / out_name, variables)
+for stale in sorted(vhosts_dst.glob("*.conf")):
+    if stale.name not in rendered_vhosts:
+        stale.unlink()
+        print(f"[REMOVE] stale vhost  ->  {stale}")
 
 print("\n-- Copying Nginx snippets ------------------------------------------------")
 snippets_src = configs_dir / "nginx" / "snippets"

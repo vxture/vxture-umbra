@@ -84,6 +84,15 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "config renderer prunes retired vhosts",
+        Path("scripts/deploy/04-render-configs.py"),
+        [
+            "rendered_vhosts",
+            "stale vhost",
+            "stale.unlink()",
+        ],
+    ),
+    (
         "deploy check validates environment formats",
         Path("scripts/deploy/00-check-env.sh"),
         [
