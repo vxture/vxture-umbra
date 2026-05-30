@@ -33,6 +33,7 @@ venv/
 
 # Node (if any tooling added later)
 node_modules/
+.npm-cache/
 .next/
 portals/console/.next/
 *.tsbuildinfo

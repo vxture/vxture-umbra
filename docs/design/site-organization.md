@@ -23,32 +23,30 @@ Before this migration, website-related source code lived in several top-level di
 
 ```text
 account-web/              # Next.js account and invite UI
-landing/html/             # ruyin.ai and www.ruyin.ai static landing source
-portal/html/              # legacy guide source served at vpn.ruyin.ai/guide/
+portals/website/          # ruyin.ai Next public website
+portals/console/public/guide/ # guide source served at vpn.ruyin.ai/guide/
 services/account/         # account API plus legacy fallback HTML
 configs/nginx/vhosts/     # routing for all public web surfaces
 ```
 
-Deployment renders or copies source into:
+Deployment renders configs and starts containers:
 
 ```text
-DATA_DIR/nginx/html/ruyin-landing/
-DATA_DIR/nginx/html/www-ruyin/
+umbra-website              # serves ruyin.ai
+www.ruyin.ai               # redirects to ruyin.ai
 DATA_DIR/portal/html/
 ```
 
-These output paths are mounted by existing containers and should not be changed
-in the first migration.
+The legacy guide output path remains mounted by `umbra-portal`.
 
 ## Problems
 
 - Top-level `landing/` and `portal/` are too generic for a platform repo.
-- Static site source, Next app source, and service code are not grouped by
-  product surface.
-- `landing/html/` is copied to both apex and `www`, which is operationally
-  valid but not obvious from directory names.
-- Legacy static guide is mixed with the user account portal conceptually, but
-  lives as a separate top-level `portal/`.
+- Historical standalone site source, Next app source, and service code were not
+  grouped by product surface.
+- The old `landing/html/` copy-to-apex-and-www model hid the canonical domain
+  decision in deploy scripts.
+- Guide source used to live outside the console portal boundary.
 - Documentation still describes old account HTML flows even though Next now
   owns most user-facing UI.
 
@@ -60,8 +58,9 @@ repo structure:
 ```text
 portals/
   website/                 # ruyin.ai and www.ruyin.ai public portal
-    static/                # first migration keeps the current static site
-      index.html
+    app/                   # Next routes
+    components/            # website shell components
+    public/
       favicon.ico
       assets/
         brand/
@@ -84,8 +83,8 @@ portals/
 
 Notes:
 
-- `portals/website` owns the public Ruyin website on `ruyin.ai` and
-  `www.ruyin.ai`.
+- `portals/website` owns the public Ruyin website on `ruyin.ai`.
+- `www.ruyin.ai` is a canonical redirect to `ruyin.ai`.
 - `portals/console` owns the user self-service console on `console.ruyin.ai`.
 - `portals/admin` is the temporary management surface. It should include the
   invite console UI and links into Marzban, while Marzban itself remains the
@@ -94,8 +93,8 @@ Notes:
   keep `admin.ruyin.ai/dashboard/` on the Marzban upstream during the
   temporary phase.
 - The current legacy guide under `vpn.ruyin.ai/guide/` should be treated as a
-  static compatibility surface. It can either move under
-  `portals/console/static/guide/` or be retired after the new console covers the
+  public guide surface. It can either stay under
+  `portals/console/public/guide/` or be retired after the new console covers the
   onboarding flow.
 
 Keep service and infra code outside `portals/`:
@@ -122,35 +121,33 @@ Rationale:
 - `packages/` is reserved for reusable libraries and future backend package
   extraction.
 - `configs/` contains runtime infrastructure templates.
-- Static source directories use `static/`, not `html/`, because the source is
-  not the same as the rendered runtime mount.
+- Public guide source uses `public/guide`, while rendered runtime output stays
+  under `DATA_DIR/portal/html`.
 
 ## Compatibility Strategy
 
 The first migration must be backward compatible.
 
-`scripts/deploy/04-render-configs.py` reads from the new paths first and falls
-back to old paths if needed:
+`scripts/deploy/04-render-configs.py` renders infrastructure configs. The
+Ruyin website is built and served by the `umbra-website` Next container:
 
 ```text
-portals/website/static/             -> fallback landing/html/
-portals/console/static/guide/        -> fallback portal/html/
+portals/console/public/guide/        -> fallback portal/html/
 portals/console/                    -> legacy fallback account-web/
 portals/admin/                      -> legacy fallback account-web invite route during transition
 ```
 
-Runtime output remains unchanged:
+Runtime output for the public guide remains unchanged:
 
 ```text
-portals/website/static/
-  -> DATA_DIR/nginx/html/ruyin-landing/
-  -> DATA_DIR/nginx/html/www-ruyin/
-
-portals/console/static/guide/
+portals/console/public/guide/
   -> DATA_DIR/portal/html/
 
 portals/console/
   -> Docker image umbra-umbra-account-web
+
+portals/website/
+  -> Docker image umbra-website
 ```
 
 This keeps Nginx mounts, container names, and public URLs stable.
@@ -169,7 +166,7 @@ Before moving any source files:
    - saved subscription URL `GET`
    - `sub.ruyin.ai` root blocked
    - no `:8443` redirects
-3. Keep `04-render-configs.py` output paths unchanged.
+3. Keep `04-render-configs.py` output paths unchanged for VPN and guide surfaces.
 
 No production behavior changes in this phase.
 
@@ -187,8 +184,8 @@ Production risk is low because old paths remain available.
 Move source files:
 
 ```text
-landing/html/**     -> portals/website/static/**
-portal/html/**      -> portals/console/static/guide/**
+landing/html/**     -> portals/website/public/** or Next components
+portal/html/**      -> portals/console/public/guide/**
 account-web/**      -> portals/console/**
 ```
 
@@ -217,7 +214,6 @@ Update references:
 
 Do not change:
 
-- `DATA_DIR/nginx/html/...`
 - `DATA_DIR/portal/html`
 - Nginx public route behavior
 - Marzban/Xray/subproxy configs
@@ -314,7 +310,7 @@ Use small commits so rollback is simple:
 
 1. `Document site organization migration`
 2. `Add portal layout fallbacks`
-3. `Move website static source under portals`
+3. `Migrate website from standalone source to Next`
 4. `Move account web under portals console`
 5. `Remove legacy site path fallbacks`
 

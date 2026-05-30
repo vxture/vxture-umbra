@@ -108,7 +108,7 @@ log_step "Container health..."
 CONTAINERS=(
   umbra-nginx umbra-marzban
   umbra-subproxy umbra-account umbra-account-web
-  umbra-vaultwarden umbra-portal
+  umbra-vaultwarden umbra-portal umbra-website
 )
 
 cd "$REPO_DIR"
@@ -127,6 +127,7 @@ done
 log_step "HTTPS endpoints..."
 
 check_http "$APEX_DOMAIN"        "https://$APEX_DOMAIN"
+check_http_body_contains "$APEX_DOMAIN Ruyin homepage" "https://$APEX_DOMAIN/" "Hermes"
 check_http "$WWW_DOMAIN"         "https://$WWW_DOMAIN"
 check_http "$EDGE_DOMAIN"        "https://$EDGE_DOMAIN"
 check_http_body_contains "$EDGE_DOMAIN VPN display" "https://$EDGE_DOMAIN/" "Proxy"

@@ -199,7 +199,7 @@ Vultr:       vultr.com, vultrobjects.com, 108.61.182.248/32
 DeepSeek:    deepseek.com, deepseek.ai, api.deepseek.com
 ```
 
-**Reason:** Microsoft services are accessible from most networks without proxy; forcing them causes latency and auth degradation. DeepSeek is a Chinese domestic service; direct connection is faster and more stable.
+**Reason:** Microsoft services are accessible from most networks without proxy; forcing them causes latency and auth degradation. DeepSeek is a Chinese domestic service; direct connection is faster and more stable. DeepSeek is also excluded from Clash fake-ip DNS so local tools such as Roo Code receive real DNS answers instead of `198.18.0.0/16` synthetic addresses.
 
 Cloudflare login, dashboard, challenge, and edge service domains are forced to `PROXY` because direct routing can leave the Cloudflare account login flow stalled. Vultr hosts the VPS control plane and provider storage domains; proxying them through the same node can create management loops.
 The exact VPN/VPS endpoint IP is pinned as `IP-CIDR,108.61.182.248/32,DIRECT,no-resolve` to avoid proxy loops without requiring ASN databases during client startup.

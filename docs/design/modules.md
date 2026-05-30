@@ -30,11 +30,11 @@ Nginx runs two listeners:
 | Template | Domain | Upstream |
 |----------|--------|---------|
 | `00-default.conf.template` | catch-all | ACME challenge and default 404/redirect behavior |
-| `01-ruyin.conf.template` | `ruyin.ai` | static files in `nginx/html/ruyin-landing/` |
-| `02-www.conf.template` | `www.ruyin.ai` | static files in `nginx/html/www-ruyin/` |
+| `01-ruyin.conf.template` | `ruyin.ai` | `umbra-website:3210` Next public website |
+| `02-www.conf.template` | `www.ruyin.ai` | 301 canonical redirect to `ruyin.ai` |
 | `03-vpn-portal.conf.template` | `EDGE_DOMAIN` | `umbra-portal:80` VPN display and guide |
 | `04-sub.conf.template` | `sub.ruyin.ai` | `umbra-subproxy:8080` for native Marzban `/sub/<token>` metadata normalization |
-| `05-console.conf.template` | `console.ruyin.ai` | `umbra-account-web:3000` + `umbra-account:8081` |
+| `05-console.conf.template` | `console.ruyin.ai` | `umbra-account-web:3220` + `umbra-account:3281` |
 | `06-pass.conf.template` | `pass.ruyin.ai` | `umbra-vaultwarden:80` |
 | `07-admin.conf.template` | `admin.ruyin.ai` | `umbra-marzban:8000` + `/invites` to account web/API |
 
@@ -239,6 +239,7 @@ This file is rendered from `configs/marzban/clash-subscription.j2` - it contains
 `/sub/<token>`. It does not convert subscription formats. It normalizes the
 response filename, `profile-title` header, and YAML `#profile-title` to
 `Ruyin-USERNAME`.
+This is a narrow edge adapter and can remain Python while it stays small.
 
 ### Docker Config
 
@@ -288,13 +289,17 @@ SQLite databases are backed up via file copy or root-container archives in `scri
 ### Stack
 
 Self-contained Python stdlib HTTP service with SQLite state in `DATA_DIR/account/account.db`.
+This is the current lightweight edge-node implementation. New formal Ruyin
+business backends should be implemented with NestJS; migrate this account API
+when account, invite, billing, audit, or admin workflows exceed the current
+single-file service scope.
 
 ### Content Structure
 
 ```
 vpn.ruyin.ai/
 |-- /                  -> VPN display
-`-- /guide/            -> legacy static guide from umbra-portal
+`-- /guide/            -> public guide from umbra-portal
 
 console.ruyin.ai/
 |-- /                  -> login / account home
@@ -344,7 +349,7 @@ vaultwarden/server:latest
 
 ```env
 DOMAIN=https://pass.ruyin.ai
-SIGNUPS_ALLOWED=false
+# Registration is controlled from the Vaultwarden admin panel.
 ADMIN_TOKEN={{ VAULTWARDEN_ADMIN_TOKEN }}
 DATABASE_URL=sqlite:////data/db.sqlite3
 ```

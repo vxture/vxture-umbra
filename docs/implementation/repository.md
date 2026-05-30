@@ -27,15 +27,21 @@ Key implementation paths:
 | `configs/nginx/snippets/*.conf` | Shared nginx snippets copied to `DATA_DIR/nginx/snippets/` |
 | `configs/xray/config.json.template` | Marzban-managed Xray config rendered to `DATA_DIR/marzban/xray_config.json` |
 | `configs/marzban/clash-subscription.j2` | Marzban Clash template rendered to `DATA_DIR/marzban/templates/clash/default.yml` |
-| `portals/website/static/` | Source for `ruyin.ai` and `www.ruyin.ai` static pages, including `assets/` |
+| `portals/website/` | Next.js public website for `ruyin.ai`, including reusable shell components and `public/assets/` |
 | `portals/console/` | Next.js user portal for `console.ruyin.ai` and temporary invite UI |
-| `portals/console/static/guide/` | Source for the legacy static guide served under `vpn.ruyin.ai/guide/` |
+| `portals/console/public/guide/` | Source for the public guide served under `vpn.ruyin.ai/guide/` |
 | `portals/admin/` | Temporary admin portal boundary; invite UI will move here after route split |
-| `services/account/account.py` | Account API plus legacy fallback HTML |
-| `services/subproxy/subproxy.py` | Subscription response metadata normalizer |
+| `services/account/account.py` | Current lightweight Python account/invite API; future formal business backend should be NestJS |
+| `services/subproxy/subproxy.py` | Lightweight Python subscription response metadata adapter |
 | `scripts/server/` | Server lifecycle implementation |
 | `scripts/deploy/` | Deploy pipeline implementation |
 | `scripts/ops/` | Runtime operations implementation |
 | `scripts/lib/` | Shared shell helpers |
+
+See [`project-structure-plan.md`](project-structure-plan.md) for the target
+portal layout, brand asset intake list, and cleanup phases.
+
+Python in this repo is for deployment tooling, the current lightweight account
+API, and narrow edge adapters. New formal business backends should use NestJS.
 
 Avoid adding generated files, runtime data, certificates, SQLite databases, or server backups to the repo.

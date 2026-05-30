@@ -35,6 +35,27 @@ Production VPN edge node - SNI routing, VLESS+REALITY proxy, subscription delive
 
 ---
 
+## Local Development Ports
+
+Umbra uses a dedicated local-only port block so it stays clear of the Vxture
+monorepo development ports. These ports are for direct browser preview and
+local service debugging only.
+
+| Port | Service | URL |
+|------|---------|-----|
+| 3210 | Ruyin website | `http://localhost:3210` |
+| 3220 | Ruyin console | `http://localhost:3220` |
+| 3281 | Account API | `http://localhost:3281` |
+
+Reserve `3210`, `3220`, and `3281` for Umbra. If local Vxture SSO origin checks
+are enabled, allow `http://localhost:3220` as the Umbra console callback origin.
+
+Production does not expose these ports. Public production traffic enters only
+through Nginx on host ports `80` and `443`; Nginx then proxies to `3210`,
+`3220`, and `3281` inside the Docker network.
+
+---
+
 ## Initial Server Setup
 
 SSH in as root using the key provided at server creation:

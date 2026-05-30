@@ -30,7 +30,7 @@ from typing import Any
 
 
 LISTEN_HOST = os.environ.get("ACCOUNT_HOST", "0.0.0.0")
-LISTEN_PORT = int(os.environ.get("ACCOUNT_PORT", "8081"))
+LISTEN_PORT = int(os.environ.get("ACCOUNT_PORT", "3281"))
 DB_PATH = os.environ.get("ACCOUNT_DB_PATH", "/var/lib/umbra-account/account.db")
 SESSION_SECRET = os.environ.get("ACCOUNT_SESSION_SECRET", "")
 INVITE_SECRET = os.environ.get("ACCOUNT_INVITE_SECRET", "")

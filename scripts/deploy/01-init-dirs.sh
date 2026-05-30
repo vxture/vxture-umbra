@@ -18,8 +18,6 @@ log_step "Creating DATA_DIR structure at $DATA_DIR ..."
 
 mk "$DATA_DIR/nginx/conf.d"
 mk "$DATA_DIR/nginx/stream.d"
-mk "$DATA_DIR/nginx/html/ruyin-landing"
-mk "$DATA_DIR/nginx/html/www-ruyin"
 mk "$DATA_DIR/nginx/private"
 mk "$DATA_DIR/nginx/logs"
 mk "$DATA_DIR/marzban/templates/clash"
@@ -54,7 +52,7 @@ log_ok "chmod 711 $DATA_DIR/nginx/private"
 chmod 700 "$BACKUP_DIR"
 log_ok "chmod 700 $BACKUP_DIR"
 
-# -- Copy nginx.conf (static, no templating needed) ----------------------------
+# -- Copy nginx.conf (plain file, no templating needed) ------------------------
 # Always overwrite so repo changes (e.g. map blocks) propagate to the running config.
 REPO_NGINX_CONF="$REPO_DIR/configs/nginx/nginx.conf"
 DATA_NGINX_CONF="$DATA_DIR/nginx/nginx.conf"

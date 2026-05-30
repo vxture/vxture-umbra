@@ -14,9 +14,9 @@ Internet
 `-- :443 -> umbra-nginx stream listener with SNI preread
            |-- SNI = REALITY_SNI -> umbra-marzban:10443 (Xray subprocess)
            `-- other SNI values -> umbra-nginx internal HTTPS listener :8443
-                                      |-- ruyin.ai         -> static landing
-                                      |-- www.ruyin.ai     -> static landing copy
-                                      |-- EDGE_DOMAIN      -> static VPN display
+                                      |-- ruyin.ai         -> umbra-website:3210
+                                      |-- www.ruyin.ai     -> 301 redirect to ruyin.ai
+                                      |-- EDGE_DOMAIN      -> public VPN guide
                                       |-- sub.ruyin.ai           -> umbra-subproxy:8080 -> umbra-marzban:8000 /sub/<token>
                                       |-- console.ruyin.ai -> umbra-account-web + umbra-account API
                                       |-- admin.ruyin.ai   -> umbra-marzban:8000 and /invites -> account web/API
@@ -58,7 +58,7 @@ Mode 1: stream (layer 4, public port 443)
 
 Mode 2: http (layer 7, internal port 8443)
   - Terminates TLS for normal domains
-  - Routes by server_name to static files or container upstreams
+  - Routes by server_name to container upstreams, redirects, or public guide surfaces
 ```
 
 Why two-level? Because:
@@ -77,6 +77,10 @@ Host ports:
   80  -> umbra-nginx
   443 -> umbra-nginx stream
 
+Only these host ports are exposed in production. Service ports such as `3210`,
+`3220`, and `3281` are internal Docker-network ports. They may be used directly
+only during local development.
+
 Services:
   umbra-nginx
     - public HTTP/HTTPS/SNI gateway
@@ -84,6 +88,10 @@ Services:
     - proxies REALITY traffic to umbra-marzban:10443
     - proxies Marzban web/API traffic to umbra-marzban:8000
     - proxies subscription traffic to umbra-subproxy:8080
+
+  umbra-website
+    - Ruyin public Next website on :3210
+    - consumes Vxture design-system as the design source
 
   umbra-marzban
     - Marzban API/admin/subscription on :8000
@@ -93,12 +101,12 @@ Services:
     - internal-only metadata normalizer for /sub/<token>
 
   umbra-account
-    - invite-bound user account portal on :8081
+    - current lightweight account/invite API on :3281
     - stores account and invite state in DATA_DIR/account/account.db
     - talks to Marzban API and native subscription info endpoints
 
   umbra-portal
-    - legacy static guide on :80, exposed under EDGE_DOMAIN /guide/
+    - public guide on :80, exposed under EDGE_DOMAIN /guide/
 
   umbra-vaultwarden
     - Vaultwarden on :80
@@ -136,10 +144,13 @@ Services:
 |       |       `-- clash-subscription.j2
 |       |-- portals/
 |       |   |-- website/
-|       |   |   `-- static/
+|       |   |   |-- app/
+|       |   |   |-- components/
+|       |   |   |-- public/
+|       |   |   `-- Dockerfile
 |       |   |-- console/
 |       |   |   |-- app/
-|       |   |   `-- static/
+|       |   |   `-- public/
 |       |   |       `-- guide/
 |       |   `-- admin/
 |       |-- scripts/
@@ -174,9 +185,6 @@ Services:
 |       |   |-- conf.d/
 |       |   |-- stream.d/
 |       |   |-- snippets/
-|       |   |-- html/
-|       |   |   |-- ruyin-landing/
-|       |   |   `-- www-ruyin/
 |       |   |-- private/
 |       |   `-- logs/
 |       |-- marzban/
@@ -209,9 +217,23 @@ Services:
 | 10443 | Internal | umbra-marzban | Bundled Xray subprocess: VLESS + REALITY |
 | 8000 | Internal | umbra-marzban | Marzban API + admin + subscription |
 | 8080 | Internal | umbra-subproxy | Subscription metadata normalization |
-| 8081 | Internal | umbra-account | Invite-bound account portal |
+| 3281 | Internal | umbra-account | Invite-bound account portal |
+| 3210 | Internal | umbra-website | Ruyin public Next website |
+| 3220 | Internal | umbra-account-web | User console and invite UI |
 | 80 | Internal | umbra-vaultwarden | Vaultwarden HTTP |
-| 80 | Internal | umbra-portal | Legacy static guide |
+| 80 | Internal | umbra-portal | Public guide |
+
+---
+
+## Backend Stack Direction
+
+Umbra currently has one Ruyin-owned business API: `umbra-account`, implemented
+as `services/account/account.py`. It is a lightweight Python service for the
+edge-node phase. `umbra-subproxy` is not a business backend; it is a small
+metadata adapter for subscription responses.
+
+Future formal business backends should use NestJS under `services/*-api/`.
+Python remains appropriate for deployment scripts and narrow edge adapters.
 
 ---
 

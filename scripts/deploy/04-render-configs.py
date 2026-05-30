@@ -116,8 +116,8 @@ def copy_file(src: Path, dst: Path, mode: int = 0o644):
     print(f"[COPY] {src.name}  ->  {dst}")
 
 
-# -- Static file rendering -----------------------------------------------------
-def render_static_tree(src_dir: Path, dst_dir: Path, variables: dict):
+# -- Public content rendering --------------------------------------------------
+def render_public_tree(src_dir: Path, dst_dir: Path, variables: dict):
     for src in sorted(src_dir.rglob("*")):
         if src.is_dir():
             continue
@@ -230,28 +230,19 @@ subprocess.run(
     check=True,
 )
 
-print("\n-- Rendering static VPN guide ------------------------------------------")
+print("\n-- Rendering public VPN guide ------------------------------------------")
 portal_src = first_existing_path(
-    REPO_DIR / "portals" / "console" / "static" / "guide",
+    REPO_DIR / "portals" / "console" / "public" / "guide",
     REPO_DIR / "portal" / "html",
 )
 portal_dst = DATA_DIR / "portal" / "html"
 if portal_src:
-    render_static_tree(portal_src, portal_dst, variables)
+    render_public_tree(portal_src, portal_dst, variables)
 else:
     print("[WARN] VPN guide source not found in repo - skipping")
 
-print("\n-- Rendering landing page -----------------------------------------------")
-landing_src = first_existing_path(
-    REPO_DIR / "portals" / "website" / "static",
-    REPO_DIR / "landing" / "html",
-)
-if landing_src:
-    for dst_dir in [DATA_DIR / "nginx" / "html" / "ruyin-landing",
-                    DATA_DIR / "nginx" / "html" / "www-ruyin"]:
-        render_static_tree(landing_src, dst_dir, variables)
-else:
-    print("[WARN] landing source not found in repo - skipping")
+print("\n-- Website app -----------------------------------------------------------")
+print("[SKIP] Ruyin website is served by umbra-website Next app")
 
 print("\n-- Copying docs placeholder ---------------------------------------------")
 docs_src = REPO_DIR / "docs-site" / "html"

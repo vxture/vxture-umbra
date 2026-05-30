@@ -2,6 +2,10 @@ networks:
   umbra-net:
     driver: bridge
 
+secrets:
+  npm_token:
+    environment: NODE_AUTH_TOKEN
+
 services:
 
   # -- Nginx: Public SNI gateway + HTTP virtual hosts ---------------------------
@@ -14,6 +18,7 @@ services:
       - umbra-subproxy
       - umbra-account
       - umbra-account-web
+      - umbra-website
       - umbra-vaultwarden
       - umbra-portal
     ports:
@@ -97,6 +102,7 @@ services:
       ACCOUNT_SESSION_SECRET: "${ACCOUNT_SESSION_SECRET}"
       ACCOUNT_INVITE_SECRET: "${ACCOUNT_INVITE_SECRET}"
       ACCOUNT_INVITE_TTL_DAYS: "${ACCOUNT_INVITE_TTL_DAYS:-30}"
+      ACCOUNT_PORT: "3281"
       MARZBAN_BASE_URL: "https://umbra-marzban:8000"
       MARZBAN_ADMIN_USER: "${MARZBAN_ADMIN_USER}"
       MARZBAN_ADMIN_PASSWORD: "${MARZBAN_ADMIN_PASSWORD}"
@@ -121,11 +127,27 @@ services:
     depends_on:
       - umbra-account
     environment:
-      PORT: "3000"
+      PORT: "3220"
       AUTH_BFF_URL: "${AUTH_BFF_URL}"
       AUTH_INTERNAL_TOKEN: "${AUTH_INTERNAL_TOKEN}"
       VXTURE_SSO_URL: "${VXTURE_SSO_URL:-}"
       NEXT_PUBLIC_RUYIN_ACCOUNT_URL: "https://${CONSOLE_DOMAIN}"
+    networks:
+      - umbra-net
+
+  # -- Website: Ruyin public landing and self-built public pages ---------------
+  umbra-website:
+    build:
+      context: ./portals/website
+      args:
+        VXTURE_NPM_REGISTRY: "${VXTURE_NPM_REGISTRY:-https://npm.pkg.github.com}"
+      secrets:
+        - npm_token
+    container_name: umbra-website
+    restart: always
+    environment:
+      PORT: "3210"
+      NEXT_PUBLIC_HERMES_URL: "https://hermes.vxture.com"
     networks:
       - umbra-net
 
@@ -137,7 +159,6 @@ services:
     restart: always
     environment:
       DOMAIN: "https://${PASS_DOMAIN}"
-      SIGNUPS_ALLOWED: "false"
       ADMIN_TOKEN: "${VAULTWARDEN_ADMIN_TOKEN}"
       LOG_LEVEL: "warn"
     volumes:
@@ -145,7 +166,7 @@ services:
     networks:
       - umbra-net
 
-  # -- Static Guide: Legacy onboarding content under /guide/ ---------------------
+  # -- Public Guide: onboarding content under /guide/ ---------------------------
   umbra-portal:
     image: nginx:alpine
     container_name: umbra-portal

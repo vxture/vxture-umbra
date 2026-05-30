@@ -133,7 +133,7 @@ Success criteria:
 
 ### S2 - Normal Redeploy, Keep All Runtime Data
 
-Use after code, docs, static site, template, or script updates.
+Use after code, docs, public site, template, or script updates.
 
 Commands:
 
@@ -168,7 +168,7 @@ Safety checklist:
 
 ### S3 - Config-Only Redeploy
 
-Use when only templates/static content changed and all required certificates
+Use when only templates/public content changed and all required certificates
 already exist.
 
 Commands:

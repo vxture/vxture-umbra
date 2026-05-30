@@ -14,8 +14,8 @@ Do not run it with `bash`.
 
 - `.env`
 - `DATA_DIR/private/reality.json`
-- templates and static files under `configs/` and `portals/`
-- static assets under `portals/website/static/assets/` are deployed with the landing page
+- templates and public guide files under `configs/` and `portals/`
+- Ruyin website assets under `portals/website/public/` are served by the Next app container
 
 ## Template Syntax
 
@@ -40,16 +40,19 @@ Do not use `user.username` in the Clash subscription template; Marzban does not 
 | `configs/nginx/snippets/*.conf` | `DATA_DIR/nginx/snippets/*.conf` |
 | `configs/xray/config.json.template` | `DATA_DIR/marzban/xray_config.json` |
 | `configs/marzban/clash-subscription.j2` | `DATA_DIR/marzban/templates/clash/default.yml` |
-| `portals/website/static/**` | `DATA_DIR/nginx/html/ruyin-landing/` and `DATA_DIR/nginx/html/www-ruyin/` |
-| `portals/console/static/guide/**` | `DATA_DIR/portal/html/` |
+| `portals/console/public/guide/**` | `DATA_DIR/portal/html/` |
 
-## Landing Assets
+## Website Assets
 
-Landing page images live under `portals/website/static/assets/`.
-The site favicon lives at `portals/website/static/favicon.ico`.
+The Ruyin public website is a Next app in `portals/website/`.
+Nginx proxies `ruyin.ai` to the `umbra-website` container.
+`www.ruyin.ai` is a canonical redirect to `ruyin.ai`.
 
-Use relative URLs from `portals/website/static/index.html`, for example:
+Website images live under `portals/website/public/assets/`.
+The site favicon lives at `portals/website/public/favicon.ico`.
+
+Use root-relative public URLs from Next components, for example:
 
 ```html
-<img src="assets/brand/ruyin-dark.png" alt="">
+<img src="/assets/brand/ruyin-dark.png" alt="">
 ```

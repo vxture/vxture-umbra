@@ -59,9 +59,12 @@ SKIP_SUFFIXES = {
     ".log",
 }
 SKIP_NAME_SUFFIXES = (".bak", ".backup", ".old", ".tmp", ".swp", ".swo")
-LOCALIZED_STATIC_PREFIXES = (
-    Path("portals/website/static"),
-    Path("portals/console/static"),
+LOCALIZED_CONTENT_PREFIXES = (
+    Path("portals/website/app"),
+    Path("portals/website/components"),
+    Path("portals/website/lib"),
+    Path("portals/website/public"),
+    Path("portals/console/public"),
 )
 
 
@@ -384,6 +387,17 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "compose exposes only public nginx ports",
+        Path("docker-compose.yml"),
+        [
+            '- "80:80"',
+            '- "443:443"',
+            'PORT: "3210"',
+            'PORT: "3220"',
+            'ACCOUNT_PORT: "3281"',
+        ],
+    ),
+    (
         "deploy up restarts code-mounted Python services",
         Path("scripts/deploy/05-up.sh"),
         [
@@ -410,8 +424,8 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "location ^~ /invites/",
             "https://{{ ADMIN_DOMAIN }}",
             "resolver 127.0.0.11 valid=30s ipv6=off",
-            'set $account_upstream "umbra-account:8081"',
-            'set $account_web_upstream "umbra-account-web:3000"',
+            'set $account_upstream "umbra-account:3281"',
+            'set $account_web_upstream "umbra-account-web:3220"',
             "proxy_pass http://$account_upstream",
             "proxy_pass http://$account_web_upstream",
         ],
@@ -423,8 +437,8 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "server_name {{ ADMIN_DOMAIN }}",
             "location = /invites",
             "location ^~ /invites/",
-            'set $account_upstream "umbra-account:8081"',
-            'set $account_web_upstream "umbra-account-web:3000"',
+            'set $account_upstream "umbra-account:3281"',
+            'set $account_web_upstream "umbra-account-web:3220"',
             'set $marzban_upstream "umbra-marzban:8000"',
             "proxy_pass http://$account_upstream",
             "proxy_pass http://$account_web_upstream",
@@ -610,9 +624,29 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         "cloudflare routes through proxy or final match",
         Path("configs/marzban/clash-subscription.j2"),
         [
-            "# 3. Cloudflare account, dashboard, challenge, and edge services proxy",
+            "# 2. Cloudflare account, dashboard, challenge, and edge services proxy",
             "DOMAIN-SUFFIX,cloudflare.com,PROXY",
             "DOMAIN-SUFFIX,cloudflareinsights.com,PROXY",
+        ],
+    ),
+    (
+        "deepseek direct domains bypass fake-ip",
+        Path("configs/marzban/clash-subscription.j2"),
+        [
+            "fake-ip-filter:",
+            "- deepseek.com",
+            '- "*.deepseek.com"',
+            "- deepseek.ai",
+            '- "*.deepseek.ai"',
+        ],
+    ),
+    (
+        "deepseek is must-direct",
+        Path("configs/marzban/must-direct-rules.txt"),
+        [
+            "DOMAIN-SUFFIX,deepseek.com",
+            "DOMAIN-SUFFIX,deepseek.ai",
+            "DOMAIN-SUFFIX,api.deepseek.com",
         ],
     ),
 ]
@@ -705,6 +739,21 @@ FORBIDDEN: list[tuple[str, Path, str]] = [
         "IP-" + "ASN,",
     ),
     (
+        "website dev port must not be host-published",
+        Path("docker-compose.yml"),
+        '"3210:3210"',
+    ),
+    (
+        "console dev port must not be host-published",
+        Path("docker-compose.yml"),
+        '"3220:3220"',
+    ),
+    (
+        "account API dev port must not be host-published",
+        Path("docker-compose.yml"),
+        '"3281:3281"',
+    ),
+    (
         "cloudflare.com must not be must-direct",
         Path("configs/marzban/must-direct-rules.txt"),
         "DOMAIN-SUFFIX,cloudflare.com",
@@ -793,7 +842,7 @@ def read(path: Path) -> str:
 
 def should_skip(path: Path) -> bool:
     rel_path = path.relative_to(PROJECT_ROOT)
-    if any(rel_path == prefix or rel_path.is_relative_to(prefix) for prefix in LOCALIZED_STATIC_PREFIXES):
+    if any(rel_path == prefix or rel_path.is_relative_to(prefix) for prefix in LOCALIZED_CONTENT_PREFIXES):
         return True
 
     rel_parts = rel_path.parts

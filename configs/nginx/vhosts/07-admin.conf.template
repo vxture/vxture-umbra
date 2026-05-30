@@ -11,8 +11,8 @@ server {
     include /etc/nginx/snippets/security-headers.conf;
 
     resolver 127.0.0.11 valid=30s ipv6=off;
-    set $account_upstream "umbra-account:8081";
-    set $account_web_upstream "umbra-account-web:3000";
+    set $account_upstream "umbra-account:3281";
+    set $account_web_upstream "umbra-account-web:3220";
     set $marzban_upstream "umbra-marzban:8000";
 
     location = / {

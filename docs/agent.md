@@ -32,10 +32,11 @@ Purpose:    Production overseas edge entry node
 | Service | Container | Domain | Purpose |
 |---------|-----------|--------|---------|
 | Nginx | `umbra-nginx` | gateway | SNI stream + HTTP virtual hosts |
+| Website | `umbra-website` | ruyin.ai | Ruyin public Next.js homepage |
 | Marzban + Xray | `umbra-marzban` | sub.ruyin.ai, admin.ruyin.ai, REALITY ingress | VPN user management, subscription, bundled Xray subprocess |
 | Subscription Proxy | `umbra-subproxy` | internal | Normalizes subscription response metadata only |
 | Account Portal | `umbra-account` | console.ruyin.ai, admin.ruyin.ai/invites | Invite-bound user dashboard and invite management |
-| Static Guide | `umbra-portal` | vpn.ruyin.ai | VPN display, legacy onboarding guide and docs |
+| Public Guide | `umbra-portal` | vpn.ruyin.ai | VPN display, onboarding guide and docs |
 | Vaultwarden | `umbra-vaultwarden` | pass.ruyin.ai | Password manager |
 | Certbot | one-shot Docker container | ACME webroot | Let's Encrypt issue/renew automation |
 
@@ -45,8 +46,8 @@ Purpose:    Production overseas edge entry node
 
 | Domain | Target | Notes |
 |--------|--------|-------|
-| `ruyin.ai` | Nginx -> static landing | Brand home, navigation to services |
-| `www.ruyin.ai` | Nginx -> static content | Independent content from apex |
+| `ruyin.ai` | Nginx -> umbra-website | Brand home and Hermes entry |
+| `www.ruyin.ai` | Nginx -> ruyin.ai | Canonical redirect |
 | `vpn.ruyin.ai` | Nginx -> umbra-portal | VPN display and legacy guide |
 | `sub.ruyin.ai` | Nginx -> umbra-subproxy -> umbra-marzban | Marzban-native subscription endpoint with normalized metadata |
 | `console.ruyin.ai` | Nginx -> umbra-account-web + umbra-account | User login, invite activation, subscription dashboard |
@@ -98,6 +99,7 @@ Phase 4 - Hardening
 | [`design/modules.md`](design/modules.md) | Per-service spec: config, volumes, ports, environment variables |
 | [`design/decisions.md`](design/decisions.md) | Design decisions: security model, B++ rules, subscription design |
 | [`implementation/repository.md`](implementation/repository.md) | Current repository layout and source-of-truth paths |
+| [`implementation/project-structure-plan.md`](implementation/project-structure-plan.md) | Target portal layout, brand assets, and cleanup phases |
 | [`implementation/config-rendering.md`](implementation/config-rendering.md) | Template renderer inputs, syntax, and outputs |
 | [`implementation/scripts.md`](implementation/scripts.md) | Deployment script entrypoints and ordered steps |
 | [`implementation/subscriptions.md`](implementation/subscriptions.md) | Native Marzban subscription rules and Clash title behavior |
@@ -122,14 +124,14 @@ Phase 4 - Hardening
 10. **Backup runs automatically** after every successful deployment and on daily cron.
 11. **`DATA_DIR/private/` permissions: `700` dir, `600` files.**
 12. **Scripts must be idempotent** - safe to re-run without destroying existing state.
-13. **Maintenance text is ASCII English** - docs, scripts, configs, and comments avoid non-ASCII; user-facing localized static pages may use UTF-8.
+13. **Maintenance text is ASCII English** - docs, scripts, configs, and comments avoid non-ASCII; user-facing localized pages may use UTF-8.
 
 ---
 
 ## v1.0 Success Criteria
 
 ```
-[ ] All containers running: nginx, marzban, subproxy, account, vaultwarden, portal
+[ ] All containers running: nginx, website, marzban, subproxy, account, vaultwarden, portal
 [ ] HTTPS working on active public domains
 [ ] Xray REALITY connection functional (test with Clash Verge)
 [ ] Marzban console accessible at admin.ruyin.ai and protected by Marzban login

@@ -83,6 +83,10 @@ BACKUP_DIR=/srv/vxture/backup/umbra
 # -- Nginx -----------------------------------------------
 NGINX_CONTAINER=umbra-nginx
 
+# -- Private packages ------------------------------------
+VXTURE_NPM_REGISTRY=https://npm.pkg.github.com
+NODE_AUTH_TOKEN=<token-with-package-read-access>
+
 # -- Xray / REALITY -------------------------------------
 REALITY_DEST=www.microsoft.com:443
 REALITY_SNI=www.microsoft.com
@@ -160,8 +164,6 @@ Creates:
 DATA_DIR/nginx/conf.d
 DATA_DIR/nginx/stream.d
 DATA_DIR/nginx/snippets
-DATA_DIR/nginx/html/ruyin-landing
-DATA_DIR/nginx/html/www-ruyin
 DATA_DIR/nginx/private
 DATA_DIR/nginx/logs
 DATA_DIR/marzban/templates/clash
@@ -227,10 +229,11 @@ Do not run it with `bash scripts/deploy/04-render-configs.py`; it is a Python sc
 | `configs/nginx/snippets/*.conf` | `DATA_DIR/nginx/snippets/*.conf` |
 | `configs/marzban/clash-subscription.j2` | `DATA_DIR/marzban/templates/clash/default.yml` |
 | `configs/xray/config.json.template` | `DATA_DIR/marzban/xray_config.json` |
-| `portals/website/static/**` | `DATA_DIR/nginx/html/ruyin-landing/` and `DATA_DIR/nginx/html/www-ruyin/` |
-| `portals/console/static/guide/**` | `DATA_DIR/portal/html/` |
+| `portals/console/public/guide/**` | `DATA_DIR/portal/html/` |
 
 Also injects REALITY keys into Xray/Marzban config and renders the Clash subscription template.
+The Ruyin public website is built as the `umbra-website` Next.js service and
+served through `01-ruyin.conf.template`; it is not copied into `DATA_DIR`.
 
 ### `05-up.sh`
 

@@ -18,6 +18,10 @@ dns:
     - "*.lan"
     - "*.local"
     - "*.{{ APEX_DOMAIN }}"
+    - deepseek.com
+    - "*.deepseek.com"
+    - deepseek.ai
+    - "*.deepseek.ai"
     - localhost.ptlogin2.qq.com
   nameserver:
     - 223.5.5.5
@@ -43,7 +47,7 @@ proxy-groups:
       - DIRECT
 
 rules:
-  # 0. Must-direct services: Umbra, Microsoft, Vultr
+  # 0. Must-direct services: Umbra, Microsoft, Vultr, domestic AI
   #    Source: configs/marzban/must-direct-rules.txt
 {{ CLASH_MUST_DIRECT_RULES }}
 
@@ -55,12 +59,7 @@ rules:
   - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
   - IP-CIDR,198.18.0.0/15,DIRECT,no-resolve
 
-  # 2. Domestic AI services direct
-  - DOMAIN-SUFFIX,deepseek.com,DIRECT
-  - DOMAIN-SUFFIX,deepseek.ai,DIRECT
-  - DOMAIN-SUFFIX,api.deepseek.com,DIRECT
-
-  # 3. Cloudflare account, dashboard, challenge, and edge services proxy
+  # 2. Cloudflare account, dashboard, challenge, and edge services proxy
   - DOMAIN-SUFFIX,cloudflare.com,PROXY
   - DOMAIN-SUFFIX,cloudflare-dns.com,PROXY
   - DOMAIN-SUFFIX,cloudflareaccess.com,PROXY

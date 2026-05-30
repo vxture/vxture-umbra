@@ -8,10 +8,8 @@ server {
     include /etc/nginx/snippets/ssl-params.conf;
     include /etc/nginx/snippets/security-headers.conf;
 
-    root /usr/share/nginx/html/ruyin-landing;
-    index index.html;
-
     location / {
-        try_files $uri $uri/ =404;
+        proxy_pass http://umbra-website:3210;
+        include /etc/nginx/snippets/proxy-headers.conf;
     }
 }

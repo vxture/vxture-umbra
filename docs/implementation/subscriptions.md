@@ -98,13 +98,17 @@ SUB_PROFILE_TITLE: "${SUB_PROFILE_TITLE:-Ruyin}"
 
 Proxy node names remain controlled by Marzban and `NODE_NAME`.
 
-Microsoft, Vultr, Umbra public service domains, and other must-direct targets
+Microsoft, Vultr, Umbra public service domains, DeepSeek, and other must-direct targets
 are rendered from `must-direct-rules.txt` before any `PROXY` rule. Cloudflare
 account, dashboard, challenge, and edge service domains are explicit `PROXY`
 rules so login flows do not get stuck on direct routing. The
 validator `scripts/deploy/07-validate-clash-rules.py` fails config rendering if
 a must-direct domain is missing, appears after the first proxy boundary, or
 overlaps any `PROXY` rule.
+
+DeepSeek domains are also listed in `fake-ip-filter` so local applications such
+as Roo Code receive real DNS answers instead of Mihomo/Clash synthetic
+`198.18.0.0/16` addresses.
 
 The current VPN/VPS public endpoint is also pinned as an exact `IP-CIDR` direct
 rule. Do not use ASN routing rules in the subscription template; Clash cores may

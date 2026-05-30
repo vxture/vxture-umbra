@@ -56,6 +56,12 @@ DOMAIN-SUFFIX,xboxlive.com
 DOMAIN-SUFFIX,vultr.com
 DOMAIN-SUFFIX,vultrobjects.com
 
+# Domestic AI services. Keep direct and bypass Clash fake-ip so local tools such
+# as Roo Code receive real DNS answers instead of 198.18.0.0/16 synthetic IPs.
+DOMAIN-SUFFIX,deepseek.com
+DOMAIN-SUFFIX,deepseek.ai
+DOMAIN-SUFFIX,api.deepseek.com
+
 # Current VPN/VPS public endpoint. Keep an exact IP direct rule because some
 # clients may resolve the edge host before applying domain rules.
 IP-CIDR,108.61.182.248/32

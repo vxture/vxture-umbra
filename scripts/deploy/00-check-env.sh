@@ -51,7 +51,7 @@ REQUIRED_VARS=(
   VAULTWARDEN_ADMIN_TOKEN
   CERTBOT_EMAIL CERTBOT_STAGING CERTBOT_SKIP
   USER_COUNT USER_PREFIX
-  NGINX_CONTAINER
+  NGINX_CONTAINER VXTURE_NPM_REGISTRY
 )
 
 for var in "${REQUIRED_VARS[@]}"; do
@@ -143,6 +143,20 @@ if [[ "${VXTURE_LOGIN_URL:-}" =~ ^https?://[^[:space:]]+$ ]]; then
   log_ok "VXTURE_LOGIN_URL is valid"
 else
   fail "VXTURE_LOGIN_URL must be an http(s) URL"
+fi
+
+if [[ "${VXTURE_NPM_REGISTRY:-}" =~ ^https?://[^[:space:]]+$ ]]; then
+  log_ok "VXTURE_NPM_REGISTRY is valid"
+else
+  fail "VXTURE_NPM_REGISTRY must be an http(s) URL"
+fi
+
+if [[ "${VXTURE_NPM_REGISTRY:-}" == *"npm.pkg.github.com"* ]]; then
+  if [[ -n "${NODE_AUTH_TOKEN:-}" ]]; then
+    log_ok "NODE_AUTH_TOKEN is set for GitHub Packages"
+  else
+    fail "NODE_AUTH_TOKEN is required when VXTURE_NPM_REGISTRY uses GitHub Packages"
+  fi
 fi
 
 if [[ -z "${VXTURE_SSO_URL:-}" ]]; then
