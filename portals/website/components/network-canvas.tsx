@@ -39,6 +39,8 @@ export function NetworkCanvas() {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
+    const surface = canvas;
+    const context = ctx;
 
     let points: Point[] = [];
     let frame = 0;
@@ -56,11 +58,11 @@ export function NetworkCanvas() {
 
     function resize() {
       const ratio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(window.innerWidth * ratio);
-      canvas.height = Math.floor(window.innerHeight * ratio);
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      surface.width = Math.floor(window.innerWidth * ratio);
+      surface.height = Math.floor(window.innerHeight * ratio);
+      surface.style.width = `${window.innerWidth}px`;
+      surface.style.height = `${window.innerHeight}px`;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
       seed();
     }
 
@@ -73,7 +75,7 @@ export function NetworkCanvas() {
     }
 
     function draw() {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      context.clearRect(0, 0, window.innerWidth, window.innerHeight);
       for (let i = 0; i < points.length; i += 1) {
         const p = points[i];
         if (!reduce) {
@@ -84,8 +86,8 @@ export function NetworkCanvas() {
           if (p.y < -20) p.y = window.innerHeight + 20;
           if (p.y > window.innerHeight + 20) p.y = -20;
         }
-        ctx.fillStyle = color(0.58);
-        ctx.fillRect(p.x, p.y, 2, 2);
+        context.fillStyle = color(0.58);
+        context.fillRect(p.x, p.y, 2, 2);
 
         for (let j = i + 1; j < points.length; j += 1) {
           const q = points[j];
@@ -93,12 +95,12 @@ export function NetworkCanvas() {
           const dy = p.y - q.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           if (distance < 138) {
-            ctx.strokeStyle = color((1 - distance / 138) * 0.22);
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.stroke();
+            context.strokeStyle = color((1 - distance / 138) * 0.22);
+            context.lineWidth = 1;
+            context.beginPath();
+            context.moveTo(p.x, p.y);
+            context.lineTo(q.x, q.y);
+            context.stroke();
           }
         }
       }
