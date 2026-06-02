@@ -25,18 +25,26 @@ log_banner "Umbra - Start Services"
 cd "$REPO_DIR"
 
 compose_pull_with_retry() {
-  local attempt
-  for attempt in 1 2 3 4 5 6; do
-    if docker compose pull --quiet; then
-      return 0
-    fi
+  local image attempt
+  local -a images
+  mapfile -t images < <(docker compose config --images | sed '/^[[:space:]]*$/d')
 
-    log_warn "docker compose pull failed on attempt $attempt; retrying..."
-    sleep $((attempt * 5))
+  for image in "${images[@]}"; do
+    log_info "Pulling $image"
+    for attempt in 1 2 3 4 5 6; do
+      if docker pull --quiet "$image"; then
+        break
+      fi
+
+      if [[ "$attempt" -eq 6 ]]; then
+        log_error "docker pull failed after retries: $image"
+        return 1
+      fi
+
+      log_warn "docker pull failed for $image on attempt $attempt; retrying..."
+      sleep $((attempt * 5))
+    done
   done
-
-  log_error "docker compose pull failed after retries."
-  return 1
 }
 
 # -- Marzban TLS cert ----------------------------------------------------------
