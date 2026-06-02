@@ -102,9 +102,14 @@ Microsoft, Vultr, Umbra public service domains, DeepSeek, and other must-direct 
 are rendered from `must-direct-rules.txt` before any `PROXY` rule. Cloudflare
 account, dashboard, challenge, and edge service domains are explicit `PROXY`
 rules so login flows do not get stuck on direct routing. The
-validator `scripts/deploy/07-validate-clash-rules.py` fails config rendering if
+validator `deploy/worker-03/scripts/19-check-clash-rules.py` fails config rendering if
 a must-direct domain is missing, appears after the first proxy boundary, or
 overlaps any `PROXY` rule.
+
+Google service domains are explicit `PROXY` rules, including Gmail and regional
+Google search domains such as `google.co.jp`. `google.com` alone does not match
+country or regional Google domains, so each required suffix must be listed in
+`configs/marzban/clash-subscription.j2`.
 
 DeepSeek domains are also listed in `fake-ip-filter` so local applications such
 as Roo Code receive real DNS answers instead of Mihomo/Clash synthetic

@@ -1,0 +1,11 @@
+# Runtime env files contain production values and must stay local to worker-03.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Runtime secrets must not be committed.
+secrets/*
+!secrets/.gitkeep
+!secrets/README.md
+!secrets/*.example

@@ -34,7 +34,7 @@ source. Umbra must not define its own DS.
 - Repo-root package checks use `.npmrc` for the same `@vxture` scope.
 - `NODE_AUTH_TOKEN` is injected as a Docker BuildKit secret for package read
   access and must remain in `.env` or CI secrets only.
-- `00-check-environment.sh` requires `NODE_AUTH_TOKEN` when
+- `11-check-runtime-environment.sh` requires `NODE_AUTH_TOKEN` when
   `VXTURE_NPM_REGISTRY` points to GitHub Packages.
 - Do not vendor-copy DS CSS into Umbra as a workaround.
 - If DS package publishing is not ready, keep this migration branch un-deployed
@@ -82,7 +82,7 @@ source. Umbra must not define its own DS.
 - 2026-05-29: Added the website container to deploy health checks and updated
   implementation, deployment, module, architecture, and site-organization docs.
 - 2026-05-29: Passed Python syntax checks, `git diff --check`, and
-  `scripts/deploy/08-check-script-contracts.py`.
+  `scripts/checks/06-check-deploy-contracts.py`.
 - 2026-05-29: Website `type-check` is blocked locally because dependencies are
   not installed; `npm install --cache .npm-cache` timed out while fetching
   packages, and the Vxture DS package still needs an accessible package source.

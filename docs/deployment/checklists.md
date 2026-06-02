@@ -13,9 +13,9 @@ Use only these primary entrypoints in new docs and operations:
 
 | Entry point | Boundary | Owns |
 |---|---|---|
-| `bash scripts/server.sh <cmd>` | Server lifecycle | Host bootstrap and reset |
-| `bash scripts/deploy.sh <cmd>` | Deployment lifecycle | Render repo/env into runtime services |
-| `bash scripts/ops.sh <cmd>` | Operations lifecycle | Running-node maintenance |
+| `bash deploy/worker-03/server.sh <cmd>` | Server lifecycle | Host bootstrap and reset |
+| `bash deploy/worker-03/deploy.sh <cmd>` | Deployment lifecycle | Render repo/env into runtime services |
+| `bash deploy/worker-03/ops.sh <cmd>` | Operations lifecycle | Running-node maintenance |
 
 Compatibility wrappers in `scripts/*.sh` exist only for older habits. Do not add
 new behavior to wrapper scripts and do not reference them in new docs.
@@ -71,7 +71,7 @@ Commands:
 ```bash
 ssh root@<server-ip>
 git clone https://github.com/vxture/umbra.git /srv/vxture/repo/umbra
-bash /srv/vxture/repo/umbra/scripts/server.sh init
+bash /srv/vxture/repo/umbra/deploy/worker-03/server.sh init
 ```
 
 Checklist:
@@ -103,9 +103,9 @@ ssh stone@<server-ip>
 cd /srv/vxture/repo/umbra
 cp .env.example .env
 nano .env
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
-bash scripts/deploy.sh verify
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
+bash deploy/worker-03/deploy.sh verify
 ```
 
 Preflight checklist:
@@ -125,9 +125,9 @@ Success criteria:
 ```text
 [ ] `docker compose ps` shows nginx, marzban, subproxy, vaultwarden, portal running
 [ ] `docker exec umbra-nginx nginx -t` succeeds
-[ ] `bash scripts/ops.sh certs --status` shows trusted LE certs, unless in self-signed mode
-[ ] `bash scripts/deploy.sh verify` completes or reports only documented auth-protected endpoints
-[ ] `bash scripts/deploy.sh wizard` creates or skips expected users
+[ ] `bash deploy/worker-03/ops.sh certs --status` shows trusted LE certs, unless in self-signed mode
+[ ] `bash deploy/worker-03/deploy.sh verify` completes or reports only documented auth-protected endpoints
+[ ] `bash deploy/worker-03/deploy.sh wizard` creates or skips expected users
 [ ] Subscription URL uses `https://sub.ruyin.ai/sub/<token>`
 ```
 
@@ -140,9 +140,9 @@ Commands:
 ```bash
 cd /srv/vxture/repo/umbra
 git pull origin main
-bash scripts/ops.sh backup
-bash scripts/deploy.sh all
-bash scripts/deploy.sh verify
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh verify
 ```
 
 Preservation contract:
@@ -176,15 +176,15 @@ Commands:
 ```bash
 cd /srv/vxture/repo/umbra
 git pull origin main
-bash scripts/deploy.sh config
-bash scripts/ops.sh reload
+bash deploy/worker-03/deploy.sh config
+bash deploy/worker-03/ops.sh reload
 ```
 
 Preflight checklist:
 
 ```text
 [ ] Cert files exist for every domain referenced by rendered nginx vhosts
-[ ] `bash scripts/ops.sh certs --status` has no missing active domain
+[ ] `bash deploy/worker-03/ops.sh certs --status` has no missing active domain
 [ ] The new config does not introduce a new domain unless its cert already exists
 ```
 
@@ -193,8 +193,8 @@ If `deploy.sh config` fails:
 ```text
 [ ] Do not restart nginx blindly
 [ ] Read the printed `nginx -t` error
-[ ] If missing cert path is reported, run `bash scripts/ops.sh certs --upgrade`
-[ ] Re-run `bash scripts/deploy.sh config`
+[ ] If missing cert path is reported, run `bash deploy/worker-03/ops.sh certs --upgrade`
+[ ] Re-run `bash deploy/worker-03/deploy.sh config`
 ```
 
 ### S4 - Domain Change, Keep Data and Existing Certs
@@ -207,10 +207,10 @@ Required order:
 cd /srv/vxture/repo/umbra
 git pull origin main
 nano .env
-bash scripts/ops.sh backup
-bash scripts/ops.sh certs --upgrade
-bash scripts/deploy.sh config
-bash scripts/deploy.sh verify
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/ops.sh certs --upgrade
+bash deploy/worker-03/deploy.sh config
+bash deploy/worker-03/deploy.sh verify
 ```
 
 Checklist:
@@ -230,7 +230,7 @@ Success criteria:
 
 ```text
 [ ] `rg "old-domain"` returns no project reference, except historical docs explicitly retained
-[ ] `bash scripts/ops.sh certs --status` shows the new domain
+[ ] `bash deploy/worker-03/ops.sh certs --status` shows the new domain
 [ ] `docker exec umbra-nginx nginx -t` succeeds
 [ ] Real GET to `https://sub.ruyin.ai/sub/<token>` returns 200 for valid token
 ```
@@ -244,7 +244,7 @@ Commands:
 ```bash
 cd /srv/vxture/repo/umbra
 docker exec umbra-nginx nginx -t
-bash scripts/ops.sh certs --status
+bash deploy/worker-03/ops.sh certs --status
 ```
 
 Decision tree:
@@ -254,14 +254,14 @@ Decision tree:
 [ ] If nginx complains about syntax, fix template or rendered config source
 [ ] If nginx complains about upstream/service names, check docker compose network/services
 [ ] If nginx is still running, do not restart until config test succeeds
-[ ] After fix, run `bash scripts/deploy.sh config`
+[ ] After fix, run `bash deploy/worker-03/deploy.sh config`
 ```
 
 Fallback only when the goal is to restore nginx loadability:
 
 ```bash
-bash scripts/deploy/03-self-signed.sh
-bash scripts/deploy.sh config
+bash deploy/worker-03/scripts/21-issue-self-signed-certificates.sh
+bash deploy/worker-03/deploy.sh config
 ```
 
 Self-signed mode is not a trusted client solution. It only makes nginx able to
@@ -275,8 +275,8 @@ Commands:
 
 ```bash
 cd /srv/vxture/repo/umbra
-bash scripts/server.sh reset
-bash scripts/deploy.sh all
+bash deploy/worker-03/server.sh reset
+bash deploy/worker-03/deploy.sh all
 ```
 
 Expected preservation:
@@ -317,10 +317,10 @@ Commands:
 
 ```bash
 cd /srv/vxture/repo/umbra
-bash scripts/ops.sh backup
-bash scripts/server.sh reset --full
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/server.sh reset --full
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
 ```
 
 Destructive contract:
@@ -352,10 +352,10 @@ Commands:
 
 ```bash
 cd /srv/vxture/repo/umbra
-bash scripts/ops.sh certs --status
-bash scripts/ops.sh certs --clean-renewal-state
-bash scripts/ops.sh certs --clean-workdirs
-bash scripts/ops.sh certs --upgrade
+bash deploy/worker-03/ops.sh certs --status
+bash deploy/worker-03/ops.sh certs --clean-renewal-state
+bash deploy/worker-03/ops.sh certs --clean-workdirs
+bash deploy/worker-03/ops.sh certs --upgrade
 ```
 
 Safety checklist:
@@ -389,7 +389,7 @@ Use before reset, deploy, domain change, or risky script changes.
 Backup command:
 
 ```bash
-bash scripts/ops.sh backup
+bash deploy/worker-03/ops.sh backup
 ```
 
 Backup checklist:
@@ -417,7 +417,7 @@ Use after services and certs are healthy.
 Commands:
 
 ```bash
-bash scripts/deploy.sh wizard
+bash deploy/worker-03/deploy.sh wizard
 ```
 
 Checklist:
@@ -454,14 +454,14 @@ Run this before committing script changes.
 Validation commands:
 
 ```bash
-python3 scripts/deploy/08-check-script-contracts.py
-bash -n scripts/deploy.sh scripts/ops.sh scripts/server.sh
-bash -n scripts/deploy/*.sh scripts/ops/*.sh scripts/server/*.sh scripts/lib/*.sh
-python3 -m py_compile scripts/deploy/04-render-configuration-templates.py scripts/deploy/07-validate-clash-rules.py scripts/deploy/08-check-script-contracts.py
+python3 scripts/checks/06-check-deploy-contracts.py
+bash -n deploy/worker-03/deploy.sh deploy/worker-03/ops.sh deploy/worker-03/server.sh
+bash -n deploy/worker-03/scripts/*.sh deploy/worker-03/lib/*.sh
+python3 -m py_compile deploy/worker-03/scripts/22-render-runtime-configs.py deploy/worker-03/scripts/19-check-clash-rules.py scripts/checks/06-check-deploy-contracts.py
 git diff --check
 ```
 
-`08-check-script-contracts.py` scans source inputs only: `.editorconfig`,
+`06-check-deploy-contracts.py` scans source inputs only: `.editorconfig`,
 `.env.example`, `.gitattributes`, `README.md`, `docker-compose.yml`,
 `configs/`, `docs/`, and `scripts/`. It intentionally ignores local `.env*`
 files, backups, runtime output, caches, and binary assets.

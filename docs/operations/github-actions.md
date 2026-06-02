@@ -113,7 +113,7 @@ CI responsibilities:
 | Diff whitespace | `git diff --check` |
 | Shell syntax | `bash -n scripts/**/*.sh` equivalent |
 | Python syntax | `python -m compileall -q scripts services` |
-| Deploy contract checks | `python scripts/deploy/08-check-script-contracts.py` |
+| Deploy contract checks | `python scripts/checks/06-check-deploy-contracts.py` |
 | Website type check | `npm run type-check --prefix portals/website` |
 | Console type check | `npm run type-check --prefix portals/console` |
 | Website build | `npm run build --prefix portals/website` |
@@ -307,9 +307,9 @@ services:
     image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/ruyin-console:${IMAGE_TAG:-latest}
 ```
 
-`IMAGE_REGISTRY` should point to Aliyun ACR on worker-03. A GHCR fallback can be
-kept as an explicit rollback operation, but normal production deploys should
-use ACR.
+`IMAGE_REGISTRY` should point to Aliyun ACR on worker-03. The deploy script may
+fall back to GHCR after ACR pull retries are exhausted, because worker-03 can
+experience transient TLS timeouts when pulling large images from ACR.
 
 ## Deploy Workflow
 
@@ -335,7 +335,6 @@ Required job condition:
 if: >-
   ${{
     github.event.workflow_run.conclusion == 'success' &&
-    github.event.workflow_run.event == 'push' &&
     github.event.workflow_run.head_branch == 'main'
   }}
 ```
@@ -359,8 +358,8 @@ export IMAGE_REGISTRY="$ALIYUN_ACR_REGISTRY"
 export IMAGE_NAMESPACE="${ALIYUN_ACR_NAMESPACE:-vxture}"
 export IMAGE_TAG="sha-<short-sha>"
 
-bash scripts/deploy.sh all
-bash scripts/deploy.sh verify
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh verify
 ```
 
 Notes:
@@ -369,10 +368,13 @@ Notes:
 - The remote repo must not have local commits that prevent fast-forward.
 - ACR login uses retry/backoff because first contact to the remote registry can
   intermittently hit TLS handshake timeouts.
+- Image pull uses ACR first. If ACR image pulls fail after retries, deployment
+  may switch to GHCR (`ghcr.io/vxture`) for the same immutable `sha-<short-sha>`
+  tag.
 - Runtime state remains on worker-03 under `.env`, `DATA_DIR`, and
   `BACKUP_DIR`; CI must not carry production secrets except SSH credentials.
 - Config rendering and certificate lifecycle still belong to Umbra deploy
-  scripts. `scripts/deploy.sh all` reaches `scripts/deploy.sh start`, which
+  scripts. `deploy/worker-03/deploy.sh all` reaches `deploy/worker-03/deploy.sh start`, which
   pulls `IMAGE_TAG` and runs `docker compose up -d`.
 
 ## Required Secrets

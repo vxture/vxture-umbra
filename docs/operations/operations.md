@@ -13,7 +13,7 @@ Runs automatically:
 - Daily via cron at 02:00
 
 ```cron
-0 2 * * * /srv/vxture/repo/umbra/scripts/ops.sh backup >> /var/log/umbra-backup.log 2>&1
+0 2 * * * /srv/vxture/repo/umbra/deploy/worker-03/ops.sh backup >> /var/log/umbra-backup.log 2>&1
 ```
 
 ### What Gets Backed Up
@@ -97,7 +97,7 @@ crontab BACKUP_DIR/root-crontab-<timestamp>.txt
 docker compose up -d
 
 # 6. Verify
-bash scripts/deploy.sh verify
+bash deploy/worker-03/deploy.sh verify
 ```
 
 ---
@@ -107,7 +107,7 @@ bash scripts/deploy.sh verify
 ### Renewal Script
 
 ```bash
-bash scripts/ops.sh certs --renew
+bash deploy/worker-03/ops.sh certs --renew
 ```
 
 What it does:
@@ -125,13 +125,13 @@ Before running `certbot renew`, the script removes only invalid zero-byte files 
 ### Cron
 
 ```cron
-17 3 * * * /srv/vxture/repo/umbra/scripts/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
+17 3 * * * /srv/vxture/repo/umbra/deploy/worker-03/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
 ```
 
 ### Manual Cert Check
 
 ```bash
-bash scripts/ops.sh certs --status
+bash deploy/worker-03/ops.sh certs --status
 ```
 
 The status command reads certificates inside Docker because certbot-owned files may not be readable by the deploy user on the host.
@@ -141,7 +141,7 @@ It reports non-trusted/self-signed issuers as warnings and also warns if zero-by
 ### Renewal State Cleanup
 
 ```bash
-bash scripts/ops.sh certs --clean-renewal-state
+bash deploy/worker-03/ops.sh certs --clean-renewal-state
 ```
 
 This removes only zero-byte `DATA_DIR/letsencrypt/renewal/*.conf` files left by failed or interrupted certbot runs. It does not contact Let's Encrypt, does not renew certificates, and does not delete `live/` or `archive/` certificate files.
@@ -149,7 +149,7 @@ This removes only zero-byte `DATA_DIR/letsencrypt/renewal/*.conf` files left by 
 ### Retired Certificate Lineage Cleanup
 
 ```bash
-bash scripts/ops.sh certs --clean-retired-lineages
+bash deploy/worker-03/ops.sh certs --clean-retired-lineages
 ```
 
 This removes Certbot lineages that are not active in `.env`. It deletes only matching non-active entries under `DATA_DIR/letsencrypt/live/`, `DATA_DIR/letsencrypt/archive/`, and `DATA_DIR/letsencrypt/renewal/*.conf`.
@@ -159,7 +159,7 @@ It preserves active domains, Certbot accounts, renewal hooks, `DATA_DIR/letsencr
 ### Certificate Workdir Cleanup
 
 ```bash
-bash scripts/ops.sh certs --clean-workdirs
+bash deploy/worker-03/ops.sh certs --clean-workdirs
 ```
 
 This normalizes retry directories. If no `DATA_DIR/letsencrypt.staged` exists, it migrates the newest legacy `DATA_DIR/letsencrypt.new.*` directory into `DATA_DIR/letsencrypt.staged`, then removes obsolete `letsencrypt.new.*` and `letsencrypt.failed.*` workdirs. It does not delete active `DATA_DIR/letsencrypt` or `letsencrypt.backup.*` rollback directories.
@@ -167,7 +167,7 @@ This normalizes retry directories. If no `DATA_DIR/letsencrypt.staged` exists, i
 ### Real Certificate Upgrade
 
 ```bash
-bash scripts/ops.sh certs --upgrade
+bash deploy/worker-03/ops.sh certs --upgrade
 ```
 
 Upgrade is staged:
