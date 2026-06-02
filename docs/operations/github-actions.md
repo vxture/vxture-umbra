@@ -220,10 +220,13 @@ Required job condition:
 if: >-
   ${{
     github.event.workflow_run.conclusion == 'success' &&
-    github.event.workflow_run.event == 'push' &&
     github.event.workflow_run.head_branch == 'main'
   }}
 ```
+
+Do not check `github.event.workflow_run.event == 'push'` here. This deploy
+workflow listens to the `docker-build` workflow, whose event is `workflow_run`;
+the original push has already been validated by `docker-build`.
 
 The build must use the exact SHA that passed CI:
 

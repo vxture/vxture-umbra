@@ -500,6 +500,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "git merge --ff-only origin/develop",
             "develop CI success must not automatically push main.",
             "deploy-worker-03.yml` runs only after `docker-build` completes successfully",
+            "Do not check `github.event.workflow_run.event == 'push'` here.",
             "No automatic develop-to-main promotion without release confirmation.",
         ],
     ),
@@ -1077,6 +1078,11 @@ FORBIDDEN: list[tuple[str, Path, str]] = [
         "one.one.one.one must not be must-direct",
         Path("configs/marzban/must-direct-rules.txt"),
         "DOMAIN,one.one.one.one",
+    ),
+    (
+        "worker deploy must not require original push event",
+        Path(".github/workflows/deploy-worker-03.yml"),
+        "github.event.workflow_run.event == 'push'",
     ),
 ]
 
