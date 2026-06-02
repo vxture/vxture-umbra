@@ -1,11 +1,11 @@
 # Config Rendering
 
-`scripts/deploy/04-render-configuration-templates.py` is the only config renderer.
+`deploy/worker-03/scripts/22-render-runtime-configs.py` is the only config renderer.
 
 Run it with Python:
 
 ```bash
-python3 scripts/deploy/04-render-configuration-templates.py
+python3 deploy/worker-03/scripts/22-render-runtime-configs.py
 ```
 
 Do not run it with `bash`.
@@ -19,7 +19,7 @@ Do not run it with `bash`.
 
 ## Template Syntax
 
-Only `{{ SCREAMING_SNAKE_CASE }}` variables are rendered by `04-render-configuration-templates.py`.
+Only `{{ SCREAMING_SNAKE_CASE }}` variables are rendered by `22-render-runtime-configs.py`.
 
 Lowercase or mixed-case Jinja variables are intentionally left for Marzban's second-stage template rendering. Example:
 

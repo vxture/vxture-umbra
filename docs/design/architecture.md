@@ -161,16 +161,16 @@ Services:
 |       |   |   |-- init.sh
 |       |   |   `-- reset.sh
 |       |   |-- deploy/
-|       |   |   |-- 00-check-environment.sh
-|       |   |   |-- 01-init-data-directories.sh
-|       |   |   |-- 02-generate-reality-keys.sh
-|       |   |   |-- 03-issue-tls-certificates.sh
-|       |   |   |-- 03-self-signed.sh
-|       |   |   |-- 04-render-configuration-templates.py
-|       |   |   |-- 05-start-docker-services.sh
-|       |   |   |-- 06-verify-deployment.sh
+|       |   |   |-- 11-check-runtime-environment.sh
+|       |   |   |-- 12-prepare-runtime-directories.sh
+|       |   |   |-- 13-generate-runtime-secrets.sh
+|       |   |   |-- 20-issue-tls-certificates.sh
+|       |   |   |-- 21-issue-self-signed-certificates.sh
+|       |   |   |-- 22-render-runtime-configs.py
+|       |   |   |-- 23-start-docker-services.sh
+|       |   |   |-- 24-verify-deployment.sh
 |       |   |   |-- all.sh
-|       |   |   `-- 07-post-deploy-wizard.sh
+|       |   |   `-- 25-run-post-deploy-wizard.sh
 |       |   `-- ops/
 |       |       |-- backup.sh
 |       |       `-- certs.sh

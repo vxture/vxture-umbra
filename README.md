@@ -68,7 +68,7 @@ Clone the repo and bootstrap the server (installs Docker, creates admin user, co
 
 ```bash
 git clone https://github.com/vxture/umbra.git /srv/vxture/repo/umbra
-bash /srv/vxture/repo/umbra/scripts/server.sh init
+bash /srv/vxture/repo/umbra/deploy/worker-03/server.sh init
 ```
 
 `server.sh init` creates the `stone` admin user (sudo + docker) and copies `/root/.ssh/authorized_keys` to the new user. **Your existing SSH key works for both root and stone.** Root SSH is left enabled - disable it manually after confirming `stone` login works.
@@ -129,9 +129,9 @@ USER_PREFIX=user
 ### First Deploy
 
 ```bash
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
-bash scripts/deploy.sh verify
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
+bash deploy/worker-03/deploy.sh verify
 docker exec umbra-nginx nginx -t
 ```
 
@@ -143,10 +143,10 @@ Use this for normal code/config updates. It preserves existing certs, REALITY ke
 cd /srv/vxture/repo/umbra
 git pull origin main
 
-bash scripts/ops.sh backup
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
-bash scripts/deploy.sh verify
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
+bash deploy/worker-03/deploy.sh verify
 docker exec umbra-nginx nginx -t
 ```
 
@@ -158,11 +158,11 @@ Use this only when you intentionally want to destroy runtime data and rebuild fr
 cd /srv/vxture/repo/umbra
 git pull origin main
 
-bash scripts/ops.sh backup
-bash scripts/server.sh reset --full
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
-bash scripts/deploy.sh verify
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/server.sh reset --full
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
+bash deploy/worker-03/deploy.sh verify
 docker exec umbra-nginx nginx -t
 ```
 
@@ -182,7 +182,7 @@ CERTBOT_SKIP=true
 MARZBAN_SSL_CA_TYPE=private
 ```
 
-After the rate limit window passes, switch back to `MARZBAN_SSL_CA_TYPE=public` and run `bash scripts/ops.sh certs --upgrade`. The upgrade command stages new certificates first; valid existing LE certs are reused, and if issuance fails the existing production certificates are left untouched.
+After the rate limit window passes, switch back to `MARZBAN_SSL_CA_TYPE=public` and run `bash deploy/worker-03/ops.sh certs --upgrade`. The upgrade command stages new certificates first; valid existing LE certs are reused, and if issuance fails the existing production certificates are left untouched.
 
 Marzban subscription URLs use the native format `https://sub.ruyin.ai/sub/<token>`. The console may show a different token after refresh; older saved URLs can remain valid. Verify subscriptions with GET, not HEAD:
 
@@ -225,26 +225,26 @@ Add free monitors at [BetterStack](https://betterstack.com) or [UptimeRobot](htt
 ### Dispatchers
 
 ```bash
-bash scripts/deploy.sh <command>   # deployment lifecycle
-bash scripts/ops.sh <command>      # runtime operations
+bash deploy/worker-03/deploy.sh <command>   # deployment lifecycle
+bash deploy/worker-03/ops.sh <command>      # runtime operations
 
 # Examples:
-bash scripts/ops.sh status                       # container status
-bash scripts/ops.sh logs umbra-nginx             # tail logs
-bash scripts/ops.sh restart umbra-marzban        # restart one service
-bash scripts/deploy.sh config                    # re-render templates + nginx reload
-bash scripts/ops.sh certs --status               # show cert expiry
-bash scripts/deploy.sh verify                    # run full verification suite
+bash deploy/worker-03/ops.sh status                       # container status
+bash deploy/worker-03/ops.sh logs umbra-nginx             # tail logs
+bash deploy/worker-03/ops.sh restart umbra-marzban        # restart one service
+bash deploy/worker-03/deploy.sh config                    # re-render templates + nginx reload
+bash deploy/worker-03/ops.sh certs --status               # show cert expiry
+bash deploy/worker-03/deploy.sh verify                    # run full verification suite
 ```
 
 ### Certificate management
 
 ```bash
-bash scripts/ops.sh certs --renew              # manual renewal check (also runs daily via cron)
-bash scripts/ops.sh certs --status     # show expiry for all domains
-bash scripts/ops.sh certs --upgrade    # staged upgrade to trusted LE certs; partial successes are kept
-bash scripts/ops.sh certs --clean-renewal-state  # remove invalid zero-byte renewal configs
-bash scripts/ops.sh certs --clean-workdirs       # normalize obsolete staged workdirs
+bash deploy/worker-03/ops.sh certs --renew              # manual renewal check (also runs daily via cron)
+bash deploy/worker-03/ops.sh certs --status     # show expiry for all domains
+bash deploy/worker-03/ops.sh certs --upgrade    # staged upgrade to trusted LE certs; partial successes are kept
+bash deploy/worker-03/ops.sh certs --clean-renewal-state  # remove invalid zero-byte renewal configs
+bash deploy/worker-03/ops.sh certs --clean-workdirs       # normalize obsolete staged workdirs
 ```
 
 Renewal runs daily at 03:17 via cron (added by `deploy.sh all`). It delegates to `certbot renew`, so it does not force reissue. Services reload only when certbot actually renews a certificate.
@@ -254,16 +254,16 @@ Renewal runs daily at 03:17 via cron (added by `deploy.sh all`). It delegates to
 ```bash
 # Normal redeploy, data preserved
 git pull origin main
-bash scripts/ops.sh backup
-bash scripts/server.sh reset
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/server.sh reset
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
 
 # Full reset, destroys runtime data after confirmation
-bash scripts/ops.sh backup
-bash scripts/server.sh reset --full
-bash scripts/deploy.sh all
-bash scripts/deploy.sh wizard
+bash deploy/worker-03/ops.sh backup
+bash deploy/worker-03/server.sh reset --full
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh wizard
 ```
 
 > `--full` uses Docker internally to remove root-owned certbot files.
@@ -273,19 +273,19 @@ bash scripts/deploy.sh wizard
 ### Manual backup
 
 ```bash
-bash scripts/ops.sh backup
+bash deploy/worker-03/ops.sh backup
 # Archives saved to BACKUP_DIR, 30-day retention
 ```
 
 ### Re-render config only
 
 ```bash
-python3 scripts/deploy/04-render-configuration-templates.py
+python3 deploy/worker-03/scripts/22-render-runtime-configs.py
 # or
-bash scripts/deploy.sh config
+bash deploy/worker-03/deploy.sh config
 ```
 
-`04-render-configuration-templates.py` is a Python script; do not run it with `bash`.
+`22-render-runtime-configs.py` is a Python script; do not run it with `bash`.
 
 ---
 
@@ -312,7 +312,7 @@ docker run --rm -v /srv/vxture/data/umbra/letsencrypt:/target alpine sh -c 'rm -
 Marzban (newer versions) requires a valid non-self-signed TLS cert to bind to `0.0.0.0`. Run real cert issuance first:
 
 ```bash
-bash scripts/ops.sh certs --upgrade
+bash deploy/worker-03/ops.sh certs --upgrade
 docker compose restart umbra-marzban
 ```
 
@@ -321,7 +321,7 @@ docker compose restart umbra-marzban
 Not expected. The admin vhost is public and Marzban handles login. Re-render nginx config and verify the rendered `07-admin.conf` has no `allow` / `deny all` rules:
 
 ```bash
-bash scripts/deploy.sh config
+bash deploy/worker-03/deploy.sh config
 curl -sk -o /dev/null -w "%{http_code}\n" https://admin.ruyin.ai/dashboard/
 ```
 
@@ -337,7 +337,7 @@ curl -sk -o /dev/null -w "%{http_code}\n" https://admin.ruyin.ai/dashboard/
 | `deploy.sh all` | Full deployment orchestrator (steps 00-07 + cron setup) |
 | `ops.sh certs` | Certificate lifecycle: renew / upgrade / status |
 | `deploy.sh wizard` | Post-deploy wizard: host config, user creation, sub URLs |
-| `deploy/06-verify-deployment.sh` | Verify all services and endpoints |
+| `deploy/worker-03/scripts/24-verify-deployment.sh` | Verify all services and endpoints |
 | `ops/backup.sh` | Backup databases and config files |
 
 ---

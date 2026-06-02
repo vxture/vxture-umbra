@@ -68,7 +68,7 @@ live under the owning portal or service until reuse is real.
 Current Python usage is limited to deployment tooling and small runtime
 adapters:
 
-- `scripts/deploy/*.py`: deployment-time config rendering and checks.
+- `deploy/worker-03/scripts/*.py`: deployment-time config rendering and checks.
 - `services/account/account.py`: current lightweight account/invite API.
 - `services/subproxy/subproxy.py`: subscription metadata adapter.
 

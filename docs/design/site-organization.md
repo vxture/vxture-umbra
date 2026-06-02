@@ -124,7 +124,7 @@ Rationale:
 
 The first migration must be backward compatible.
 
-`scripts/deploy/04-render-configuration-templates.py` renders infrastructure configs. The
+`deploy/worker-03/scripts/22-render-runtime-configs.py` renders infrastructure configs. The
 Ruyin website is built and served by the `umbra-website` Next container:
 
 ```text
@@ -158,7 +158,7 @@ Before moving any source files:
    - saved subscription URL `GET`
    - `sub.ruyin.ai` root blocked
    - no `:8443` redirects
-3. Keep `04-render-configuration-templates.py` output paths unchanged for VPN and guide surfaces.
+3. Keep `22-render-runtime-configs.py` output paths unchanged for VPN and guide surfaces.
 
 No production behavior changes in this phase.
 
@@ -215,9 +215,9 @@ Server execution should use:
 ```bash
 cd /srv/vxture/repo/umbra
 git pull --ff-only origin main
-python3 scripts/deploy/04-render-configuration-templates.py
-bash scripts/deploy/05-start-docker-services.sh
-bash scripts/deploy/06-verify-deployment.sh
+python3 deploy/worker-03/scripts/22-render-runtime-configs.py
+bash deploy/worker-03/scripts/23-start-docker-services.sh
+bash deploy/worker-03/scripts/24-verify-deployment.sh
 ```
 
 Manual post-checks:
@@ -231,7 +231,7 @@ curl -skI https://admin.ruyin.ai/ | grep -i '^location:' | grep ':8443' && echo 
 ```
 
 Saved valid subscription URLs must also be tested through the existing
-`06-verify-deployment.sh` database-derived check.
+`24-verify-deployment.sh` database-derived check.
 
 ### Phase 4: Remove Old Paths
 
@@ -284,7 +284,7 @@ These files participate directly in VPN transport or subscription delivery.
 
 ## Acceptance Criteria
 
-- `bash scripts/deploy/06-verify-deployment.sh` passes with zero failures.
+- `bash deploy/worker-03/scripts/24-verify-deployment.sh` passes with zero failures.
 - `https://vpn.ruyin.ai/` returns the VPN display page.
 - `https://console.ruyin.ai/` returns the Next account UI.
 - `https://admin.ruyin.ai/invites` returns the Next invite UI.

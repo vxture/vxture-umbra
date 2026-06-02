@@ -113,7 +113,7 @@ CI responsibilities:
 | Diff whitespace | `git diff --check` |
 | Shell syntax | `bash -n scripts/**/*.sh` equivalent |
 | Python syntax | `python -m compileall -q scripts services` |
-| Deploy contract checks | `python scripts/deploy/08-check-script-contracts.py` |
+| Deploy contract checks | `python scripts/checks/06-check-deploy-contracts.py` |
 | Website type check | `npm run type-check --prefix portals/website` |
 | Console type check | `npm run type-check --prefix portals/console` |
 | Website build | `npm run build --prefix portals/website` |
@@ -358,8 +358,8 @@ export IMAGE_REGISTRY="$ALIYUN_ACR_REGISTRY"
 export IMAGE_NAMESPACE="${ALIYUN_ACR_NAMESPACE:-vxture}"
 export IMAGE_TAG="sha-<short-sha>"
 
-bash scripts/deploy.sh all
-bash scripts/deploy.sh verify
+bash deploy/worker-03/deploy.sh all
+bash deploy/worker-03/deploy.sh verify
 ```
 
 Notes:
@@ -374,7 +374,7 @@ Notes:
 - Runtime state remains on worker-03 under `.env`, `DATA_DIR`, and
   `BACKUP_DIR`; CI must not carry production secrets except SSH credentials.
 - Config rendering and certificate lifecycle still belong to Umbra deploy
-  scripts. `scripts/deploy.sh all` reaches `scripts/deploy.sh start`, which
+  scripts. `deploy/worker-03/deploy.sh all` reaches `deploy/worker-03/deploy.sh start`, which
   pulls `IMAGE_TAG` and runs `docker compose up -d`.
 
 ## Required Secrets

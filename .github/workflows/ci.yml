@@ -58,12 +58,14 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check
-          for file in scripts/*.sh scripts/deploy/*.sh scripts/ops/*.sh scripts/server/*.sh scripts/lib/*.sh; do
+          for file in deploy/worker-03/*.sh deploy/worker-03/scripts/*.sh deploy/worker-03/lib/*.sh scripts/checks/*.sh scripts/github/*.ps1; do
             [ -f "$file" ] || continue
-            bash -n "$file"
+            case "$file" in
+              *.sh) bash -n "$file" ;;
+            esac
           done
-          python -m compileall -q scripts services
-          python scripts/deploy/08-check-script-contracts.py
+          python -m compileall -q deploy scripts services
+          python scripts/checks/06-check-deploy-contracts.py
 
       - name: Portal type checks
         shell: bash

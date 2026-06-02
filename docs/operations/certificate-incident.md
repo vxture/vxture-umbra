@@ -45,13 +45,13 @@ the repair path is `certs --upgrade`.
 
 ## Operational Rules
 
-- Use `bash scripts/ops.sh certs --status` to inspect certificate trust and
+- Use `bash deploy/worker-03/ops.sh certs --status` to inspect certificate trust and
   work directories.
-- Use `bash scripts/ops.sh certs --clean-renewal-state` to remove only invalid
+- Use `bash deploy/worker-03/ops.sh certs --clean-renewal-state` to remove only invalid
   zero-byte renewal configs.
-- Use `bash scripts/ops.sh certs --clean-workdirs` to normalize obsolete staged
+- Use `bash deploy/worker-03/ops.sh certs --clean-workdirs` to normalize obsolete staged
   work directories without touching active certs or backups.
-- Use `bash scripts/ops.sh certs --upgrade` to replace self-signed certs with
+- Use `bash deploy/worker-03/ops.sh certs --upgrade` to replace self-signed certs with
   trusted LE certs.
 - Do not use `certs --renew` as a repair command. It only renews existing
   Certbot-managed certificates that are due.

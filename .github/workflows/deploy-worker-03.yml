@@ -92,7 +92,7 @@ jobs:
           short_sha="${PASSED_SHA::7}"
           image_tag="sha-$short_sha"
 
-          cat > /tmp/deploy-worker-03.sh <<'REMOTE_SCRIPT'
+          cat > /tmp/deploy.sh <<'REMOTE_SCRIPT'
           set -euo pipefail
 
           cd "$REPO_DIR"
@@ -130,12 +130,12 @@ jobs:
           export FALLBACK_IMAGE_REGISTRY="$GHCR_REGISTRY"
           export FALLBACK_IMAGE_NAMESPACE="$GHCR_NAMESPACE"
 
-          bash scripts/deploy.sh all
-          bash scripts/deploy.sh verify
+          bash deploy/worker-03/deploy.sh all
+          bash deploy/worker-03/deploy.sh verify
           REMOTE_SCRIPT
 
-          scp -i ~/.ssh/worker_03 -P "$port" /tmp/deploy-worker-03.sh \
-            "$WORKER_03_USER@$WORKER_03_HOST:/tmp/deploy-worker-03.sh"
+          scp -i ~/.ssh/worker_03 -P "$port" /tmp/deploy.sh \
+            "$WORKER_03_USER@$WORKER_03_HOST:/tmp/deploy.sh"
 
           remote_env=(
             "REPO_DIR=$repo_dir"
@@ -157,6 +157,6 @@ jobs:
             printf -v escaped '%q=%q ' "$key" "$value"
             remote_cmd+="$escaped"
           done
-          remote_cmd+="bash /tmp/deploy-worker-03.sh"
+          remote_cmd+="bash /tmp/deploy.sh"
 
           ssh -i ~/.ssh/worker_03 -p "$port" "$WORKER_03_USER@$WORKER_03_HOST" "$remote_cmd"

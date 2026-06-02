@@ -37,8 +37,8 @@ The file is ignored by Git. Fill it from a password manager or other approved
 secret store, then run:
 
 ```powershell
-pwsh -File scripts/github/set-github-secrets.ps1 -DryRun
-pwsh -File scripts/github/set-github-secrets.ps1
+pwsh -File scripts/github/00-set-github-secrets.ps1 -DryRun
+pwsh -File scripts/github/00-set-github-secrets.ps1
 ```
 
 The script creates the `worker-03` GitHub environment if it does not already
@@ -63,7 +63,7 @@ Before the first automated deploy:
 - The repository exists on worker-03 at `WORKER_03_REPO_DIR`.
 - The checkout can fetch `origin main`.
 - The deploy user can run Docker and Docker Compose.
-- The deploy user is not root; `scripts/deploy.sh all` rejects root.
+- The deploy user is not root; `deploy/worker-03/deploy.sh all` rejects root.
 - `.env` exists on worker-03 and contains production runtime secrets.
 - `.env` should set `IMAGE_REGISTRY` to Aliyun ACR for normal production pulls.
 - `.env` should set `IMAGE_NAMESPACE=vxture`.
@@ -95,9 +95,9 @@ downloading or unable to start. Do not skip the non-Docker checks:
 
 ```bash
 git diff --check
-python scripts/deploy/08-check-script-contracts.py
+python scripts/checks/06-check-deploy-contracts.py
 python -m compileall -q scripts services
-bash -n scripts/deploy.sh scripts/ops.sh scripts/server.sh
+bash -n deploy/worker-03/deploy.sh deploy/worker-03/ops.sh deploy/worker-03/server.sh
 npm run type-check --prefix portals/website
 npm run type-check --prefix portals/console
 npm run build --prefix portals/website

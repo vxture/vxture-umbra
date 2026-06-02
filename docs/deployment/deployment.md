@@ -113,7 +113,7 @@ CERTBOT_EMAIL=<your-email>
 
 ### Step 3: Secrets
 
-No database passwords needed - SQLite requires no credentials. The account portal secrets sign sessions and hash invite codes; generate them separately. The REALITY secret file is `DATA_DIR/private/reality.json`, which is generated automatically by [`02-generate-reality-keys.sh`](../../scripts/deploy/02-generate-reality-keys.sh).
+No database passwords needed - SQLite requires no credentials. The account portal secrets sign sessions and hash invite codes; generate them separately. The REALITY secret file is `DATA_DIR/private/reality.json`, which is generated automatically by [`13-generate-runtime-secrets.sh`](../../deploy/worker-03/scripts/13-generate-runtime-secrets.sh).
 
 ---
 
@@ -122,20 +122,20 @@ No database passwords needed - SQLite requires no credentials. The account porta
 ### One-shot deploy
 
 ```bash
-bash scripts/deploy.sh all
+bash deploy/worker-03/deploy.sh all
 ```
 
 ### Step-by-step
 
 ```
-00-check-environment.sh                Validate environment, DNS, Docker
-01-init-data-directories.sh            Create DATA_DIR structure with correct permissions
-02-generate-reality-keys.sh            Generate REALITY keypair -> private/reality.json
-03-issue-tls-certificates.sh           Issue Let's Encrypt certs for active domains
-04-render-configuration-templates.py   Render all templates -> DATA_DIR
-05-start-docker-services.sh            docker compose up -d
-06-verify-deployment.sh                Full verification suite
-07-post-deploy-wizard.sh               Interactive wizard (host config, user creation, sub URLs)
+11-check-runtime-environment.sh                Validate environment, DNS, Docker
+12-prepare-runtime-directories.sh            Create DATA_DIR structure with correct permissions
+13-generate-runtime-secrets.sh            Generate REALITY keypair -> private/reality.json
+20-issue-tls-certificates.sh           Issue Let's Encrypt certs for active domains
+22-render-runtime-configs.py   Render all templates -> DATA_DIR
+23-start-docker-services.sh            docker compose up -d
+24-verify-deployment.sh                Full verification suite
+25-run-post-deploy-wizard.sh               Interactive wizard (host config, user creation, sub URLs)
 ```
 
 `deploy.sh all` also calls `ops.sh backup` at the end unless `--skip-backup` is passed.
@@ -144,7 +144,7 @@ bash scripts/deploy.sh all
 
 ## Script Specifications
 
-### `00-check-environment.sh`
+### `11-check-runtime-environment.sh`
 
 ```
 Checks:
@@ -157,7 +157,7 @@ Checks:
   [ ] Ports 80 and 443 are not in use
 ```
 
-### `01-init-data-directories.sh`
+### `12-prepare-runtime-directories.sh`
 
 Creates:
 
@@ -187,14 +187,14 @@ chmod 711 DATA_DIR/nginx/private
 chmod 700 BACKUP_DIR
 ```
 
-### `02-generate-reality-keys.sh`
+### `13-generate-runtime-secrets.sh`
 
 - Runs `xray x25519` via a temporary Docker container (`teddysun/xray`)
 - Generates private key, public key, shortId
 - Writes `DATA_DIR/private/reality.json` (chmod 600)
 - **Skips if file already exists**
 
-### `03-issue-tls-certificates.sh`
+### `20-issue-tls-certificates.sh`
 
 - Starts a temporary Nginx container serving ACME challenge on port 80
 - Issues cert for each domain sequentially
@@ -207,19 +207,19 @@ chmod 700 BACKUP_DIR
 - When used by `certs --upgrade`, partial staged successes are kept for the next retry
 - Activation is blocked unless every staged domain verifies as trusted, unexpired, name-matched LE
 
-### `04-render-configuration-templates.py`
+### `22-render-runtime-configs.py`
 
 Renders all templates with variables from `.env` and `private/`:
 
 Run this step with Python, or via the deployment dispatcher:
 
 ```bash
-python3 scripts/deploy/04-render-configuration-templates.py
+python3 deploy/worker-03/scripts/22-render-runtime-configs.py
 # or
-bash scripts/deploy.sh config
+bash deploy/worker-03/deploy.sh config
 ```
 
-Do not run it with `bash scripts/deploy/04-render-configuration-templates.py`; it is a Python script.
+Do not run it with `bash deploy/worker-03/scripts/22-render-runtime-configs.py`; it is a Python script.
 
 | Source | Output |
 |--------|--------|
@@ -234,7 +234,7 @@ Also injects REALITY keys into Xray/Marzban config and renders the Clash subscri
 The Ruyin public website is built as the `umbra-website` Next.js service and
 served through `01-ruyin.conf.template`; it is not copied into `DATA_DIR`.
 
-### `05-start-docker-services.sh`
+### `23-start-docker-services.sh`
 
 ```bash
 docker compose up -d
@@ -242,7 +242,7 @@ docker compose up -d
 
 Polls each service for healthy status before proceeding (replaces a hard sleep with health check retries).
 
-### `06-verify-deployment.sh`
+### `24-verify-deployment.sh`
 
 See Verification Checklist below.
 
@@ -313,7 +313,7 @@ DOMAIN-SUFFIX,openai.com,PROXY
 MATCH,DIRECT
 ```
 
-The config renderer runs `scripts/deploy/07-validate-clash-rules.py` and fails if any must-direct domain from `configs/marzban/must-direct-rules.txt` is missing, appears after the proxy boundary, or overlaps a `PROXY` rule.
+The config renderer runs `deploy/worker-03/scripts/19-check-clash-rules.py` and fails if any must-direct domain from `configs/marzban/must-direct-rules.txt` is missing, appears after the proxy boundary, or overlaps a `PROXY` rule.
 
 Must NOT contain:
 ```
@@ -366,7 +366,7 @@ Expected: all files exist and are non-zero size after services have started.
 5.  Copy .env from old node
 6.  Copy DATA_DIR/private/ from old node
     (preserves REALITY keys - clients keep same public key)
-7.  Run `bash scripts/deploy.sh all` on new VPS
+7.  Run `bash deploy/worker-03/deploy.sh all` on new VPS
 8.  Verify using /etc/hosts override (point domains to new IP locally)
 9.  Switch DNS to new VPS IP
 10. Notify users to refresh subscription in Clash
