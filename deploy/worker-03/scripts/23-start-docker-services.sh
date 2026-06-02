@@ -27,21 +27,22 @@ cd "$REPO_DIR"
 pull_images_for_current_registry() {
   local image attempt
   local -a images
+  local pull_timeout="${DOCKER_PULL_TIMEOUT_SECONDS:-90}"
   mapfile -t images < <(docker compose config --images | sed '/^[[:space:]]*$/d')
 
   for image in "${images[@]}"; do
     log_info "Pulling $image"
-    for attempt in 1 2 3 4 5 6; do
-      if docker pull --quiet "$image"; then
+    for attempt in 1 2 3; do
+      if timeout "$pull_timeout" docker pull --quiet "$image"; then
         break
       fi
 
-      if [[ "$attempt" -eq 6 ]]; then
+      if [[ "$attempt" -eq 3 ]]; then
         log_error "docker pull failed after retries: $image"
         return 1
       fi
 
-      log_warn "docker pull failed for $image on attempt $attempt; retrying..."
+      log_warn "docker pull failed or timed out for $image on attempt $attempt; retrying..."
       sleep $((attempt * 5))
     done
   done

@@ -1378,9 +1378,21 @@ def check_worker_deploy_fallback_contract() -> list[str]:
             problems.append("deploy workflow exports fallback registry but start script does not consume it")
     if "docker compose pull" in start_script:
         problems.append("deploy start must use serial docker pull via docker compose config --images")
+    if 'timeout "$pull_timeout" docker pull --quiet "$image"' not in start_script:
+        problems.append("deploy start must bound docker pull hangs with timeout")
+    if "for attempt in 1 2 3; do" not in start_script:
+        problems.append("deploy start must fail primary registry quickly enough to reach fallback")
     if "export IMAGE_REGISTRY=\"$FALLBACK_IMAGE_REGISTRY\"" in start_script:
         if "docker compose up -d" not in start_script:
             problems.append("fallback registry switch must be followed by docker compose up -d")
+    required_ssh_options = (
+        "-o ServerAliveInterval=30",
+        "-o ServerAliveCountMax=20",
+        "-o ConnectTimeout=30",
+    )
+    missing_ssh_options = [option for option in required_ssh_options if option not in workflow]
+    if missing_ssh_options:
+        problems.append(f"deploy workflow must keep long SSH sessions alive: missing {missing_ssh_options!r}")
     return problems
 
 

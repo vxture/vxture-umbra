@@ -134,7 +134,11 @@ jobs:
           bash deploy/worker-03/deploy.sh verify
           REMOTE_SCRIPT
 
-          scp -i ~/.ssh/worker_03 -P "$port" /tmp/deploy.sh \
+          scp -i ~/.ssh/worker_03 -P "$port" \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            -o ConnectTimeout=30 \
+            /tmp/deploy.sh \
             "$WORKER_03_USER@$WORKER_03_HOST:/tmp/deploy.sh"
 
           remote_env=(
@@ -159,4 +163,8 @@ jobs:
           done
           remote_cmd+="bash /tmp/deploy.sh"
 
-          ssh -i ~/.ssh/worker_03 -p "$port" "$WORKER_03_USER@$WORKER_03_HOST" "$remote_cmd"
+          ssh -i ~/.ssh/worker_03 -p "$port" \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            -o ConnectTimeout=30 \
+            "$WORKER_03_USER@$WORKER_03_HOST" "$remote_cmd"
