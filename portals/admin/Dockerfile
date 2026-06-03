@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --ignore-scripts
 COPY . .
-# Brand identity SVGs from repo-level canonical source
+# Brand identity PNG/ICO files from repo-level canonical source
 COPY --from=brand_context / ./public/assets/brand/
 RUN npm run build
 

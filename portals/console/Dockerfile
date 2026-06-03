@@ -17,7 +17,7 @@ WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Brand identity SVGs from repo-level canonical source
+# Brand identity PNG/ICO files from repo-level canonical source
 COPY --from=brand_context / ./public/assets/brand/
 RUN npm run build
 

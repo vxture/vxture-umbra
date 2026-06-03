@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   title: "Ruyin Admin",
   description: "Ruyin VPN & password management",
   icons: {
-    icon: "/assets/icons/ruyin-icon-64.svg",
+    icon: "/favicon.ico",
   },
 };
 

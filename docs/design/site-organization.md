@@ -60,7 +60,7 @@ portals/
     public/
       favicon.ico
       assets/
-        brand/               # Brand identity SVGs, paired with lib/brand.ts
+        brand/               # Brand identity PNG/ICO files, paired with lib/brand.ts
         icons/
 
   console/                 # console.ruyin.ai user home, default user portal

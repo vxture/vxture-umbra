@@ -11,15 +11,15 @@ export const metadata: Metadata = {
   title: `${ruyinBrand.fullName} ${ruyinBrand.productName}`,
   description: ruyinBrand.description,
   icons: {
-    icon: "/assets/icons/ruyin-icon-32.svg",
-    apple: "/assets/icons/ruyin-icon-180.svg",
+    icon: "/favicon.ico",
+    apple: "/assets/brand/ruyin-symbol-dark.png",
     shortcut: "/favicon.ico",
   },
   openGraph: {
     title: `${ruyinBrand.productName} - ${ruyinBrand.fullName}`,
     description: ruyinBrand.description,
     siteName: ruyinBrand.productName,
-    images: [{ url: "/assets/social/ruyin-og-image.svg", width: 1200, height: 630 }],
+    images: [{ url: "/assets/brand/ruyin-hero-light.png", width: 720, height: 360 }],
     locale: "en_US",
     type: "website",
   },
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${ruyinBrand.productName} - ${ruyinBrand.fullName}`,
     description: ruyinBrand.description,
-    images: ["/assets/social/ruyin-twitter-card.svg"],
+    images: ["/assets/brand/ruyin-hero-light.png"],
   },
 };
 

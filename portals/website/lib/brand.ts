@@ -1,15 +1,15 @@
-/** Absolute URL to the Ruyin symbol SVG for the given resolved theme. */
+/** Absolute URL to the Ruyin symbol PNG for the given resolved theme. */
 export function markSrc(resolved: string): string {
   return resolved === "dark"
-    ? "/assets/brand/ruyin-symbol-dark.svg"
-    : "/assets/brand/ruyin-symbol-light.svg";
+    ? "/assets/brand/ruyin-symbol-dark.png"
+    : "/assets/brand/ruyin-symbol-light.png";
 }
 
-/** Absolute URL to the Ruyin lockup SVG for the given resolved theme. */
+/** Absolute URL to the Ruyin hero PNG for the given resolved theme. */
 export function signatureSrc(resolved: string): string {
   return resolved === "dark"
-    ? "/assets/brand/ruyin-lockup-dark.svg"
-    : "/assets/brand/ruyin-lockup-light.svg";
+    ? "/assets/brand/ruyin-hero-dark.png"
+    : "/assets/brand/ruyin-hero-light.png";
 }
 
 export const ruyinBrand = {

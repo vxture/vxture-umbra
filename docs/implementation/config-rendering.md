@@ -53,5 +53,5 @@ The site favicon lives at `portals/website/public/favicon.ico`.
 Use root-relative public URLs from Next components, for example:
 
 ```html
-<img src="/assets/brand/ruyin-symbol-dark.svg" alt="">
+<img src="/assets/brand/ruyin-symbol-dark.png" alt="">
 ```

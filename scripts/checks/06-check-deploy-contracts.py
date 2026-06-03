@@ -1455,12 +1455,43 @@ def check_worker_deploy_dependency_boundary() -> list[str]:
     return problems
 
 
+def check_brand_assets_use_png_and_ico() -> list[str]:
+    problems: list[str] = []
+    roots = (
+        PROJECT_ROOT / "brand",
+        PROJECT_ROOT / "portals/website/public/assets/brand",
+        PROJECT_ROOT / "portals/console/public/assets/brand",
+        PROJECT_ROOT / "portals/admin/public/assets/brand",
+    )
+
+    svg_files: list[str] = []
+    for root in roots:
+        if root.exists():
+            svg_files.extend(path.relative_to(PROJECT_ROOT).as_posix() for path in root.rglob("*.svg"))
+    if svg_files:
+        problems.append(f"Ruyin brand assets must be PNG/ICO, not SVG: {svg_files!r}")
+
+    required = (
+        PROJECT_ROOT / "brand/favicon.ico",
+        PROJECT_ROOT / "brand/ruyin-hero-dark.png",
+        PROJECT_ROOT / "brand/ruyin-hero-light.png",
+        PROJECT_ROOT / "brand/ruyin-symbol-dark.png",
+        PROJECT_ROOT / "brand/ruyin-symbol-light.png",
+    )
+    missing = [path.relative_to(PROJECT_ROOT).as_posix() for path in required if not path.exists()]
+    if missing:
+        problems.append(f"canonical PNG/ICO brand pack is incomplete: missing {missing!r}")
+
+    return problems
+
+
 CUSTOM_CHECKS = (
     ("compose owned image mapping is exact", check_compose_owned_image_mapping),
     ("docker build matrix publishes the exact owned images", check_docker_build_image_matrix),
     ("worker deploy fallback contract is valid", check_worker_deploy_fallback_contract),
     ("standalone scripts guard optional first argument", check_help_argument_guards),
     ("worker deploy dependency boundary is explicit", check_worker_deploy_dependency_boundary),
+    ("brand assets use PNG and ICO", check_brand_assets_use_png_and_ico),
 )
 
 

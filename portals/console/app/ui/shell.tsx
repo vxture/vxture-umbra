@@ -9,7 +9,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <a className="brand" href="/">
           <img
             className="brand-mark"
-            src="/assets/brand/ruyin-symbol-dark.svg"
+            src="/assets/brand/ruyin-symbol-dark.png"
             alt="Ruyin"
             width={28}
             height={28}

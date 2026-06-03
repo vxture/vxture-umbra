@@ -140,7 +140,7 @@ portals/website/
 |-- public/
 |   |-- favicon.ico
 |   `-- assets/
-|       |-- brand/            # Brand identity SVGs, paired with lib/brand.ts
+|       |-- brand/            # Brand identity PNG/ICO files, paired with lib/brand.ts
 |       |-- icons/
 |       `-- social/
 |-- Dockerfile
@@ -175,7 +175,7 @@ portals/console/
 |       `-- shell.tsx
 |-- public/
 |   |-- assets/
-|   |   |-- brand/           # Brand identity SVGs
+|   |   |-- brand/           # Brand identity PNG/ICO files
 |   |   `-- icons/
 |   `-- guide/               # Public guide under vpn.ruyin.ai/guide/
 |-- Dockerfile
@@ -210,11 +210,10 @@ portals/admin/
 |   |-- layout.tsx
 |   `-- page.tsx
 |-- public/
+|   |-- favicon.ico
 |   `-- assets/
-|       |-- brand/
-|       |   `-- ruyin-symbol-dark.svg
-|       `-- icons/
-|           `-- ruyin-icon-64.svg
+|       `-- brand/
+|           `-- ruyin-symbol-dark.png
 |-- Dockerfile
 |-- next.config.mjs
 |-- package.json
@@ -230,45 +229,48 @@ Near-term rule:
 
 ## Brand Resource Source Of Truth
 
-Brand identity SVGs are stored in a single canonical directory at repo root:
+Brand identity PNG/ICO files are stored in a single canonical directory at repo
+root:
 
 ```text
 umbra/brand/
-|-- ruyin-symbol-dark.svg
-|-- ruyin-symbol-light.svg
-|-- ruyin-lockup-dark.svg
-|-- ruyin-lockup-light.svg
-|-- ruyin-wordmark-dark.svg
-`-- ruyin-wordmark-light.svg
+|-- favicon.ico
+|-- ruyin-hero-dark.png
+|-- ruyin-hero-light.png
+|-- ruyin-symbol-dark.png
+|-- ruyin-symbol-light.png
+|-- vxture-logo-dark.png
+|-- vxture-logo-light.png
+`-- vxture-logo.png
 ```
 
-This directory is the **single source of truth** - all edits to brand SVGs must
-be made here, then the files are propagated to each portal's
+This directory is the **single source of truth** - all edits to brand PNG/ICO
+files must be made here, then the files are propagated to each portal's
 `public/assets/brand/` for local development.
 
 During Docker build, `docker compose` injects
 [`additional_contexts`](https://docs.docker.com/compose/compose-file/build/#additional_contexts)
 named `brand_context`, and each
-[`Dockerfile`](portals/website/Dockerfile) copies the SVGs into
+[`Dockerfile`](portals/website/Dockerfile) copies the brand files into
 `public/assets/brand/` via:
 
 ```dockerfile
 COPY --from=brand_context / ./public/assets/brand/
 ```
 
-This eliminates duplication across three portals while keeping the SVGs
+This eliminates duplication across three portals while keeping the assets
 accessible at `/assets/brand/...` at runtime.
 
 ### Per-portal copies for local dev
 
-Each portal keeps its own copy of the subset of SVGs it needs, committed to
+Each portal keeps its own copy of the PNG/ICO files it needs, committed to
 git. These are kept in sync manually from the canonical `brand/` directory.
 They are not the source of truth - they are local dev copies.
 
 ```text
-portals/website/public/assets/brand/   # All 6 SVGs (symbol, lockup, wordmark)
-portals/console/public/assets/brand/   # symbol dark/light + lockup dark
-portals/admin/public/assets/brand/     # symbol dark only
+portals/website/public/assets/brand/   # PNG brand pack
+portals/console/public/assets/brand/   # PNG brand pack
+portals/admin/public/assets/brand/     # PNG brand pack
 ```
 
 Standalone `public/guide/` content should keep only the assets it directly uses
@@ -278,38 +280,33 @@ until the guide is rebuilt or retired.
 
 | Asset | Required | Target path | Notes |
 |---|---:|---|---|
-| Ruyin symbol dark | Yes | `portals/website/public/assets/brand/ruyin-symbol-dark.svg` | Small header mark on dark backgrounds |
-| Ruyin symbol light | Yes | `portals/website/public/assets/brand/ruyin-symbol-light.svg` | Small header mark on light backgrounds |
-| Ruyin lockup dark | Yes | `portals/website/public/assets/brand/ruyin-lockup-dark.svg` | Logo + Ruyin + CN name or full lockup |
-| Ruyin lockup light | Yes | `portals/website/public/assets/brand/ruyin-lockup-light.svg` | Light-theme equivalent |
-| Ruyin wordmark dark | Recommended | `portals/website/public/assets/brand/ruyin-wordmark-dark.svg` | Large hero/signature image |
-| Ruyin wordmark light | Recommended | `portals/website/public/assets/brand/ruyin-wordmark-light.svg` | Large hero/signature image |
-| Favicon ico | Yes | `portals/website/public/favicon.ico` | Browser favicon |
-| App icon 32 | Recommended | `portals/website/public/assets/icons/ruyin-icon-32.svg` | Small browser/UI icon |
-| App icon 64 | Yes | `portals/website/public/assets/icons/ruyin-icon-64.svg` | Header fallback and general UI |
-| App icon 180 | Recommended | `portals/website/public/assets/icons/ruyin-icon-180.svg` | Apple touch icon |
-| App icon 512 | Recommended | `portals/website/public/assets/icons/ruyin-icon-512.svg` | PWA/social reuse |
-| Open Graph image | Recommended | `portals/website/public/assets/social/ruyin-og-image.svg` | 1200x630 |
-| Twitter card image | Optional | `portals/website/public/assets/social/ruyin-twitter-card.png` | 1200x630 or 1200x600 |
+| Asset | Required | Canonical source | Runtime use |
+|---|---:|---|---|
+| Browser favicon | Yes | `brand/favicon.ico` | Copied to each portal `public/favicon.ico` |
+| Ruyin symbol dark | Yes | `brand/ruyin-symbol-dark.png` | Header and admin marks on dark surfaces |
+| Ruyin symbol light | Yes | `brand/ruyin-symbol-light.png` | Header mark on light surfaces |
+| Ruyin hero dark | Yes | `brand/ruyin-hero-dark.png` | Website hero/signature image in dark mode |
+| Ruyin hero light | Yes | `brand/ruyin-hero-light.png` | Website hero/signature image, Open Graph, Twitter card |
+| Vxture logo dark | Optional | `brand/vxture-logo-dark.png` | Reserved for cross-brand surfaces |
+| Vxture logo light | Optional | `brand/vxture-logo-light.png` | Reserved for cross-brand surfaces |
+| Vxture logo default | Optional | `brand/vxture-logo.png` | Reserved for cross-brand surfaces |
 
-The duplicate old website source has been removed. Brand identity SVGs live
-in `assets/brand/` alongside the `lib/brand.ts` code module. The console guide
-is standalone public content and currently uses its local favicon as the header
-mark until the new Ruyin brand pack is provided.
+Do not add Ruyin brand SVGs. If a new brand asset is needed, provide PNG at
+the final intended display ratio and add it to `brand/` first.
 
 ## Cleanup Phases
 
 ### Phase 1: Brand Pack Intake [done]
 
 - Created canonical [`brand/`](brand/) directory at repo root as single source of truth
-  for all brand identity SVGs (symbol, lockup, wordmark in dark/light variants).
+  for all brand identity PNG/ICO files.
 - Each portal keeps a local dev copy in `public/assets/brand/`, synced from canonical
   source.
 - [`portals/website/lib/brand.ts`](portals/website/lib/brand.ts) provides theme-aware
   `markSrc(theme)` and `signatureSrc(theme)` functions.
 - Docker builds use `additional_contexts` in
   [`docker-compose.yml`](docker-compose.yml) and `COPY --from=brand_context` in each
-  [`Dockerfile`](portals/website/Dockerfile) to inject brand SVGs at build time.
+  [`Dockerfile`](portals/website/Dockerfile) to inject brand PNG/ICO files at build time.
 
 ### Phase 2: Guide Retirement
 

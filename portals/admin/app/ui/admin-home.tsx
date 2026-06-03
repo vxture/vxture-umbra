@@ -4,7 +4,7 @@ export function AdminHome() {
       <header className="admin-header">
         <img
           className="admin-brand-mark"
-          src="/assets/brand/ruyin-symbol-dark.svg"
+          src="/assets/brand/ruyin-symbol-dark.png"
           alt="Ruyin"
           width={36}
           height={36}

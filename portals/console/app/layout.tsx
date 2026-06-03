@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   title: "Ruyin Account",
   description: "Ruyin VPN account portal",
   icons: {
-    icon: "/assets/icons/ruyin-icon-64.svg",
-    apple: "/assets/icons/ruyin-icon-180.svg",
+    icon: "/favicon.ico",
+    apple: "/assets/brand/ruyin-symbol-dark.png",
   },
 };
 
