@@ -110,6 +110,11 @@ Phase 4 - Hardening
 | [`operations/github-actions-enablement.md`](operations/github-actions-enablement.md) | Secrets, rulesets, and first-run checklist for enabling CI/CD |
 | [`operations/certificate-incident.md`](operations/certificate-incident.md) | Certificate incident ledger and non-regression guardrails |
 | [`operations/local-dev-environment.md`](operations/local-dev-environment.md) | Operator workstation notes for TUN, DeepSeek API, and Roo Code |
+| [`memory/README.md`](memory/README.md) | **Memory mirror index.** AI-assistant persistent memory, summaries and pointers |
+| [`memory/project-overview.md`](memory/project-overview.md) | Memory: stack, domain layout, architecture, Marzban HTTP-proxy decision |
+| [`memory/deployment-modules.md`](memory/deployment-modules.md) | Memory: `deploy.sh` dispatcher, step scripts, config update workflow |
+| [`memory/cicd-deploy-flow.md`](memory/cicd-deploy-flow.md) | Memory: git flow to worker-03, promotion command, deploy gotchas |
+| [`memory/memory-versioning-preference.md`](memory/memory-versioning-preference.md) | Memory: how the memory store is versioned in this repo |
 
 ---
 
