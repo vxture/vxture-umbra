@@ -85,6 +85,9 @@ rules:
   - DOMAIN-SUFFIX,ai.com,PROXY
   - DOMAIN-SUFFIX,anthropic.com,PROXY
   - DOMAIN-SUFFIX,claude.ai,PROXY
+  - DOMAIN-SUFFIX,claude.com,PROXY
+  - DOMAIN-SUFFIX,claudeusercontent.com,PROXY
+  - DOMAIN-SUFFIX,anthropic.ai,PROXY
   - DOMAIN-SUFFIX,gemini.google.com,PROXY
   - DOMAIN-SUFFIX,aistudio.google.com,PROXY
   - DOMAIN-SUFFIX,generativelanguage.googleapis.com,PROXY
@@ -191,5 +194,5 @@ rules:
   # 11. China IP direct
   - GEOIP,CN,DIRECT
 
-  # 12. Fallback direct
-  - MATCH,DIRECT
+  # 12. Fallback proxy
+  - MATCH,PROXY

@@ -77,7 +77,7 @@ def parse_rules(config_path: Path) -> tuple[list[tuple[int, str, str, str]], int
                 first_proxy = idx
             continue
 
-        if re.match(r"^\s*-\s*MATCH,DIRECT\b", line):
+        if re.match(r"^\s*-\s*MATCH,(DIRECT|PROXY)\b", line):
             if first_match is None:
                 first_match = idx
 
@@ -123,7 +123,7 @@ def main() -> int:
     expected = load_must_direct_rules(args.rules, variables)
     actual, first_proxy, first_match = parse_rules(args.config)
     if first_proxy is None or first_match is None:
-        print("[FAIL] Clash rules must contain at least one PROXY rule and final MATCH,DIRECT")
+        print("[FAIL] Clash rules must contain at least one PROXY rule and a final MATCH rule")
         return 1
 
     direct = {(rule_type, value): line for line, rule_type, value, policy in actual if policy == "DIRECT"}

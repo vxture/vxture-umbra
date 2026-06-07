@@ -11,12 +11,14 @@ environment variables. The subscription template keeps TUN bounded by routing
 rules:
 
 ```yaml
-- MATCH,DIRECT
+- GEOIP,CN,DIRECT
+- MATCH,PROXY
 ```
 
-Only explicitly listed domains such as Anthropic, OpenAI, GitHub, npm, Google,
-Cloudflare, and selected developer services route through `PROXY`. Unmatched
-traffic routes direct.
+Must-direct domains (Microsoft, Vultr, Umbra services, domestic AI) and China
+GEOIP traffic route `DIRECT`. Everything else, including explicitly listed
+domains such as Anthropic, OpenAI, GitHub, npm, Google, and Cloudflare, falls
+through to `PROXY`.
 
 DeepSeek is intentionally direct:
 

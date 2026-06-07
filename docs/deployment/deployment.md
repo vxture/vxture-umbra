@@ -299,7 +299,7 @@ Expected: the Marzban login/dashboard route responds; nginx must not block it wi
 Create a test user in Marzban, then:
 
 ```bash
-curl -sk https://sub.ruyin.ai/sub/<marzban-token> | grep -E "name: vx-tokyo|MATCH,DIRECT|openai|microsoft.com,DIRECT|cloudflare.com,PROXY|vultr.com,DIRECT|108.61.182.248/32,DIRECT"
+curl -sk https://sub.ruyin.ai/sub/<marzban-token> | grep -E "name: vx-tokyo|MATCH,PROXY|openai|microsoft.com,DIRECT|cloudflare.com,PROXY|vultr.com,DIRECT|108.61.182.248/32,DIRECT"
 ```
 
 Expected output contains:
@@ -310,7 +310,7 @@ DOMAIN-SUFFIX,cloudflare.com,PROXY
 DOMAIN-SUFFIX,vultr.com,DIRECT
 IP-CIDR,108.61.182.248/32,DIRECT,no-resolve
 DOMAIN-SUFFIX,openai.com,PROXY
-MATCH,DIRECT
+MATCH,PROXY
 ```
 
 The config renderer runs `deploy/worker-03/scripts/19-check-clash-rules.py` and fails if any must-direct domain from `configs/marzban/must-direct-rules.txt` is missing, appears after the proxy boundary, or overlaps a `PROXY` rule.

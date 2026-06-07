@@ -160,14 +160,14 @@ Priority  Rule Type                        Action
 10        Social / comms                   PROXY (forced)
 11        Google ecosystem                 PROXY (forced)
 12        China IP (GEOIP,CN)              DIRECT
-13        Everything else                  DIRECT (fallback)
+13        Everything else                  PROXY (fallback)
 ```
 
 ### Hard Constraint: Must-PROXY (AI providers, per-vendor)
 
 ```
 OpenAI:      openai.com, chatgpt.com, oaistatic.com, oaiusercontent.com, ai.com
-Anthropic:   anthropic.com, claude.ai
+Anthropic:   anthropic.com, claude.ai, claude.com, claudeusercontent.com, anthropic.ai
 Google AI:   gemini.google.com, aistudio.google.com, generativelanguage.googleapis.com
 xAI:         x.ai, api.x.ai
 Perplexity:  perplexity.ai
@@ -404,8 +404,8 @@ rules:
   # 13. China IP direct
   - GEOIP,CN,DIRECT
 
-  # 14. Fallback direct
-  - MATCH,DIRECT
+  # 14. Fallback proxy
+  - MATCH,PROXY
 ```
 
 ---
