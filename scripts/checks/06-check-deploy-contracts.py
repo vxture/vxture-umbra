@@ -605,8 +605,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "Promotion must be a controlled entry point",
             ".github/workflows/ci.yml",
             ".github/workflows/promote.yml",
-            ".github/workflows/docker-build.yml",
-            ".github/workflows/deploy-worker-03.yml",
+            ".github/workflows/release.yml",
             "docker-build",
             "ruyin-website",
             "ruyin-console",
@@ -622,8 +621,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "expected_sha",
             "git merge --ff-only origin/develop",
             "develop CI success must not automatically push main.",
-            "deploy-worker-03.yml` runs only after `docker-build` completes successfully",
-            "Do not check `github.event.workflow_run.event == 'push'` here.",
+            "deploy-worker-03` job runs inside `release.yml` after the `build` job",
             "No automatic develop-to-main promotion without release confirmation.",
         ],
     ),
@@ -681,7 +679,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
     ),
     (
         "docker build workflow publishes six images to GHCR and Aliyun ACR",
-        Path(".github/workflows/docker-build.yml"),
+        Path(".github/workflows/release.yml"),
         [
             "name: docker-build",
             "push:",
@@ -705,7 +703,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
     ),
     (
         "docker build only rebuilds changed images and retags the rest by digest",
-        Path(".github/workflows/docker-build.yml"),
+        Path(".github/workflows/release.yml"),
         [
             "build_images:",
             "Decide build vs retag",
@@ -716,12 +714,12 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
-        "worker-03 deploy consumes docker-build output with GHCR primary and ACR fallback",
-        Path(".github/workflows/deploy-worker-03.yml"),
+        "worker-03 deploy consumes build output with GHCR primary and ACR fallback",
+        Path(".github/workflows/release.yml"),
         [
             "name: deploy-worker-03",
-            "- docker-build",
-            "PASSED_SHA: ${{ github.event.workflow_run.head_sha }}",
+            "needs: [detect, build]",
+            "PASSED_SHA: ${{ github.sha }}",
             'image_tag="sha-$short_sha"',
             "ALIYUN_ACR_REGISTRY",
             "ALIYUN_ACR_NAMESPACE",
@@ -1280,7 +1278,7 @@ FORBIDDEN: list[tuple[str, Path, str]] = [
     ),
     (
         "worker deploy must not require original push event",
-        Path(".github/workflows/deploy-worker-03.yml"),
+        Path(".github/workflows/release.yml"),
         "github.event.workflow_run.event == 'push'",
     ),
 ]
@@ -1377,7 +1375,7 @@ def check_compose_owned_image_mapping() -> list[str]:
 
 
 def check_docker_build_image_matrix() -> list[str]:
-    text = read(PROJECT_ROOT / ".github/workflows/docker-build.yml")
+    text = read(PROJECT_ROOT / ".github/workflows/release.yml")
     matrix_images = set(re.findall(r"^\s+- image: (ruyin-[a-z-]+)\s*$", text, flags=re.MULTILINE))
     problems: list[str] = []
     if matrix_images != EXPECTED_RUYIN_IMAGES:
@@ -1399,7 +1397,7 @@ def check_docker_build_image_matrix() -> list[str]:
 
 
 def check_worker_deploy_fallback_contract() -> list[str]:
-    workflow = read(PROJECT_ROOT / ".github/workflows/deploy-worker-03.yml")
+    workflow = read(PROJECT_ROOT / ".github/workflows/release.yml")
     start_script = read(PROJECT_ROOT / "deploy/worker-03/scripts/23-start-docker-services.sh")
     problems: list[str] = []
 
@@ -1547,6 +1545,8 @@ def main() -> int:
     absent_paths = [
         Path(".github/workflows/quality-gate.yml"),
         Path(".github/workflows/promote-develop-to-main.yml"),
+        Path(".github/workflows/docker-build.yml"),
+        Path(".github/workflows/deploy-worker-03.yml"),
     ]
     for rel_path in absent_paths:
         if (PROJECT_ROOT / rel_path).exists():
