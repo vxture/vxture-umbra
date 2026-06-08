@@ -33,8 +33,9 @@ jobs:
       }}
     outputs:
       deployable: ${{ steps.scope.outputs.deployable }}
+      build_images: ${{ steps.scope.outputs.build_images }}
     steps:
-      - name: Determine deployable scope
+      - name: Determine deployable scope and changed images
         id: scope
         shell: bash
         env:
@@ -43,39 +44,59 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
+          all_images="ruyin-website ruyin-console ruyin-admin ruyin-nginx ruyin-account-api ruyin-subproxy"
           base="$(gh run list --repo "$REPO" --workflow deploy-worker-03.yml --branch main \
             --status success --limit 1 --json headSha --jq '.[0].headSha' 2>/dev/null || true)"
           deployable=true
           reason=no-known-base
+          build_all=true
+          declare -A want
           if [[ -n "$base" ]]; then
             files="$(gh api "repos/$REPO/compare/$base...$HEAD_SHA" \
               --jq '.files[].filename' 2>/dev/null || true)"
             if [[ -z "$files" ]]; then
-              deployable=false
-              reason=no-changes
+              deployable=false; reason=no-changes; build_all=false
             else
-              deployable=false
-              reason=docs-only
+              deployable=false; reason=docs-only; build_all=false
               while IFS= read -r f; do
                 [[ -z "$f" ]] && continue
+                # Deployable unless every change is documentation/metadata.
                 case "$f" in
-                  docs/*|.claude/*) ;;
-                  CLAUDE.md|README.md|LICENSE) ;;
+                  docs/*|.claude/*) : ;;
+                  CLAUDE.md|README.md|LICENSE) : ;;
                   *)
-                    if [[ "${f%/*}" == "$f" && "${f%.md}" != "$f" ]]; then
-                      :
-                    else
-                      deployable=true
-                      reason="deployable:$f"
-                      break
-                    fi
+                    if [[ "${f%/*}" == "$f" && "${f%.md}" != "$f" ]]; then : ; else deployable=true; fi
                     ;;
+                esac
+                # Map each change to the image(s) it feeds. Unknown paths force a
+                # full rebuild (safe: over-building never ships stale code).
+                case "$f" in
+                  portals/website/*) want[ruyin-website]=1 ;;
+                  portals/console/*) want[ruyin-console]=1 ;;
+                  portals/admin/*) want[ruyin-admin]=1 ;;
+                  brand/*) want[ruyin-website]=1; want[ruyin-console]=1; want[ruyin-admin]=1 ;;
+                  services/account/*|docker/ruyin-account-api.Dockerfile) want[ruyin-account-api]=1 ;;
+                  services/subproxy/*|docker/ruyin-subproxy.Dockerfile) want[ruyin-subproxy]=1 ;;
+                  docker/ruyin-nginx.Dockerfile) want[ruyin-nginx]=1 ;;
+                  docs/*|.claude/*|configs/*|deploy/*|scripts/*) : ;;
+                  *.md|LICENSE|.gitignore|.gitattributes|.editorconfig|docker-compose.yml|.env.example) : ;;
+                  *) build_all=true ;;
                 esac
               done <<< "$files"
             fi
           fi
+          if [[ "$deployable" != "true" ]]; then
+            build_json='[]'
+          elif [[ "$build_all" == "true" ]]; then
+            build_json="$(printf '%s\n' $all_images | jq -R . | jq -cs 'sort')"
+          elif [[ ${#want[@]} -eq 0 ]]; then
+            build_json='[]'
+          else
+            build_json="$(printf '%s\n' "${!want[@]}" | jq -R . | jq -cs 'sort')"
+          fi
           echo "deployable=$deployable" >> "$GITHUB_OUTPUT"
-          echo "scope: deployable=$deployable reason=$reason ($base...$HEAD_SHA)"
+          echo "build_images=$build_json" >> "$GITHUB_OUTPUT"
+          echo "scope: deployable=$deployable reason=$reason build_images=$build_json ($base...$HEAD_SHA)"
 
   docker-build:
     name: docker-build
@@ -167,7 +188,22 @@ jobs:
           username: ${{ secrets.ALIYUN_ACR_USERNAME }}
           password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
 
+      - name: Decide build vs retag
+        id: decide
+        shell: bash
+        env:
+          BUILD_IMAGES: ${{ needs.detect.outputs.build_images }}
+          IMAGE: ${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          if printf '%s' "$BUILD_IMAGES" | jq -e --arg i "$IMAGE" 'any(. == $i)' >/dev/null; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build and push image
+        if: ${{ steps.decide.outputs.build == 'true' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.context }}
@@ -185,3 +221,23 @@ jobs:
             ghcr.io/${{ env.GHCR_NAMESPACE }}/${{ matrix.image }}:${{ steps.meta.outputs.image_tag }}
             ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/${{ matrix.image }}:latest
             ${{ env.ACR_REGISTRY }}/${{ env.ACR_NAMESPACE }}/${{ matrix.image }}:${{ steps.meta.outputs.image_tag }}
+
+      - name: Retag unchanged image to deploy tag
+        if: ${{ steps.decide.outputs.build == 'false' }}
+        shell: bash
+        env:
+          IMAGE: ${{ matrix.image }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+        run: |
+          set -euo pipefail
+          # The image's source did not change this revision, so do not rebuild
+          # (a rebuild would mint a new digest and force a pointless container
+          # recreate on deploy). Copy the existing :latest manifest to the
+          # immutable per-commit deploy tag; the digest is preserved, so the
+          # deploy keeps the running container.
+          for repo in \
+            "ghcr.io/${GHCR_NAMESPACE}/${IMAGE}" \
+            "${ACR_REGISTRY}/${ACR_NAMESPACE}/${IMAGE}"; do
+            echo "Retagging ${repo}:latest -> ${repo}:${IMAGE_TAG}"
+            docker buildx imagetools create -t "${repo}:${IMAGE_TAG}" "${repo}:latest"
+          done

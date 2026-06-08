@@ -706,6 +706,18 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "docker build only rebuilds changed images and retags the rest by digest",
+        Path(".github/workflows/docker-build.yml"),
+        [
+            "build_images:",
+            "Decide build vs retag",
+            "steps.decide.outputs.build == 'true'",
+            "steps.decide.outputs.build == 'false'",
+            "docker buildx imagetools create",
+            "${repo}:${IMAGE_TAG}",
+        ],
+    ),
+    (
         "worker-03 deploy consumes docker-build output with GHCR primary and ACR fallback",
         Path(".github/workflows/deploy-worker-03.yml"),
         [
