@@ -36,8 +36,7 @@ feature/fix branch
   -> merge to develop
   -> ci on develop
   -> controlled promotion develop -> main
-  -> docker-build on main push
-  -> deploy-worker-03
+  -> release on main push (detect -> build -> deploy jobs)
 ```
 
 Production meaning:
@@ -57,14 +56,15 @@ needed, it belongs in the promotion step before `main` advances.
 | Pull request to `main` | yes | no | no | no |
 | Push to `develop` | yes | no automatic promotion | no | no |
 | Manual promotion `develop -> main` | validates and pushes | yes | no | no |
-| Push to `main` | no (already validated) | no | on push | after Docker build success |
+| Push to `main` | no (already validated) | no | `release` build job | `release` deploy job |
 | Tag push | no current behavior | no | optional future semver build | no |
 
 CI does not run again on `main`. Promotion only fast-forwards `main` to a
 `develop` revision whose `quality-gate` already passed (promote.yml verifies it,
 and the `main` ruleset requires that same check on the SHA), so re-running CI on
-`main` would re-test byte-identical content. `docker-build` therefore triggers
-directly on the `main` push.
+`main` would re-test byte-identical content. The `release` workflow therefore
+triggers directly on the `main` push and runs detect -> build -> deploy as
+sequential jobs (no `workflow_run` hops, one change-detection pass).
 
 Important constraint:
 
@@ -83,8 +83,7 @@ Target workflow files:
 |---|---|---|---|
 | `.github/workflows/ci.yml` | `ci` | `quality-gate` | Static checks and portal builds |
 | `.github/workflows/promote.yml` | `branch-promotion` | `fast-forward-promotion` | Manual controlled promotion |
-| `.github/workflows/docker-build.yml` | `docker-build` | `docker-build` | Build and push production images |
-| `.github/workflows/deploy-worker-03.yml` | `deploy-worker-03` | `deploy-worker-03` | Production deployment after image push |
+| `.github/workflows/release.yml` | `release` | `detect` / `docker-build` / `deploy-worker-03` | Build and push images, then deploy worker-03 |
 
 Naming policy:
 
@@ -206,12 +205,13 @@ Audit output:
 - If a promotion PR convention is adopted later, the workflow should comment on
   that PR after successful promotion.
 
-## Docker Build Workflow
+## Release Workflow
 
-`docker-build.yml` runs on `push` to `main`. It builds the six Umbra-owned
-runtime images and pushes each image to both GHCR and Aliyun ACR. `main` is only
-reachable by fast-forward promotion of an already-validated `develop` SHA, so the
-push is trusted and no separate `main` CI run precedes it.
+`release.yml` runs on `push` to `main` and contains the whole post-promotion
+pipeline as three sequential jobs: `detect` (change detection, runs once),
+`docker-build` (build/retag the six images), and `deploy-worker-03` (SSH deploy).
+`main` is only reachable by fast-forward promotion of an already-validated
+`develop` SHA, so the push is trusted and no separate `main` CI run precedes it.
 
 Trigger:
 
@@ -222,7 +222,7 @@ on:
       - main
 ```
 
-The build must use the pushed SHA:
+The `docker-build` job (and the `deploy-worker-03` job) use the pushed SHA:
 
 ```bash
 PASSED_SHA="${{ github.sha }}"
@@ -306,42 +306,28 @@ back to Aliyun ACR after GHCR pull retries are exhausted. worker-03 is a Vultr
 Tokyo server, so GHCR is the primary runtime pull source and the Hangzhou ACR
 mirror is retained as a backup for the same immutable image tags.
 
-## Deploy Workflow
+## Deploy Job
 
-`deploy-worker-03.yml` runs only after `docker-build` completes successfully on
-a `main` push. It does not build images.
+The `deploy-worker-03` job runs inside `release.yml` after the `build` job
+completes successfully. It does not build images.
 
-Trigger:
-
-```yaml
-on:
-  workflow_run:
-    workflows:
-      - docker-build
-    types:
-      - completed
-    branches:
-      - main
-```
-
-Required job condition:
+Job dependency and condition:
 
 ```yaml
-if: >-
-  ${{
-    github.event.workflow_run.conclusion == 'success' &&
-    github.event.workflow_run.head_branch == 'main'
-  }}
+needs: [detect, build]
+if: ${{ needs.detect.outputs.deployable == 'true' }}
+environment:
+  name: worker-03
 ```
 
-Do not check `github.event.workflow_run.event == 'push'` here. This deploy
-workflow listens to the `docker-build` workflow, whose event is `workflow_run`;
-the original `main` push has already been validated by `docker-build`.
+The deploy job depends on `build`, so a failed build skips the deploy; and it
+shares the single `detect` output (no second change-detection pass). It deploys
+only when there is a deployable change.
 
 Deployment must use the exact SHA that was built and pushed:
 
 ```bash
-PASSED_SHA="${{ github.event.workflow_run.head_sha }}"
+PASSED_SHA="${{ github.sha }}"
 ```
 
 Remote command contract:
@@ -443,13 +429,13 @@ Before enabling the workflows:
 - [x] Rename or replace the initial `quality-gate.yml` with `ci.yml`.
 - [x] Replace automatic `promote-develop-to-main.yml` with controlled
       `promote.yml`.
-- [x] Add `docker-build.yml` for the six ACR/GHCR images.
+- [x] Add `release.yml` (detect -> build -> deploy) for the six ACR/GHCR images
+      and the worker-03 deploy.
 - [x] Add dedicated Dockerfiles for `ruyin-nginx`, `ruyin-account-api`, and
       `ruyin-subproxy`.
 - [x] Ensure `docker-compose.yml` uses the six ACR repository names in `image:`
       fields.
-- [x] Ensure `deploy-worker-03.yml` listens to workflow `docker-build`, not
-      `ci`.
+- [x] Ensure the `release` `deploy-worker-03` job runs after the `build` job.
 - [ ] Add the required GitHub secrets.
 - [ ] Configure repository rulesets for `develop` and `main`.
 - [ ] Run one dry promotion against a disposable branch or test repository if
