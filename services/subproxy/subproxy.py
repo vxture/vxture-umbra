@@ -9,7 +9,8 @@ profile title and download filename to "<prefix>-<username>".
 
 # Runtime image is digest-pinned at deploy time (deploy/worker-03/scripts/
 # 26-pin-image-digests.py), so only services whose image digest changed are
-# recreated on deploy.
+# recreated on deploy. The build pipeline rebuilds only changed images and
+# retags the rest, so unchanged services keep their digest and stay running.
 
 from __future__ import annotations
 
