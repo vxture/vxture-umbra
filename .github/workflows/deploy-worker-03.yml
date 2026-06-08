@@ -42,9 +42,10 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          bash scripts/ci/changed-scope.sh "${{ github.event.workflow_run.head_sha }}" \
+          bash scripts/ci/changed-scope.sh "$HEAD_SHA" \
             | tee -a "$GITHUB_OUTPUT"
 
   deploy:
