@@ -58,7 +58,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --check
-          for file in deploy/worker-03/*.sh deploy/worker-03/scripts/*.sh deploy/worker-03/lib/*.sh scripts/checks/*.sh scripts/github/*.ps1; do
+          for file in deploy/worker-03/*.sh deploy/worker-03/scripts/*.sh deploy/worker-03/lib/*.sh scripts/checks/*.sh scripts/ci/*.sh scripts/github/*.ps1; do
             [ -f "$file" ] || continue
             case "$file" in
               *.sh) bash -n "$file" ;;

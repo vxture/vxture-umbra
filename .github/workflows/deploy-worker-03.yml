@@ -16,17 +16,43 @@ concurrency:
 permissions:
   contents: read
   packages: read
+  actions: read
 
 jobs:
-  deploy:
-    name: deploy-worker-03
+  detect:
+    name: detect-deployable-changes
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
     if: >-
       ${{
         github.event.workflow_run.conclusion == 'success' &&
         github.event.workflow_run.head_branch == 'main'
       }}
+    outputs:
+      deployable: ${{ steps.scope.outputs.deployable }}
+    steps:
+      - name: Checkout passed revision
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Determine deployable scope
+        id: scope
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash scripts/ci/changed-scope.sh "${{ github.event.workflow_run.head_sha }}" \
+            | tee -a "$GITHUB_OUTPUT"
+
+  deploy:
+    name: deploy-worker-03
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: detect
+    if: ${{ needs.detect.outputs.deployable == 'true' }}
     environment:
       name: worker-03
 
