@@ -95,23 +95,36 @@ jobs:
             nextcache-${{ matrix.portal }}-${{ hashFiles(format('portals/{0}/package-lock.json', matrix.portal)) }}-
             nextcache-${{ matrix.portal }}-
 
+      # Install with a portal-local .npmrc and no --prefix, mirroring the
+      # portal Dockerfiles. Running npm ci from the repo root against the root
+      # .npmrc with --prefix authenticates the package metadata request but
+      # drops the token on the GitHub Packages /download/ tarball fetch, so the
+      # @vxture downloads fail 401 ("authentication token not provided"). A
+      # co-located .npmrc resolves auth for the tarball requests too. The
+      # placeholder is written literally; npm substitutes NODE_AUTH_TOKEN from
+      # the environment, so the secret never passes through the shell.
       - name: Install dependencies
         shell: bash
+        working-directory: portals/${{ matrix.portal }}
         run: |
           set -euo pipefail
-          npm ci --prefix portals/${{ matrix.portal }}
+          printf '@vxture:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc
+          trap 'rm -f .npmrc' EXIT
+          npm ci
 
       - name: Type check
         shell: bash
+        working-directory: portals/${{ matrix.portal }}
         run: |
           set -euo pipefail
-          npm run type-check --prefix portals/${{ matrix.portal }}
+          npm run type-check
 
       - name: Production build
         shell: bash
+        working-directory: portals/${{ matrix.portal }}
         run: |
           set -euo pipefail
-          npm run build --prefix portals/${{ matrix.portal }}
+          npm run build
 
   # Aggregator that preserves the required status-check name. Branch rulesets
   # require "quality-gate"; keeping this job named exactly that means the
