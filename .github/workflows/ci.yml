@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - develop
+      # main never receives PRs in the normal flow (it only advances via
+      # promote.yml's fast-forward). This trigger is a deliberate guard: if a
+      # PR is ever opened against main directly, the quality gate still runs.
       - main
   push:
     branches:
@@ -20,37 +23,21 @@ env:
   NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
 jobs:
-  quality-gate:
-    name: quality-gate
+  # Repo-global checks that do not depend on portal node_modules. Runs in
+  # parallel with the portal-build matrix.
+  static-checks:
+    name: static-checks
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: |
-            portals/website/package-lock.json
-            portals/console/package-lock.json
-            portals/admin/package-lock.json
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-
-      - name: Install portal dependencies
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm ci --prefix portals/website
-          npm ci --prefix portals/console
-          npm ci --prefix portals/admin
 
       - name: Static script checks
         shell: bash
@@ -66,26 +53,91 @@ jobs:
           python -m compileall -q deploy scripts services
           python scripts/checks/06-check-deploy-contracts.py
 
-      - name: Portal type checks
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run type-check --prefix portals/website
-          npm run type-check --prefix portals/console
-          npm run type-check --prefix portals/admin
-
-      - name: Portal production builds
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm run build --prefix portals/website
-          npm run build --prefix portals/console
-          npm run build --prefix portals/admin
-
       - name: Docker Compose config validation
         shell: bash
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
         run: |
           set -euo pipefail
           docker compose --env-file .env.example config --quiet
+
+  # One leg per portal so type-check + production build run in parallel rather
+  # than serially. fail-fast is off so one portal's failure still reports the
+  # others. The Next.js build cache is restored/saved per portal to make
+  # repeat builds incremental instead of cold.
+  portal-build:
+    name: portal-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        portal:
+          - website
+          - console
+          - admin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: portals/${{ matrix.portal }}/package-lock.json
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: portals/${{ matrix.portal }}/.next/cache
+          key: nextcache-${{ matrix.portal }}-${{ hashFiles(format('portals/{0}/package-lock.json', matrix.portal)) }}-${{ github.sha }}
+          restore-keys: |
+            nextcache-${{ matrix.portal }}-${{ hashFiles(format('portals/{0}/package-lock.json', matrix.portal)) }}-
+            nextcache-${{ matrix.portal }}-
+
+      # Install with a portal-local .npmrc and no --prefix, mirroring the
+      # portal Dockerfiles. Running npm ci from the repo root against the root
+      # .npmrc with --prefix authenticates the package metadata request but
+      # drops the token on the GitHub Packages /download/ tarball fetch, so the
+      # @vxture downloads fail 401 ("authentication token not provided"). A
+      # co-located .npmrc resolves auth for the tarball requests too. The
+      # placeholder is written literally; npm substitutes NODE_AUTH_TOKEN from
+      # the environment, so the secret never passes through the shell.
+      - name: Install dependencies
+        shell: bash
+        working-directory: portals/${{ matrix.portal }}
+        run: |
+          set -euo pipefail
+          printf '@vxture:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}\n' > .npmrc
+          trap 'rm -f .npmrc' EXIT
+          npm ci
+
+      - name: Type check
+        shell: bash
+        working-directory: portals/${{ matrix.portal }}
+        run: |
+          set -euo pipefail
+          npm run type-check
+
+      - name: Production build
+        shell: bash
+        working-directory: portals/${{ matrix.portal }}
+        run: |
+          set -euo pipefail
+          npm run build
+
+  # Aggregator that preserves the required status-check name. Branch rulesets
+  # require "quality-gate"; keeping this job named exactly that means the
+  # required check still maps after splitting the work into parallel jobs. It
+  # only succeeds when every upstream job succeeds; any failure leaves this job
+  # skipped, which the ruleset treats as not-passing and blocks the merge.
+  quality-gate:
+    name: quality-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [static-checks, portal-build]
+
+    steps:
+      - name: Confirm upstream gates passed
+        shell: bash
+        run: echo "static-checks and portal-build succeeded"
