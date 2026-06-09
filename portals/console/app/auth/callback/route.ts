@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
   const validInvite = pendingInvite && INVITE_RE.test(pendingInvite) ? pendingInvite : null;
   const destination = validInvite
     ? `/register?invite=${encodeURIComponent(validInvite)}`
-    : "/dashboard";
+    : "/";
 
   const response = redirectClearingState(destination, target);
   response.cookies.set(PENDING_INVITE_COOKIE, "", {

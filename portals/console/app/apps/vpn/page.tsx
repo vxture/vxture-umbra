@@ -1,6 +1,6 @@
-import { AccountApp } from "../ui/account-app";
+import { AccountApp } from "../../ui/account-app";
 
-export default async function RegisterPage({
+export default async function VpnPage({
   searchParams,
 }: {
   searchParams: Promise<{ invite?: string | string[] }>;

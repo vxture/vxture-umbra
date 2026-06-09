@@ -1,5 +1,5 @@
 import { AccountApp } from "../ui/account-app";
 
 export default function DashboardPage() {
-  return <AccountApp initialView="dashboard" />;
+  return <AccountApp initialView="home" />;
 }

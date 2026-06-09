@@ -20,8 +20,8 @@ export function Shell({ children }: { children: ReactNode }) {
           </span>
         </a>
         <nav className="actions">
-          <a className="btn btn-secondary" href="/dashboard">
-            Dashboard
+          <a className="btn btn-secondary" href="/">
+            Apps
           </a>
           <a className="btn btn-secondary" href="/invites">
             Invites

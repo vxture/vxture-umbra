@@ -1,10 +1,22 @@
 export interface VxtureUser {
   id: string;
   email: string;
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
   tenantId: string;
   role: string;
   permissions: string[];
   provider: string;
+}
+
+export interface AppCard {
+  key: string;
+  name: string;
+  href: string;
+  bindable: boolean;
+  secondaryAuth: boolean;
+  status: "active" | "unbound" | "disabled";
 }
 
 export interface AccountBinding {
@@ -31,6 +43,7 @@ export interface SessionPayload {
   ssoUrl?: string;
   user?: VxtureUser;
   account?: AccountBinding | null;
+  apps?: AppCard[];
 }
 
 export interface AdminUserRow {
