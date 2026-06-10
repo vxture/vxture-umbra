@@ -1,8 +1,8 @@
-/* ===== Admin-specific styles =====
- * DS @import happens in layout.tsx before this file.
- * Only keep layout composition and component styles not owned by DS.
- * All --vx-* tokens (and the .dark palette) are provided by
- * @vxture/design-system; do not redefine a local color palette here.
+/* ===== Admin shell composition =====
+ * Thin sidebar + topbar shell composed from DS Shell* primitives, standing in
+ * for the DS AppShell (see docs/design/ds-extension-requests.md) until it lands.
+ * Layout only - colors, fonts, and control looks come from
+ * @vxture/design-system. Do not add design primitives here.
  */
 
 * {
@@ -13,7 +13,6 @@ html,
 body {
   min-height: 100vh;
   margin: 0;
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   background: var(--vx-color-background);
   color: var(--vx-color-text-primary);
 }
@@ -23,195 +22,141 @@ a {
   text-decoration: none;
 }
 
-/* --- Page shell --- */
-.admin-page {
+/* Shell frame */
+
+.admin-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 var(--vx-space-2xl);
 }
 
-/* --- Header --- */
-.admin-header {
-  /* vxture-header rhythm: 64px bar height, 48px (--vx-space-3xl) gap to content.
-     Horizontal padding comes from .admin-page so header aligns with content. */
+.admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--vx-space-lg);
   min-height: var(--vx-space-4xl);
-  margin-bottom: var(--vx-space-3xl);
+  padding: 0 var(--vx-space-2xl);
+  border-bottom: 1px solid var(--vx-color-border);
+  background: color-mix(in srgb, var(--vx-color-surface) 86%, transparent);
+  backdrop-filter: blur(12px);
 }
 
-.brand {
+.admin-topbar-end {
   display: flex;
   align-items: center;
-  min-width: 0;
+  gap: var(--vx-space-md);
+}
+
+.admin-env {
+  font-size: var(--vx-typography-body-sm-size);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vx-color-text-muted);
+}
+
+.admin-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+.admin-sidebar {
+  border-right: 1px solid var(--vx-color-border);
+  padding: var(--vx-space-lg) var(--vx-space-md);
+}
+
+.admin-nav {
+  display: grid;
+  gap: 4px;
+  position: sticky;
+  top: calc(var(--vx-space-4xl) + var(--vx-space-lg));
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
   gap: var(--vx-space-sm);
+  padding: 10px 12px;
+  border-radius: var(--vx-radius-md);
+  color: var(--vx-color-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background var(--vx-duration-fast) var(--vx-ease-standard),
+    color var(--vx-duration-fast) var(--vx-ease-standard);
 }
 
-/* ===== Unified portal header: brand lockup + controls =====
- * Kept identical across website / console / admin. Tokens from @vxture/design-system.
- */
-
-/* Brand lockup: product wordmark only (Funnel Display, the DS brand font). */
-.vx-brand-name {
-  flex: 0 0 auto;
-  font-family: var(--font-brand);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: var(--vx-typography-logo-letter-spacing);
+.admin-nav-item:hover {
+  background: var(--vx-color-surface-muted);
   color: var(--vx-color-text-primary);
 }
 
-/* Unified icon control (theme + language). */
-.icon-button {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-md);
-  color: var(--vx-color-text-muted);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    transform var(--vx-duration-fast) var(--vx-ease-standard),
-    color var(--vx-duration-fast) var(--vx-ease-standard),
-    border-color var(--vx-duration-fast) var(--vx-ease-standard),
-    background var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.icon-button:hover {
-  color: var(--vx-color-text-primary);
-  border-color: var(--vx-color-border-strong);
-  transform: translateY(-1px);
-}
-
-.icon-button svg {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-
-/* --- Cards --- */
-.admin-cards {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vx-space-xl);
-  flex: 1;
-}
-
-.admin-card {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--vx-space-xl);
-  padding: var(--vx-space-2xl);
-  background: color-mix(in srgb, var(--vx-color-surface) 94%, transparent);
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-lg);
-  box-shadow: var(--vx-shadow-sm);
-  transition:
-    transform var(--vx-duration-fast) var(--vx-ease-standard),
-    border-color var(--vx-duration-fast) var(--vx-ease-standard),
-    box-shadow var(--vx-duration-fast) var(--vx-ease-standard);
-  cursor: pointer;
-}
-
-.admin-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--vx-color-border-strong);
-  box-shadow: var(--vx-shadow-lg);
-}
-
-/* --- Card icon --- */
-.card-icon {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--vx-radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.card-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.card-icon-vpn {
-  background: var(--vx-color-success-surface);
-  color: var(--vx-color-success);
-  border: 1px solid var(--vx-color-success-border);
-}
-
-.card-icon-pass {
-  background: var(--vx-color-warning-surface);
-  color: var(--vx-color-warning);
-  border: 1px solid var(--vx-color-warning-border);
-}
-
-/* --- Card body --- */
-.card-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.card-title {
-  font-size: var(--vx-typography-heading-4-size);
-  font-weight: 600;
-  margin: 0 0 6px;
-}
-
-.card-desc {
-  font-size: var(--vx-typography-body-sm-size);
-  line-height: var(--vx-typography-body-sm-line-height);
-  color: var(--vx-color-text-muted);
-  margin: 0 0 10px;
-}
-
-.card-link {
-  font-size: var(--vx-typography-body-sm-size);
-  font-weight: 600;
+.admin-nav-item.is-active {
+  background: var(--vx-color-primary-soft);
   color: var(--vx-color-primary);
 }
 
-.admin-card:hover .card-link {
-  color: var(--vx-color-primary-strong);
+/* Content */
+
+.admin-content {
+  min-width: 0;
+  width: min(100%, 1280px);
+  padding: var(--vx-space-2xl);
 }
 
-/* --- Footer --- */
-.admin-footer {
-  padding: var(--vx-space-3xl) 0 var(--vx-space-xl);
-  font-size: var(--vx-typography-body-sm-size);
-  color: var(--vx-color-text-muted);
-  text-align: center;
-  opacity: 0.7;
+.admin-stack {
+  display: grid;
+  gap: var(--vx-space-xl);
 }
 
-/* --- Responsive --- */
-@media (max-width: 560px) {
-  .admin-card {
-    flex-direction: column;
-    gap: var(--vx-space-lg);
+.admin-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--vx-space-lg);
+}
+
+.admin-tool-head {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-md);
+}
+
+.admin-tool-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--vx-radius-md);
+  background: var(--vx-color-primary-soft);
+  color: var(--vx-color-primary);
+}
+
+.admin-tool-body {
+  display: grid;
+  gap: var(--vx-space-md);
+}
+
+/* Responsive: collapse the sidebar into a horizontal nav strip. */
+
+@media (max-width: 760px) {
+  .admin-body {
+    grid-template-columns: 1fr;
   }
 
-  .card-icon {
-    width: 48px;
-    height: 48px;
+  .admin-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--vx-color-border);
   }
 
-  .card-icon svg {
-    width: 26px;
-    height: 26px;
+  .admin-nav {
+    position: static;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    overflow-x: auto;
   }
 }
