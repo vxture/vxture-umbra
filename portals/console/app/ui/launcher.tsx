@@ -72,7 +72,7 @@ export function Launcher({ session }: { session: SessionPayload }) {
   const avatarUrl = session.user?.avatarUrl;
 
   return (
-    <Shell>
+    <Shell user={session.user}>
       <div className="page-stack">
         <header className="launcher-greeting">
           <Avatar>

@@ -8,15 +8,13 @@ import { useLocale } from "@/lib/locale-provider";
 import { ruyinBrand, signatureSrc } from "@/lib/brand";
 import type { Locale } from "@vxture/shared";
 
-const HERO_TEXT: Record<Locale, { eyebrow: string; lead: string; action: string }> = {
+const HERO_TEXT: Record<Locale, { lead: string; action: string }> = {
   "en-US": {
-    eyebrow: "Ruyin Digital Entry",
-    lead: "Secure, intelligent network access by vxture studio.",
+    lead: "Build your own dedicated intelligent companion",
     action: "VXTURE STUDIO",
   },
   "zh-CN": {
-    eyebrow: "如影数字入口",
-    lead: "如影智能安全入口，连接你与世界。",
+    lead: "打造你的专属智能搭档",
     action: "VXTURE STUDIO",
   },
 };
@@ -32,7 +30,11 @@ export default function HomePage() {
       <SiteHeader />
       <main className="body-section">
         <section className="hero" aria-labelledby="hero-title">
-          <div className="eyebrow">{text.eyebrow}</div>
+          <div className="eyebrow">
+            <span className="eyebrow-studio">Virtual Nature Studio</span>
+            <span className="eyebrow-sep"> | </span>
+            <span className="eyebrow-product">Ruyin Agent</span>
+          </div>
           <div className="signature">
             <img
               className="signature-art"

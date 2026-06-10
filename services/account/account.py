@@ -793,6 +793,8 @@ class AccountHandler(BaseHTTPRequestHandler):
             self.api_bind_invite()
         elif path == "/api/account/reset-subscription":
             self.api_reset_subscription()
+        elif path == "/api/account/logout":
+            self.api_logout()
         elif path == "/api/account/admin/login":
             self.api_admin_login()
         elif path == "/api/account/admin/logout":
@@ -933,6 +935,20 @@ class AccountHandler(BaseHTTPRequestHandler):
                 **auth_config,
             },
         )
+
+    def api_logout(self) -> None:
+        # Clear the Vxture SSO access cookie this portal reads. The cookie may
+        # also be set on a shared parent domain by the SSO upstream; clearing it
+        # here removes the console-domain copy. The client then reloads into the
+        # anonymous SSO sign-in view.
+        body = b'{"status":"ok"}'
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.clear_cookie(VXTURE_COOKIE_ACCESS, path="/")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def api_dashboard(self) -> None:
         user = self.current_vxture_user()

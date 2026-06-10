@@ -157,6 +157,44 @@ Otherwise the Umbra usage audit will allowlist that single token read.
 
 Reference: `portals/website/components/network-canvas.tsx` (umbra)
 
+## 5. Mirror typography size tokens into :root (no-Tailwind consumability)
+
+Gap: the DS is authored for a Tailwind v4 build. `styles/globals.css` does
+`@import "tailwindcss"` and `styles/typography.css` declares the typography
+tokens inside an `@theme {}` block (sizes, line-heights, letter-spacings, plus
+the `--font-*` shorthands). `@theme {}` is a Tailwind construct: a browser does
+not understand it and drops the whole block. The tokens only become real `:root`
+custom properties after `@tailwindcss/postcss` runs.
+
+That breaks the working rule above ("usable without any portal-side utility
+classes"): a consumer that does not run the Tailwind compiler gets every
+`--vx-typography-*` token undefined, so any rule using one
+(`font-size: var(--vx-typography-heading-2-size)`) becomes invalid and falls
+back to the inherited 16px. The DS already half-solves this - it re-declares the
+`--font-*` and `--vx-font-*` tokens a second time inside a plain `:root {}` block
+in `typography.css`, so font-family resolves without Tailwind. The
+`--vx-typography-*` size/line-height/letter-spacing tokens were simply not given
+the same `:root` mirror.
+
+Request: in `typography.css`, mirror the `--vx-typography-*` tokens into the
+existing `:root {}` block exactly as the `--font-*` tokens already are (or move
+them out of `@theme` entirely), so the DS token layer is fully resolvable with
+plain CSS. This keeps `@theme` for Tailwind consumers while making the package
+framework-agnostic for the no-Tailwind portals.
+
+Acceptance:
+
+- A consumer with no Tailwind/PostCSS build sees every `--vx-typography-*` token
+  defined under `:root` (verifiable: the served CSS contains no literal
+  `@theme {` and `var(--vx-typography-heading-2-size)` resolves).
+- No change in values or behavior for Tailwind consumers.
+
+Interim (Umbra, 2026-06-10): all three portals added `@tailwindcss/postcss` +
+`postcss.config.mjs` so `@theme` compiles to `:root`. This unblocks the portals
+(brand wordmark, `.lead`, `.eyebrow`, hero CTA) but pulls in the Tailwind
+compiler + preflight, which the no-Tailwind rule wanted to avoid. Once the DS
+ships the `:root` mirror, Umbra can drop the PostCSS dependency.
+
 ## Notes on tokens and theme
 
 - `brands/ruyin.css` must expose the brand gradient token (`--vx-gradient-brand`)

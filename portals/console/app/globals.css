@@ -5,26 +5,67 @@
  * docs/design/ds-extension-requests.md.
  */
 
+:root {
+  /* Fixed header height (matches the website portal). */
+  --ruyin-header-height: 64px;
+  /* Content track shared by header inner, main, and footer inner. */
+  --ruyin-shell-max-width: 1536px;
+}
+
 /* Shell + layout */
 
 .app-shell {
-  /* 1536px max content width + 32px (--vx-space-2xl) gutter. */
-  width: min(100%, 1536px);
+  /* Shared content track + 32px (--vx-space-2xl) gutter. Top padding clears the
+     fixed header. */
+  width: min(100%, var(--ruyin-shell-max-width));
   margin: 0 auto;
-  padding: 0 var(--vx-space-2xl) var(--vx-space-3xl);
+  padding:
+    calc(var(--ruyin-header-height) + var(--vx-space-xl))
+    var(--vx-space-2xl)
+    var(--vx-space-3xl);
 }
 
 body {
   background: var(--vx-color-background);
 }
 
-.topbar {
+/* Header chrome: fixed, transparent, glass on scroll - mirrors the website
+   portal. Positions the bar only; all colors/fonts/control looks come from DS. */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  background: color-mix(in srgb, var(--vx-color-surface) 0%, transparent);
+  transition:
+    background var(--vx-duration-moderate) var(--vx-ease-standard),
+    box-shadow var(--vx-duration-moderate) var(--vx-ease-standard),
+    backdrop-filter var(--vx-duration-moderate) var(--vx-ease-standard);
+}
+
+.site-header.is-scrolled {
+  background: color-mix(in srgb, var(--vx-color-surface) 82%, transparent);
+  box-shadow: var(--vx-shadow-lg);
+  backdrop-filter: blur(18px);
+}
+
+.site-header-inner {
+  width: min(100%, var(--ruyin-shell-max-width));
+  min-height: var(--ruyin-header-height);
+  margin: 0 auto;
+  padding: 0 var(--vx-space-2xl);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--vx-space-lg);
-  min-height: var(--vx-space-4xl);
-  margin-bottom: var(--vx-space-3xl);
+}
+
+.site-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--vx-space-sm);
 }
 
 .site-tools {
@@ -32,6 +73,33 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: var(--vx-space-sm);
+}
+
+/* Brand wordmark: Funnel Display at the DS heading-3 size with the DS logo
+   tracking - identical to the website portal. */
+.site-brand-name {
+  font-family: var(--font-brand);
+  font-size: var(--vx-typography-heading-3-size);
+  letter-spacing: var(--vx-typography-logo-letter-spacing);
+}
+
+/* Footer: DS ShellLegalFooter aligned to the same content track, with a top
+   hairline and small muted legal text - identical to the website portal. */
+.site-footer-inner {
+  width: min(100%, var(--ruyin-shell-max-width));
+  min-height: 48px;
+  border-top: 1px solid var(--vx-color-border);
+  margin: 0 auto;
+  padding: 0 var(--vx-space-2xl);
+  font-size: 14px;
+  color: var(--vx-color-text-muted);
+}
+
+/* DS Button asChild renders an <a>; the `a { color: inherit }` resets outrank
+   the button's zero-specificity color, so the filled SSO button would inherit
+   dark text. Re-assert the on-brand color, scoped to the auth card. */
+.auth-card .vx-btn--default {
+  color: var(--vx-control-on-brand);
 }
 
 .muted {
@@ -122,10 +190,5 @@ body {
 @media (max-width: 800px) {
   .split {
     grid-template-columns: 1fr;
-  }
-
-  .topbar {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }

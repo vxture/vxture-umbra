@@ -10,16 +10,18 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@vxture/design-system": "^1.3.0",
+    "@vxture/shared": "^1.2.2",
     "next": "^15.5.6",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "@vxture/design-system": "^1.3.0",
-    "@vxture/shared": "^1.2.2"
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.3.0",
     "typescript": "^5.9.3"
   },
   "engines": {

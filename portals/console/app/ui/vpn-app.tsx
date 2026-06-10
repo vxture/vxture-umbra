@@ -89,7 +89,7 @@ export function VpnApp({
 
   if (!account) {
     return (
-      <Shell>
+      <Shell user={session.user}>
         <section className="auth-card page-stack">
           <PageHeader
             title="Set up VPN"
@@ -128,7 +128,7 @@ export function VpnApp({
   ];
 
   return (
-    <Shell>
+    <Shell user={session.user}>
       <div className="page-stack">
         <PageHeader
           title={account.displayName}

@@ -88,6 +88,22 @@ a {
   gap: var(--vx-space-sm);
 }
 
+/* DS Button asChild renders an <a>, but both this file's and the DS
+   globals-base's `a { color: inherit }` (specificity 0,0,1) outrank the DS
+   button's own zero-specificity :where(.vx-btn--*) color - so the filled Log in
+   button inherited dark header text (unreadable on the brand fill) and the ghost
+   Sign up lost its brand text. Re-assert the DS colors at class specificity,
+   scoped to the header. Ghost is listed after default so it wins the size-class
+   collision (size="default" also emits .vx-btn--default). */
+.site-actions .vx-btn--default {
+  color: var(--vx-control-on-brand);
+}
+
+.site-actions .vx-btn--ghost,
+.site-actions .vx-btn--outline {
+  color: var(--vx-control-brand);
+}
+
 .site-tools {
   display: flex;
   align-items: center;
@@ -96,11 +112,13 @@ a {
 }
 
 /* Brand wordmark: DS ShellBrand's label uses neither the brand typeface nor a
-   larger size by default. Apply the brand font (Funnel Display) at 20px. */
+   larger size by default. Apply the brand font (Funnel Display) at the DS
+   heading-3 size (24px) with the DS logo tracking - the same pairing the DS's
+   own brand lockup (.vx-brand-name) uses. */
 .site-brand-name {
   font-family: var(--font-brand);
-  font-size: var(--vx-typography-heading-2-size);
-  letter-spacing: var(--vx-typography-logo-large-letter-spacing);
+  font-size: var(--vx-typography-heading-3-size);
+  letter-spacing: var(--vx-typography-logo-letter-spacing);
 }
 
 /* Hero: open, centered, wide. No section dividers - whitespace separates. */
@@ -109,10 +127,10 @@ a {
   z-index: 1;
   width: min(100%, var(--ruyin-shell-max-width));
   margin: auto;
-  padding:
-    calc(var(--ruyin-header-height) + var(--vx-space-4xl))
-    var(--ruyin-shell-gutter)
-    var(--vx-space-4xl);
+  /* Symmetric vertical whitespace: margin:auto centers the hero in the column,
+     so equal top/bottom padding reads as balanced. The fixed header is
+     transparent at the top, so it does not consume visible space. */
+  padding: var(--vx-space-4xl) var(--ruyin-shell-gutter);
   display: grid;
   justify-items: center;
   text-align: center;
@@ -124,12 +142,26 @@ a {
   justify-items: center;
 }
 
+/* Hero kicker / title: "Virtual Nature Studio | Ruyin Agent" - studio name in
+   the secondary text color, product name in the brand primary, separator muted.
+   Per-span colors, so .eyebrow itself sets no base color. */
 .eyebrow {
   margin-bottom: var(--vx-space-md);
-  color: var(--vx-color-success);
-  font-size: var(--vx-typography-body-sm-size);
+  font-size: var(--vx-typography-body-lg-size);
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+.eyebrow-studio {
+  color: var(--vx-color-text-secondary);
+}
+
+.eyebrow-product {
+  color: var(--vx-color-primary);
+}
+
+.eyebrow-sep {
+  color: var(--vx-color-text-muted);
 }
 
 .signature {

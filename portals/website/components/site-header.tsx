@@ -58,7 +58,7 @@ export function SiteHeader() {
             />
           </div>
 
-          <Button variant="secondary" asChild>
+          <Button variant="ghost" asChild>
             <a href={ruyinBrand.registerUrl}>{text.register}</a>
           </Button>
           <Button asChild>
