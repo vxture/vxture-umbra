@@ -1,9 +1,8 @@
 :root {
-  --ruyin-shell-max-width: var(--vx-website-hero-content-max-width-xl);
+  /* Wide, open content track (stripe-like but wider, no divider lines). */
+  --ruyin-shell-max-width: 1680px;
   --ruyin-shell-gutter: var(--vx-space-lg);
   --ruyin-header-height: var(--vx-space-4xl);
-  --ruyin-footer-height: var(--vx-space-3xl);
-  --ruyin-footer-height-mobile: calc(var(--vx-space-4xl) + var(--vx-space-lg));
 }
 
 html,
@@ -43,6 +42,11 @@ a {
   opacity: 0.74;
 }
 
+/* Header shell: fixed, transparent, glass on scroll. The brand lockup, theme +
+ * language toggles, and sign up / log in buttons are DS components (ShellBrand,
+ * ShellThemeToggle, ShellLocaleSwitcher, Button). This file only positions the
+ * bar; it owns no colors, fonts, or control looks.
+ */
 .site-header {
   position: fixed;
   top: 0;
@@ -62,14 +66,8 @@ a {
   backdrop-filter: blur(18px);
 }
 
-.site-header-inner,
-.site-footer-inner,
-.body-section {
-  width: min(100%, var(--ruyin-shell-max-width));
-}
-
 .site-header-inner {
-  /* vxture-header rhythm: 64px bar height, 32px horizontal padding. */
+  width: min(100%, var(--ruyin-shell-max-width));
   min-height: var(--ruyin-header-height);
   margin: 0 auto;
   padding: 0 var(--vx-space-2xl);
@@ -77,38 +75,6 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: var(--vx-space-lg);
-}
-
-.site-brand {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: var(--vx-space-sm);
-}
-
-.site-header .vx-brand-lockup {
-  border-radius: var(--vx-radius-md);
-  transition: opacity var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.site-header .vx-brand-lockup:hover {
-  opacity: 0.86;
-}
-
-/* ===== Unified portal header: brand lockup + controls =====
- * This block is kept identical across website / console / admin so the three
- * portal headers share one visual language. Tokens come from @vxture/design-system.
- */
-
-/* Brand lockup: product wordmark only (Funnel Display, the DS brand font). */
-.vx-brand-name {
-  flex: 0 0 auto;
-  font-family: var(--font-brand);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: var(--vx-typography-logo-letter-spacing);
-  color: var(--vx-color-text-primary);
 }
 
 .site-actions {
@@ -125,94 +91,14 @@ a {
   gap: var(--vx-space-sm);
 }
 
-/* Unified icon control (theme + language). */
-.icon-button {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-md);
-  color: var(--vx-color-text-muted);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    transform var(--vx-duration-fast) var(--vx-ease-standard),
-    color var(--vx-duration-fast) var(--vx-ease-standard),
-    border-color var(--vx-duration-fast) var(--vx-ease-standard),
-    background var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.icon-button:hover {
-  color: var(--vx-color-text-primary);
-  border-color: var(--vx-color-border-strong);
-  transform: translateY(-1px);
-}
-
-.icon-button svg {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-
-/* Header CTAs: register (secondary) + login (primary). */
-.site-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 36px;
-  padding: 0 var(--vx-space-lg);
-  border-radius: var(--vx-radius-lg);
-  font-size: var(--vx-typography-body-sm-size);
-  font-weight: 700;
-  line-height: 1;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    transform var(--vx-duration-fast) var(--vx-ease-standard),
-    box-shadow var(--vx-duration-fast) var(--vx-ease-standard),
-    color var(--vx-duration-fast) var(--vx-ease-standard),
-    border-color var(--vx-duration-fast) var(--vx-ease-standard),
-    background var(--vx-duration-fast) var(--vx-ease-standard),
-    filter var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.site-cta-secondary {
-  border: 1px solid var(--vx-color-border);
-  color: var(--vx-color-text-secondary);
-  background: color-mix(in srgb, var(--vx-color-surface) 54%, transparent);
-}
-
-.site-cta-secondary:hover {
-  color: var(--vx-color-text-primary);
-  border-color: var(--vx-color-border-strong);
-  transform: translateY(-1px);
-}
-
-.site-cta-primary {
-  border: 1px solid transparent;
-  color: var(--vx-color-text-inverse);
-  background: var(--vx-gradient-brand);
-  box-shadow: var(--vx-shadow-md);
-}
-
-.site-cta-primary:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow: var(--vx-shadow-lg);
-}
-
+/* Hero: open, centered, wide. No section dividers - whitespace separates. */
 .body-section {
   position: relative;
   z-index: 1;
+  width: min(100%, var(--ruyin-shell-max-width));
   margin: auto;
   padding:
-    calc(var(--ruyin-header-height) + var(--vx-space-3xl))
+    calc(var(--ruyin-header-height) + var(--vx-space-4xl))
     var(--ruyin-shell-gutter)
     var(--vx-space-4xl);
   display: grid;
@@ -221,31 +107,21 @@ a {
 }
 
 .hero {
-  width: min(100%, 1080px);
+  width: min(100%, 1280px);
   display: grid;
   justify-items: center;
 }
 
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vx-space-md);
   margin-bottom: var(--vx-space-md);
   color: var(--vx-color-success);
   font-size: var(--vx-typography-body-sm-size);
   font-weight: 700;
-}
-
-.eyebrow::before,
-.eyebrow::after {
-  content: "";
-  width: 34px;
-  height: 1px;
-  background: var(--vx-color-success);
+  letter-spacing: 0.08em;
 }
 
 .signature {
-  width: min(74vw, 640px);
+  width: min(78vw, 720px);
   margin: 0 auto;
 }
 
@@ -267,8 +143,8 @@ a {
 }
 
 .lead {
-  max-width: 680px;
-  margin: var(--vx-space-md) 0 0;
+  max-width: 820px;
+  margin: var(--vx-space-lg) 0 0;
   color: var(--vx-color-text-secondary);
   font-size: var(--vx-typography-body-lg-size);
   line-height: var(--vx-typography-body-lg-line-height);
@@ -288,6 +164,7 @@ a {
   font-size: var(--vx-typography-body-size);
   font-weight: 700;
   line-height: var(--vx-typography-metric-lg-line-height);
+  letter-spacing: 0.04em;
   text-decoration: none;
   box-shadow: var(--vx-shadow-lg);
   transition:
@@ -300,62 +177,6 @@ a {
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow: var(--vx-shadow-xl);
-}
-
-.site-footer {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  min-height: var(--ruyin-footer-height);
-  margin-top: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--vx-color-background);
-  border-top: 1px solid var(--vx-color-border);
-  color: var(--vx-color-text-muted);
-  font-size: var(--vx-typography-body-sm-size);
-}
-
-.site-footer-inner {
-  min-height: var(--ruyin-footer-height);
-  padding: 0 var(--ruyin-shell-gutter);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--vx-space-2xl);
-}
-
-.footer-copy {
-  margin: 0;
-  color: var(--vx-color-text-primary);
-  font-size: var(--vx-typography-body-sm-size);
-  font-weight: 400;
-  line-height: var(--vx-typography-body-sm-line-height);
-  text-align: left;
-  white-space: nowrap;
-}
-
-.footer-links {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: var(--vx-space-sm) var(--vx-space-lg);
-  text-align: right;
-}
-
-.footer-links a {
-  color: var(--vx-color-text-muted);
-  font-size: var(--vx-typography-body-sm-size);
-  line-height: var(--vx-typography-body-sm-line-height);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.footer-links a:hover {
-  color: var(--vx-color-primary);
 }
 
 @media (min-width: 640px) {
@@ -377,38 +198,11 @@ a {
 }
 
 @media (max-width: 640px) {
-  .site-cta {
-    padding: 0 var(--vx-space-md);
-  }
-
   .signature {
-    width: min(92vw, 520px);
+    width: min(92vw, 560px);
   }
 
   .lead {
     font-size: var(--vx-typography-body-size);
-  }
-
-  .site-footer {
-    min-height: var(--ruyin-footer-height-mobile);
-  }
-
-  .site-footer-inner {
-    min-height: var(--ruyin-footer-height-mobile);
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: var(--vx-space-sm);
-    padding-top: var(--vx-space-md);
-    padding-bottom: var(--vx-space-md);
-  }
-
-  .footer-links {
-    justify-content: flex-start;
-    text-align: left;
-  }
-
-  .footer-copy {
-    white-space: normal;
   }
 }

@@ -16,12 +16,12 @@ export const ruyinBrand = {
   productName: "Ruyin",
   localName: "如影",
   fullName: "如影随形",
-  description: "Ruyin intelligent entry for Hermes workspace.",
+  description: "Ruyin - secure intelligent network access by vxture studio.",
   /** Parent studio masterbrand (analogous to Anthropic for Claude). */
   studioName: "vxturestudio",
   /** Product wordmark shown beside the studio name. */
   productDomain: "ruyin.ai",
-  hermesUrl: "https://hermes.vxture.com",
+  studioUrl: "https://vxture.com",
   /** Ruyin account console (self-service portal). */
   consoleUrl: "https://console.ruyin.ai",
   loginUrl: "https://console.ruyin.ai/login",

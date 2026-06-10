@@ -11,13 +11,13 @@ import type { Locale } from "@vxture/shared";
 const HERO_TEXT: Record<Locale, { eyebrow: string; lead: string; action: string }> = {
   "en-US": {
     eyebrow: "Ruyin Digital Entry",
-    lead: "Intelligent entry connecting the Hermes workspace.",
-    action: "Open Hermes",
+    lead: "Secure, intelligent network access by vxture studio.",
+    action: "VXTURE STUDIO",
   },
   "zh-CN": {
     eyebrow: "如影数字入口",
-    lead: "如影智能入口，连接 Hermes 智能工作台。",
-    action: "打开 Hermes",
+    lead: "如影智能安全入口，连接你与世界。",
+    action: "VXTURE STUDIO",
   },
 };
 
@@ -44,7 +44,7 @@ export default function HomePage() {
             {ruyinBrand.fullName}
           </h1>
           <p className="lead">{text.lead}</p>
-          <a className="hero-action" href={ruyinBrand.hermesUrl}>
+          <a className="hero-action" href={ruyinBrand.studioUrl}>
             {text.action}
           </a>
         </section>

@@ -71,7 +71,8 @@ export function NetworkCanvas() {
         .getPropertyValue("--vx-color-primary")
         .trim();
       const rgb = tokenToRgb(token) || "30, 81, 255";
-      return `rgba(${rgb}, ${alpha})`;
+      // canvas 2D API needs a literal rgba string built from the --vx-color-primary token
+      return `rgba(${rgb}, ${alpha})`; // ds-allow
     }
 
     function draw() {

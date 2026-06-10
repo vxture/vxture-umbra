@@ -356,7 +356,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "umbra-account-web",
             "check_http_body_contains",
             "$EDGE_DOMAIN VPN display",
-            "Hermes",
+            "VXTURE STUDIO",
             "Ruyin Account",
             "$CONSOLE_DOMAIN account home",
             "$CONSOLE_DOMAIN account login",
