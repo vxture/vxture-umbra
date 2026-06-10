@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Funnel_Display } from "next/font/google";
 import { themeBootstrapScript } from "@vxture/design-system";
 import "@vxture/design-system/styles/globals.css";
+import "@vxture/design-system/styles/brands/ruyin.css";
 import "./globals.css";
 import { Providers } from "./providers";
 

@@ -1,15 +1,28 @@
 "use client";
 
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  StatusBadge,
+} from "@vxture/design-system";
+import type { StatusBadgeTone } from "@vxture/design-system";
 import { Shell } from "./shell";
 import type { AppCard, SessionPayload } from "./types";
 
-function StatusBadge({ status }: { status: AppCard["status"] }) {
-  const label =
-    status === "active" ? "Active" : status === "unbound" ? "Not set up" : "Coming soon";
-  return <span className={`app-badge app-badge-${status}`}>{label}</span>;
-}
+const STATUS: Record<AppCard["status"], { label: string; tone: StatusBadgeTone }> = {
+  active: { label: "Active", tone: "success" },
+  unbound: { label: "Not set up", tone: "neutral" },
+  disabled: { label: "Coming soon", tone: "neutral" },
+};
 
-function greeting(session: SessionPayload) {
+function greeting(session: SessionPayload): string {
   const user = session.user;
   return user?.displayName || user?.username || user?.email || "there";
 }
@@ -23,56 +36,52 @@ function AppTile({ app }: { app: AppCard }) {
       : app.status === "unbound"
         ? "Enter your invite to activate."
         : "Available soon.";
-
-  const tile = (
-    <article className={`section-card app-card${disabled ? " app-card-disabled" : ""}`}>
-      <div className="app-card-head">
-        <h2>{app.name}</h2>
-        <StatusBadge status={app.status} />
-      </div>
-      <p className="muted">
-        {description}
-        {app.secondaryAuth ? " Requires a separate sign-in." : ""}
-      </p>
-      <span className="btn btn-secondary app-card-action" aria-disabled={disabled}>
-        {actionLabel}
-      </span>
-    </article>
-  );
-
-  if (disabled || !app.href) {
-    return tile;
-  }
+  const status = STATUS[app.status];
   const external = app.href.startsWith("http");
+
   return (
-    <a
-      className="app-card-link"
-      href={app.href}
-      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
-    >
-      {tile}
-    </a>
+    <Card className="app-tile">
+      <CardHeader className="app-tile-head">
+        <CardTitle>{app.name}</CardTitle>
+        <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+      </CardHeader>
+      <CardContent className="app-tile-body">
+        <CardDescription>
+          {description}
+          {app.secondaryAuth ? " Requires a separate sign-in." : ""}
+        </CardDescription>
+        {disabled || !app.href ? (
+          <Button variant="secondary" disabled>
+            {actionLabel}
+          </Button>
+        ) : (
+          <Button variant="secondary" asChild>
+            <a href={app.href} {...(external ? { target: "_blank", rel: "noreferrer" } : {})}>
+              {actionLabel}
+            </a>
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
 export function Launcher({ session }: { session: SessionPayload }) {
   const apps = session.apps ?? [];
+  const name = greeting(session);
+  const avatarUrl = session.user?.avatarUrl;
+
   return (
     <Shell>
       <div className="page-stack">
-        <header className="page-header launcher-greeting">
-          {session.user?.avatarUrl ? (
-            <img
-              className="launcher-avatar"
-              src={session.user.avatarUrl}
-              alt=""
-              width={48}
-              height={48}
-            />
-          ) : null}
+        <header className="launcher-greeting">
+          <Avatar>
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
+            <AvatarFallback>{name.slice(0, 1).toUpperCase()}</AvatarFallback>
+          </Avatar>
           <div>
-            <h1>Welcome, {greeting(session)}</h1>
-            <p>Choose an application to open or set up.</p>
+            <h1>Welcome, {name}</h1>
+            <p className="muted">Choose an application to open or set up.</p>
           </div>
         </header>
         <section className="card-grid">

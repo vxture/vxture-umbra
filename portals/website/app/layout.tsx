@@ -5,6 +5,7 @@ import { ruyinBrand } from "@/lib/brand";
 import { themeBootstrapScript } from "@vxture/design-system";
 import { Providers } from "./providers";
 import "@vxture/design-system/styles/globals.css";
+import "@vxture/design-system/styles/brands/ruyin.css";
 import "./globals.css";
 
 /** DS brand typeface (Funnel Display) wired to the DS brand-font loader slot. */

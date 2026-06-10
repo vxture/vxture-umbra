@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Shell } from "./shell";
+import { Button, Skeleton } from "@vxture/design-system";
+import { PageHeader, Shell } from "./shell";
 import { fetchJson, ssoStartUrl } from "./api";
 import { Launcher } from "./launcher";
 import { VpnApp } from "./vpn-app";
@@ -30,7 +31,9 @@ export function AccountApp({
   if (!session) {
     return (
       <Shell>
-        <section className="section-card auth-card">Loading...</section>
+        <section className="auth-card page-stack">
+          <Skeleton variant="line" lines={3} />
+        </section>
       </Shell>
     );
   }
@@ -38,14 +41,16 @@ export function AccountApp({
   if (session.status === "anonymous") {
     return (
       <Shell>
-        <section className="section-card auth-card page-stack">
-          <header className="page-header">
-            <h1>Sign in with Vxture</h1>
-            <p>Use your unified Vxture account to access Ruyin applications.</p>
-          </header>
-          <a className="btn btn-primary" href={ssoStartUrl(session, initialInvite)}>
-            Continue with Vxture
-          </a>
+        <section className="auth-card page-stack">
+          <PageHeader
+            title="Sign in with Vxture"
+            description="Use your unified Vxture account to access Ruyin applications."
+          />
+          <div className="actions">
+            <Button asChild>
+              <a href={ssoStartUrl(session, initialInvite)}>Continue with Vxture</a>
+            </Button>
+          </div>
           <p className="muted">
             After signing in you can set up VPN with the invite code from your administrator.
           </p>

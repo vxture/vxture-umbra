@@ -1,27 +1,24 @@
-/* ===== Console-specific styles =====
- * DS @import happens in layout.tsx before this file.
- * Only keep layout composition and component styles not owned by DS.
- * All --vx-* tokens are provided by @vxture/design-system.
+/* ===== Console layout composition =====
+ * All design primitives (colors, typography, controls, cards, tables) come from
+ * @vxture/design-system. This file holds layout-only composition. Do not add
+ * colors, fonts, or component looks here - extend the DS package instead. See
+ * docs/design/ds-extension-requests.md.
  */
 
-/* Layout */
+/* Shell + layout */
 
 .app-shell {
-  /* Match the website shell: 1536px max content width + 32px (--vx-space-2xl) gutter. */
+  /* 1536px max content width + 32px (--vx-space-2xl) gutter. */
   width: min(100%, 1536px);
   margin: 0 auto;
   padding: 0 var(--vx-space-2xl) var(--vx-space-3xl);
 }
 
 body {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0)),
-    var(--vx-color-background);
+  background: var(--vx-color-background);
 }
 
 .topbar {
-  /* vxture-header rhythm: 64px bar height, 48px (--vx-space-3xl) gap to content.
-     Horizontal padding comes from .app-shell so header aligns with content. */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,14 +27,6 @@ body {
   margin-bottom: var(--vx-space-3xl);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: var(--vx-space-sm);
-}
-
-/* Header display-control cluster (theme + language), mirrors the website. */
 .site-tools {
   display: flex;
   align-items: center;
@@ -45,212 +34,64 @@ body {
   gap: var(--vx-space-sm);
 }
 
-/* Section navigation moved out of the header into the content area. */
-.page-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vx-space-sm);
-  margin-bottom: var(--vx-space-xl);
-}
-
-/* ===== Unified portal header: brand lockup + controls =====
- * Kept identical across website / console / admin. Tokens from @vxture/design-system.
- */
-
-/* Brand lockup: product wordmark only (Funnel Display, the DS brand font). */
-.vx-brand-name {
-  flex: 0 0 auto;
-  font-family: var(--font-brand);
-  font-size: 1.5rem;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: var(--vx-typography-logo-letter-spacing);
-  color: var(--vx-color-text-primary);
-}
-
 .muted {
   color: var(--vx-color-text-muted);
 }
 
-/* Unified icon control (theme + language). */
-.icon-button {
-  flex: 0 0 auto;
-  width: 40px;
-  height: 40px;
-  display: inline-grid;
-  place-items: center;
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-md);
-  color: var(--vx-color-text-muted);
-  background: transparent;
-  cursor: pointer;
-  transition:
-    transform var(--vx-duration-fast) var(--vx-ease-standard),
-    color var(--vx-duration-fast) var(--vx-ease-standard),
-    border-color var(--vx-duration-fast) var(--vx-ease-standard),
-    background var(--vx-duration-fast) var(--vx-ease-standard);
-}
-
-.icon-button:hover {
-  color: var(--vx-color-text-primary);
-  border-color: var(--vx-color-border-strong);
-  transform: translateY(-1px);
-}
-
-.icon-button svg {
-  width: 18px;
-  height: 18px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-}
-
 .page-stack {
   display: grid;
-  gap: 18px;
-}
-
-.page-header {
-  display: grid;
-  gap: 8px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.18;
-  letter-spacing: 0;
-}
-
-.page-header p {
-  max-width: 72ch;
-  margin: 0;
-  color: var(--vx-color-text-muted);
-  line-height: 1.55;
-}
-
-/* Cards & metrics */
-
-.section-card,
-.metric-card {
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-lg);
-  background: color-mix(in srgb, var(--vx-color-surface) 94%, transparent);
-  box-shadow: var(--vx-shadow-sm);
-}
-
-.section-card {
-  padding: 20px;
-}
-
-.section-card h2 {
-  margin: 0 0 10px;
-  font-size: 18px;
-}
-
-.auth-card {
-  width: min(100%, 480px);
-  margin: 48px auto 0;
-}
-
-.metric-card {
-  padding: 16px;
-}
-
-.metric-label {
-  color: var(--vx-color-text-muted);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.metric-value {
-  margin-top: 7px;
-  font-size: 23px;
-  font-weight: 760;
-  line-height: 1.12;
-}
-
-/* Grid & split */
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
+  gap: var(--vx-space-lg);
 }
 
 .split {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, 390px);
-  gap: 16px;
+  gap: var(--vx-space-lg);
 }
-
-/* Actions & buttons */
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--vx-space-sm);
   align-items: center;
 }
 
-.btn {
-  display: inline-flex;
-  min-height: 38px;
+/* Launcher app grid */
+
+.launcher-greeting {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid transparent;
-  border-radius: var(--vx-radius-md);
-  padding: 0 14px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
+  gap: var(--vx-space-md);
 }
 
-.btn:disabled {
-  cursor: not-allowed;
-  opacity: 0.62;
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--vx-space-lg);
 }
 
-.btn-primary {
-  background: var(--vx-color-primary);
-  color: var(--vx-color-text-inverse);
+.app-tile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vx-space-sm);
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--vx-color-primary-strong);
+.app-tile-body {
+  display: grid;
+  gap: var(--vx-space-md);
 }
 
-.btn-secondary {
-  border-color: var(--vx-color-border);
-  background: var(--vx-color-surface);
-  color: var(--vx-color-text-primary);
+/* Auth / form composition (DS Input + Button supply the control looks) */
+
+.auth-card {
+  width: min(100%, 480px);
+  margin: var(--vx-space-3xl) auto 0;
 }
 
-.btn-danger {
-  border-color: var(--vx-color-danger-border);
-  background: var(--vx-color-danger-surface);
-  color: var(--vx-color-danger);
-}
-
-/* Form controls */
-
-.input {
-  width: 100%;
-  min-height: 42px;
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-md);
-  background: var(--vx-color-surface);
-  color: var(--vx-color-text-primary);
-  padding: 10px 12px;
-  outline: none;
-}
-
-.input:focus {
-  border-color: var(--vx-color-border-strong);
-  box-shadow: 0 0 0 3px var(--vx-color-primary-soft);
+.form {
+  display: grid;
+  gap: var(--vx-space-md);
 }
 
 .field {
@@ -261,14 +102,9 @@ body {
   font-weight: 650;
 }
 
-.form {
-  display: grid;
-  gap: 14px;
-}
+/* Monospace URL / token display (DS has no code primitive). */
 
-/* Misc components */
-
-.code-box {
+.url-box {
   display: block;
   width: 100%;
   overflow-wrap: anywhere;
@@ -277,128 +113,8 @@ body {
   background: var(--vx-color-surface-muted);
   padding: 12px;
   color: var(--vx-color-text-secondary);
-  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: 13px;
-}
-
-.notice {
-  border: 1px solid var(--vx-color-border);
-  border-radius: var(--vx-radius-md);
-  background: var(--vx-color-surface-muted);
-  padding: 12px;
-  color: var(--vx-color-text-secondary);
-}
-
-.notice-danger {
-  border-color: var(--vx-color-danger-border);
-  background: var(--vx-color-danger-surface);
-  color: var(--vx-color-danger);
-}
-
-/* Tables */
-
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  min-width: 980px;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  border-bottom: 1px solid var(--vx-color-border);
-  padding: 11px 10px;
-  text-align: left;
-  vertical-align: top;
-  font-size: 14px;
-}
-
-th {
-  color: var(--vx-color-text-muted);
-  font-weight: 750;
-}
-
-/* Launcher */
-
-.launcher-greeting {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.launcher-avatar {
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
-}
-
-.app-card-link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.app-card {
-  display: grid;
-  gap: 10px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-
-.app-card-link:hover .app-card {
-  border-color: var(--vx-color-border-strong);
-  transform: translateY(-1px);
-}
-
-.app-card-disabled {
-  opacity: 0.7;
-}
-
-.app-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.app-card-head h2 {
-  margin: 0;
-}
-
-.app-card-action {
-  width: fit-content;
-  margin-top: 4px;
-}
-
-.app-badge {
-  border: 1px solid var(--vx-color-border);
-  border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.app-badge-active {
-  border-color: var(--vx-color-primary-soft);
-  background: var(--vx-color-primary-soft);
-  color: var(--vx-color-primary);
-}
-
-.app-badge-unbound {
-  background: var(--vx-color-surface-muted);
-  color: var(--vx-color-text-secondary);
-}
-
-.app-badge-disabled {
-  background: var(--vx-color-surface-muted);
-  color: var(--vx-color-text-muted);
 }
 
 /* Responsive */
@@ -413,4 +129,3 @@ th {
     flex-direction: column;
   }
 }
-
