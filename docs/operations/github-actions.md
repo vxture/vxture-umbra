@@ -221,6 +221,38 @@ on:
       - main
 ```
 
+Change detection (`detect` job):
+
+`detect` runs once and compares the pushed SHA against the base - the SHA of the
+last successful `release.yml` run on `main`. It emits two outputs that gate the
+rest of the pipeline:
+
+- `deployable` - false when every changed file is documentation or repo-side
+  metadata, true otherwise. Non-deployable paths: `docs/*`, `.claude/*`,
+  `.github/*`, `scripts/*`, and root `CLAUDE.md` / `README.md` / `LICENSE`.
+  worker-03 deploys from `deploy/worker-03/`, never from `scripts/` (repo-side
+  quality-gate checks and GitHub helpers) or `.github/*` (CI plumbing), so a
+  change confined to those ships nothing to the runtime images. When
+  `deployable=false`, both `docker-build` and `deploy-worker-03` are skipped.
+- `build_images` - the subset of images whose source changed, mapped per path
+  (`portals/website/*` -> `ruyin-website`, `brand/*` -> the three portals,
+  `services/account/*` or its Dockerfile -> `ruyin-account-api`, and so on). An
+  unknown non-doc path forces a full rebuild (over-building is safe; shipping
+  stale code is not). With no known base (the first release), detect defaults to
+  deployable with a full rebuild.
+
+Three outcomes follow:
+
+| Change scope | deployable | build_images | Effect |
+|---|---|---|---|
+| docs / scripts / `.github` only | false | n/a | `docker-build` and `deploy-worker-03` skipped |
+| `configs/*` or `deploy/*` only | true | `[]` | every image retags `:latest` to the per-commit tag (digest preserved, no rebuild); deploy re-renders config |
+| portal / service / brand source | true | changed set | rebuild the changed images, retag the rest, then deploy |
+
+The retag path (`docker buildx imagetools create`) keeps the running container's
+image digest stable, so a config-only release re-renders templates and reloads
+nginx without a pointless container recreate.
+
 The `docker-build` job (and the `deploy-worker-03` job) use the pushed SHA:
 
 ```bash
