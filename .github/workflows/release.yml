@@ -54,8 +54,11 @@ jobs:
                 # Deployable unless every change is documentation/metadata.
                 # .github/* is CI/CD plumbing (workflows already take effect on
                 # their own push); it ships nothing into the runtime images.
+                # scripts/* is repo-side tooling (quality-gate checks, GitHub
+                # helpers); worker-03 deploys from deploy/worker-03/, never from
+                # scripts/, so a scripts-only change ships nothing to runtime.
                 case "$f" in
-                  docs/*|.claude/*|.github/*) : ;;
+                  docs/*|.claude/*|.github/*|scripts/*) : ;;
                   CLAUDE.md|README.md|LICENSE) : ;;
                   *)
                     if [[ "${f%/*}" == "$f" && "${f%.md}" != "$f" ]]; then : ; else deployable=true; fi
