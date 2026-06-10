@@ -95,6 +95,13 @@ a {
   gap: var(--vx-space-sm);
 }
 
+/* Brand wordmark: DS ShellBrand's label uses neither the brand typeface nor a
+   larger size by default. Apply the brand font (Funnel Display) at 20px. */
+.site-brand-name {
+  font-family: var(--font-brand);
+  font-size: 20px;
+}
+
 /* Hero: open, centered, wide. No section dividers - whitespace separates. */
 .body-section {
   position: relative;
@@ -200,7 +207,7 @@ a {
   padding: 0 32px;
   /* Small, muted legal text (the DS footer sets no base size/color). Copyright
      and links both inherit this. */
-  font-size: 12px;
+  font-size: 14px;
   color: var(--vx-color-text-muted);
 }
 
