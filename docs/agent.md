@@ -57,37 +57,14 @@ Purpose:    Production overseas edge entry node
 
 ---
 
-## Current Milestone
+## Current State
 
-**v1.0 Production Edge Node - SHIPPED.** The node runs in production with
-automated CI/CD deploys to worker-03. Current work evolves the account portal
-toward a multi-app identity model - see
-[`design/platform-identity.md`](design/platform-identity.md).
-
-v1.0 deploy phases (all complete):
-
-```
-Phase 1 - Infrastructure
-  [x] Nginx (base config, HTTP only)
-  [x] Certbot (issue all certs)
-  [x] Nginx (HTTPS + SNI stream)
-
-Phase 2 - Core Services
-  [x] Xray-core (VLESS + REALITY)
-  [x] Marzban
-  [x] Account Portal
-
-Phase 3 - Supporting Services
-  [x] Vaultwarden
-  [-] Docs site (dropped - docs live in-repo under docs/)
-
-Phase 4 - Hardening
-  [x] Marzban console login boundary
-  [x] Backup automation (post-deploy + daily cron)
-  [x] Cert renewal cron (daily 03:17)
-  [x] Logrotate
-  [ ] External uptime monitoring (operator-optional - BetterStack / UptimeRobot)
-```
+The v1.0 production edge node runs in production with automated CI/CD deploys to
+worker-03: all services in the inventory above are live behind the unified 443
+entry, with HTTPS, REALITY ingress, Marzban subscriptions, backup automation,
+and daily cert renewal in place. External uptime monitoring stays
+operator-optional. Current work evolves the account portal toward a multi-app
+identity model - see [`design/platform-identity.md`](design/platform-identity.md).
 
 ---
 
@@ -106,7 +83,6 @@ Phase 4 - Hardening
 | [`design/vxture-sso.md`](design/vxture-sso.md) | Vxture SSO handoff contract for the Ruyin console (auth start, callback, verify) |
 | [`implementation/repository.md`](implementation/repository.md) | Current repository layout and source-of-truth paths |
 | [`implementation/brand-assets.md`](implementation/brand-assets.md) | Brand asset spec: PNG/ICO source of truth, per-portal sync, build-time injection |
-| [`implementation/project-structure-plan.md`](implementation/project-structure-plan.md) | Target portal layout, brand assets, and cleanup phases |
 | [`implementation/config-rendering.md`](implementation/config-rendering.md) | Template renderer inputs, syntax, and outputs |
 | [`implementation/scripts.md`](implementation/scripts.md) | Deployment script entrypoints and ordered steps |
 | [`implementation/subscriptions.md`](implementation/subscriptions.md) | Native Marzban subscription rules and Clash title behavior |
@@ -115,7 +91,6 @@ Phase 4 - Hardening
 | [`operations/operations.md`](operations/operations.md) | Backup, rollback, cert renewal, user management, monitoring |
 | [`operations/github-actions.md`](operations/github-actions.md) | CI/CD branch flow, promotion contract, and worker-03 deployment design |
 | [`operations/github-actions-enablement.md`](operations/github-actions-enablement.md) | Secrets, rulesets, and first-run checklist for enabling CI/CD |
-| [`operations/ci-cd-optimization.md`](operations/ci-cd-optimization.md) | 2026-06 CI/CD optimization record: goals, change set, pitfalls, verification, invariants |
 | [`operations/certificate-incident.md`](operations/certificate-incident.md) | Certificate incident ledger and non-regression guardrails |
 | [`operations/local-dev-environment.md`](operations/local-dev-environment.md) | Operator workstation notes for TUN, DeepSeek API, and Roo Code |
 | [`memory/README.md`](memory/README.md) | **Memory mirror index.** AI-assistant persistent memory, summaries and pointers |
@@ -141,25 +116,3 @@ Phase 4 - Hardening
 11. **`DATA_DIR/private/` permissions: `700` dir, `600` files.**
 12. **Scripts must be idempotent** - safe to re-run without destroying existing state.
 13. **Maintenance text is ASCII English** - docs, scripts, configs, and comments avoid non-ASCII; user-facing localized pages may use UTF-8.
-
----
-
-## v1.0 Success Criteria (met in production)
-
-```
-[x] All containers running: nginx, website, marzban, subproxy, account, account-web, admin, vaultwarden
-[x] HTTPS working on active public domains
-[x] Xray REALITY connection functional (test with Clash Verge)
-[x] Marzban console accessible at admin.ruyin.ai and protected by Marzban login
-[x] Marzban subscription URL functional at sub.ruyin.ai
-[x] Subscription imports correctly into Clash Verge
-[x] Node name shows vx-tokyo
-[x] B++ rules present and correct (openai.com and cloudflare.com PROXY; microsoft.com and vultr.com DIRECT)
-[x] Vaultwarden login functional at pass.ruyin.ai
-[x] VPN display loading at vpn.ruyin.ai
-[x] User console loading at console.ruyin.ai
-[x] Invite Console loading at admin.ruyin.ai/invites
-[x] Backup archive created with correct permissions (600)
-[x] Cert renewal cron configured
-[x] Sensitive files not present in Git
-```

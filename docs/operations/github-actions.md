@@ -144,6 +144,33 @@ The exact expression can differ, but the behavior must be:
 - New commits to the same PR cancel older CI runs.
 - New pushes to the same protected branch cancel older CI runs.
 
+### Job structure
+
+`ci.yml` runs three jobs so the portal builds parallelize and one portal
+failing still reports the others:
+
+- `static-checks` - repo-global script, contract, and `docker compose config`
+  checks that do not need portal `node_modules`.
+- `portal-build` - a per-portal matrix (`website`, `console`, `admin`) with
+  `fail-fast: false`; each leg type-checks and `next build` concurrently and
+  caches its own `.next/cache`.
+- `quality-gate` - an aggregator (`needs: [static-checks, portal-build]`) that
+  carries the required status-check name.
+
+Two constraints are load-bearing:
+
+- The branch ruleset requires a check literally named `quality-gate`. After a
+  job split, exactly one job must keep that name; the aggregator fills it and is
+  skipped (treated as not-passing) if any upstream job fails. Renaming or
+  removing it silently breaks merge gating and promotion.
+- Each `portal-build` leg runs `npm ci` from inside `portals/<portal>` with a
+  co-located `.npmrc`, not `npm ci --prefix portals/<portal>` from the repo
+  root. The `--prefix` form authenticates the GitHub Packages metadata request
+  but drops the token on the follow-up `/download/` tarball request, so cold
+  installs fail with `401 Unauthorized`. The `${NODE_AUTH_TOKEN}` placeholder is
+  written literally into `.npmrc` and substituted by npm at runtime so the
+  secret never passes through shell expansion.
+
 ## Promotion Workflow
 
 `promote.yml` is the only normal path for advancing `main`.
@@ -482,24 +509,9 @@ fast-forward updates to `main`.
 Do not temporarily disable rulesets as a release path. If promotion is blocked,
 fix the promotion workflow or ruleset configuration first.
 
-## Current Implementation Checklist
-
-Before enabling the workflows:
-
-- [x] Rename or replace the initial `quality-gate.yml` with `ci.yml`.
-- [x] Replace automatic `promote-develop-to-main.yml` with controlled
-      `promote.yml`.
-- [x] Add `release.yml` (detect -> build -> deploy) for the six ACR/GHCR images
-      and the worker-03 deploy.
-- [x] Add dedicated Dockerfiles for `ruyin-nginx`, `ruyin-account-api`, and
-      `ruyin-subproxy`.
-- [x] Ensure `docker-compose.yml` uses the six ACR repository names in `image:`
-      fields.
-- [x] Ensure the `release` `deploy-worker-03` job runs after the `build` job.
-- [ ] Add the required GitHub secrets.
-- [ ] Configure repository rulesets for `develop` and `main`.
-- [ ] Run one dry promotion against a disposable branch or test repository if
-      ruleset permissions are uncertain.
+First-time enablement (secrets, rulesets, worker-03 prerequisites, and the
+activation sequence) is covered by
+[`github-actions-enablement.md`](github-actions-enablement.md).
 
 ## Non-Goals
 

@@ -258,9 +258,8 @@ umbra-marzban:
 
 ## Module 4: Storage (SQLite)
 
-### Decision
-
-All services use SQLite on this 1C1G node. No PostgreSQL container.
+All stateful services use SQLite on this 1C1G node; no PostgreSQL container. See
+[`decisions.md`](decisions.md) section 3 for the rationale. Per-service files:
 
 | File | Service |
 |------|---------|
