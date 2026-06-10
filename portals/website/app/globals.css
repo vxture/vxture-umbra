@@ -179,6 +179,20 @@ a {
   box-shadow: var(--vx-shadow-xl);
 }
 
+/* Footer: DS ShellLegalFooter, but aligned to the same content track as the
+   header (the DS default is full-bleed, which jams the copyright to the left
+   edge and the links to the right edge). A subtle top hairline separates it. */
+.site-footer {
+  border-top: 1px solid var(--vx-color-border);
+  margin-top: var(--vx-space-4xl);
+}
+
+.site-footer-inner {
+  width: min(100%, var(--ruyin-shell-max-width));
+  margin: 0 auto;
+  padding: var(--vx-space-xl) var(--vx-space-2xl);
+}
+
 @media (min-width: 640px) {
   :root {
     --ruyin-shell-gutter: var(--vx-space-xl);
@@ -204,5 +218,11 @@ a {
 
   .lead {
     font-size: var(--vx-typography-body-size);
+  }
+
+  .site-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--vx-space-md);
   }
 }
