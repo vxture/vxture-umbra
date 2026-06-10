@@ -194,30 +194,6 @@ Umbra account web
   -> 302 /dashboard
 ```
 
-## Implemented Umbra Behavior
-
-1. `GET /auth/start` is a server route in `portals/console`.
-2. The login button links to `/auth/start` when `VXTURE_SSO_URL` is configured.
-3. The login button falls back to `VXTURE_LOGIN_URL` while `VXTURE_SSO_URL` is
-   empty.
-4. `GET /auth/callback` validates the state cookie before token exchange.
-5. `GET /auth/callback` clears the state cookie after callback handling.
-
-## Acceptance Criteria
-
-- With `VXTURE_SSO_URL=` empty, existing login behavior remains unchanged.
-- With `VXTURE_SSO_URL` configured, the login button sends users through
-  `/auth/start`, not directly to Vxture from client code.
-- `/auth/start` rejects invalid SSO URL configuration before redirecting.
-- `/auth/start` redirects to Vxture with exactly one raw JSON `ctx` query
-  parameter encoded by `URLSearchParams`.
-- `/auth/callback` rejects missing or mismatched `state`.
-- `/auth/callback` handles Vxture `error` callbacks after state validation.
-- `/auth/callback` verifies the cross-domain token with `source: "ruyin.ai"`
-  before signing cookies with `source: "ruyin"`.
-- The browser receives Vxture auth cookies and lands on `/dashboard`.
-- `AUTH_INTERNAL_TOKEN` is never exposed to client JavaScript.
-
 ## Invite Activation Flow
 
 Ruyin intentionally uses a two-step activation model:
@@ -234,37 +210,25 @@ entitlement remain separate:
 - Ruyin invite codes decide whether that identity can activate a VPN
   subscription.
 
-The simpler user experience should be an invite link, not a different security
-model:
+The simpler user experience is an invite link, not a different security model:
 
 ```text
 https://console.ruyin.ai/register?invite=<code>
 ```
 
-Planned behavior:
+Invite-link handling:
 
 - If anonymous, store the invite code in a short-lived pending activation cookie
-  and send the user through `/auth/start`.
-- After callback, land on `/register` with the code prefilled.
+  and send the user through `/auth/start`; after callback, land on `/register`
+  with the code prefilled.
 - If already signed in, show the bind form with the code prefilled.
-- The final binding still happens only through `POST /api/account/bind-invite`
-  after Vxture identity is present.
+- The final binding happens only through `POST /api/account/bind-invite` after
+  Vxture identity is present.
 
-Invite admins should distribute invite links, not bare codes:
-
-```text
-https://console.ruyin.ai/register?invite=<code>
-```
-
-The invite console should show the link in the `Subscription / Invite link`
-column after an invite is generated. Its primary copy action should copy the
-full invite link. A secondary action may copy the bare invite code for
-compatibility.
-
-For the current rollout, the link lands on the existing `/register` page and the
-user can still paste or confirm the invite code manually. The next UX step is to
-prefill `invite` from the query string and preserve it through SSO when the user
-is anonymous.
+Invite admins distribute invite links, not bare codes. The invite console shows
+the link in the `Subscription / Invite link` column after an invite is
+generated; the primary copy action copies the full invite link, and a secondary
+action may copy the bare code for compatibility.
 
 ## Confirmed Vxture Contract
 

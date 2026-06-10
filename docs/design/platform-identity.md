@@ -1,14 +1,11 @@
 # Ruyin Platform Identity and Multi-App Authorization
 
-## Status
-
-Design baseline for evolving the Ruyin account portal from a single VPN
-binding into a platform identity that can authorize and bind multiple
-application systems (VPN today, Vault and others later).
-
-Confirmed decisions are recorded under "Decisions". This document is the
-implementation baseline. The admin invite console (the platform-local admin
-login) is out of scope here and stays unchanged.
+This document is the design for evolving the Ruyin account portal from a single
+VPN binding into a platform identity that can authorize and bind multiple
+application systems (VPN today, Vault and others later). VPN is the first and
+only implemented application; the Vault card is present but disabled. The admin
+invite console (the platform-local admin login) is a separate system and out of
+scope here.
 
 ## Context
 
@@ -239,19 +236,3 @@ identity (handled case by case later).
    multi-resource).
 4. `ry_access_token` scoped to `Domain=.ruyin.ai` for single sign-on across
    subdomains (requires Vxture sign-side cooperation).
-
-## Scope and Non-Goals
-
-- VPN is the first and only implemented application in this stage.
-- Vault integration is deferred; its card is present but disabled.
-- The admin invite console (the platform-local admin login, the second account
-  system) is out of scope and unchanged.
-
-## Open Items
-
-- Confirm Vxture `internal/sign` sets `ry_access_token` with `Domain=.ruyin.ai`.
-- Vxture to backfill identity claims for `username`, `display_name`, and avatar
-  (`picture`). Until then the account stores nulls and the UI falls back.
-- The current per-subdomain `/auth/callback` may later consolidate into a single
-  callback to minimize the Vxture returnTo allowlist (this also resolves the
-  current "returnTo is not allowed" provisioning gap).
