@@ -1,0 +1,19 @@
+# vpn.ruyin.ai - VPN proxy node host only; no web surface.
+#
+# The VPN node lives at EDGE_DOMAIN:443 (VLESS+REALITY, camouflage SNI), routed
+# at the stream layer and never reaching this http block. This vhost exists only
+# to handle plain browser hits to https://EDGE_DOMAIN: it presents the valid
+# EDGE_DOMAIN certificate (so HSTS includeSubDomains is satisfied and no cert
+# warning is shown) and then closes the connection with 444 - no content, no
+# redirect. Without it, EDGE_DOMAIN would fall to the catch-all and serve the
+# apex certificate, tripping a hard ERR_CERT_COMMON_NAME_INVALID / HSTS block.
+server {
+    listen 8443 ssl proxy_protocol;
+    server_name {{ EDGE_DOMAIN }};
+
+    ssl_certificate     /etc/letsencrypt/live/{{ EDGE_DOMAIN }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ EDGE_DOMAIN }}/privkey.pem;
+    include /etc/nginx/snippets/ssl-params.conf;
+
+    return 444;
+}

@@ -26,6 +26,7 @@ and rationale. The implementation is below.
 | `00-default.conf.template` | catch-all | ACME challenge and default 404/redirect behavior |
 | `01-ruyin.conf.template` | `ruyin.ai` | `umbra-website:3210` Next public website |
 | `02-www.conf.template` | `www.ruyin.ai` | 301 canonical redirect to `ruyin.ai` |
+| `03-vpn.conf.template` | `EDGE_DOMAIN` | Tombstone: valid cert + `return 444` (no web surface; node is REALITY on `:443`) |
 | `04-sub.conf.template` | `sub.ruyin.ai` | `umbra-subproxy:8080` for native Marzban `/sub/<token>` metadata normalization |
 | `05-console.conf.template` | `console.ruyin.ai` | `umbra-account-web:3220` + `umbra-account:3281` |
 | `06-pass.conf.template` | `pass.ruyin.ai` | `umbra-vaultwarden:80` |

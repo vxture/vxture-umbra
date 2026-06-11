@@ -792,6 +792,15 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
+        "vpn vhost is a certless tombstone (valid cert, 444, no web surface)",
+        Path("configs/nginx/vhosts/03-vpn.conf.template"),
+        [
+            "server_name {{ EDGE_DOMAIN }}",
+            "ssl_certificate     /etc/letsencrypt/live/{{ EDGE_DOMAIN }}/fullchain.pem",
+            "return 444",
+        ],
+    ),
+    (
         "console vhost serves user self-service",
         Path("configs/nginx/vhosts/05-console.conf.template"),
         [

@@ -147,6 +147,7 @@ checkout but is built in CI, not on the server.
 |       |   |       |-- 00-default.conf.template
 |       |   |       |-- 01-ruyin.conf.template
 |       |   |       |-- 02-www.conf.template
+|       |   |       |-- 03-vpn.conf.template
 |       |   |       |-- 04-sub.conf.template
 |       |   |       |-- 05-console.conf.template
 |       |   |       |-- 06-pass.conf.template
