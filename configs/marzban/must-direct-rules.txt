@@ -78,8 +78,8 @@ DOMAIN-SUFFIX,letsencrypt.org
 IP-CIDR,100.64.0.0/10
 IP-CIDR,192.200.0.0/24
 IP-CIDR,199.165.136.0/24
-IP-CIDR6,2606:B740:49::/48
-IP-CIDR6,2606:B740:1::/48
+IP-CIDR,2606:B740:49::/48
+IP-CIDR,2606:B740:1::/48
 
 # Current VPN/VPS public endpoint. Keep an exact IP direct rule because some
 # clients may resolve the edge host before applying domain rules.
