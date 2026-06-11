@@ -56,6 +56,16 @@ DOMAIN-SUFFIX,xboxlive.com
 DOMAIN-SUFFIX,vultr.com
 DOMAIN-SUFFIX,vultrobjects.com
 
+# TeamViewer. Remote-control traffic uses TeamViewer's own protocol over port
+# 5938 (TCP/UDP) with 443/80 fallback, reaching master and router servers under
+# teamviewer.com. Forcing it through the proxy breaks the low-latency 5938 path
+# and degrades sessions to slow relay mode, so keep the whole suffix direct.
+# Domain rules apply to every port, so 5938/443/80 are all covered. teamviewer.net
+# serves client downloads/assets; dyngate.com is the legacy relay domain.
+DOMAIN-SUFFIX,teamviewer.com
+DOMAIN-SUFFIX,teamviewer.net
+DOMAIN-SUFFIX,dyngate.com
+
 # Domestic AI services. Keep direct and bypass Clash fake-ip so local tools such
 # as Roo Code receive real DNS answers instead of 198.18.0.0/16 synthetic IPs.
 DOMAIN-SUFFIX,deepseek.com
