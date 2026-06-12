@@ -11,6 +11,7 @@ import {
   ShellUserMenu,
   useTheme,
 } from "@vxture/design-system";
+import type { IconName } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
 import { useLocale } from "../locale-provider";
 import { markSrc, ruyinBrand } from "../../lib/brand";
@@ -63,7 +64,7 @@ export function Shell({
   const displayName = user?.displayName || user?.username || user?.email || "";
 
   return (
-    <>
+    <div className="app-page">
       <header className={`site-header${isScrolled ? " is-scrolled" : ""}`}>
         <div className="site-header-inner">
           <ShellBrand
@@ -113,20 +114,22 @@ export function Shell({
         copyright={ruyinBrand.copyright}
         links={ruyinBrand.legalLinks.map(([label, href]) => ({ label, href }))}
       />
-    </>
+    </div>
   );
 }
 
 export function PageHeader({
   title,
   description,
+  icon,
   actions,
 }: {
   title: string;
   description: string;
+  icon?: IconName;
   actions?: ReactNode;
 }) {
-  return <DsPageHeader title={title} description={description} actions={actions} />;
+  return <DsPageHeader icon={icon} title={title} description={description} actions={actions} />;
 }
 
 export function Metric({ label, value }: { label: string; value: ReactNode }) {

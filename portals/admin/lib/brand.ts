@@ -5,14 +5,14 @@ export function markSrc(resolved: string): string {
     : "/assets/brand/ruyin-symbol-light.png";
 }
 
-/** Shared Ruyin brand metadata. Mirrors the website portal so the console
- *  header/footer chrome renders identically. */
+/** Shared Ruyin brand metadata. Mirrors the console portal so the admin
+ *  chrome/footer renders identically across portals. */
 export const ruyinBrand = {
   productDomain: "ruyin.ai",
   studioUrl: "https://vxture.com",
-  // ASCII source escape so the contract check (portals/console/lib is scanned)
+  // ASCII source escape so the contract check (portals/admin/lib is scanned)
   // passes, while the rendered footer shows the same copyright glyph as the
-  // website portal (whose lib is ASCII-exempt and stores the literal symbol).
+  // console/website portals.
   copyright: "\u00A9 2026 vxture studio, inc. All rights reserved.",
   legalLinks: [
     ["Terms of Service", "https://vxture.com/legal/terms"],

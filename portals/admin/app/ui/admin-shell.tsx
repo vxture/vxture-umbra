@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Icon, ShellBrand, ShellThemeToggle, useTheme } from "@vxture/design-system";
+import { Icon, ShellBrand, ShellLegalFooter, ShellThemeToggle, useTheme } from "@vxture/design-system";
 import type { IconName } from "@vxture/design-system";
+import { markSrc, ruyinBrand } from "../../lib/brand";
 
 /**
  * Thin admin shell: sidebar + topbar composed from DS Shell* primitives. This
@@ -10,8 +11,6 @@ import type { IconName } from "@vxture/design-system";
  * and swaps to it once that lands. External deep links (Marzban, Vaultwarden)
  * are intentionally left jumping out to the existing tools.
  */
-
-const PRODUCT_DOMAIN = "ruyin.ai";
 
 interface NavItem {
   id: string;
@@ -28,12 +27,6 @@ const NAV: NavItem[] = [
   { id: "vault", label: "Passwords", href: "https://pass.ruyin.ai/admin", icon: "key", external: true },
 ];
 
-function symbolSrc(theme: string): string {
-  return theme === "dark"
-    ? "/assets/brand/ruyin-symbol-dark.png"
-    : "/assets/brand/ruyin-symbol-light.png";
-}
-
 export function AdminShell({
   active,
   children,
@@ -46,7 +39,7 @@ export function AdminShell({
   return (
     <div className="admin-shell">
       <header className="admin-topbar">
-        <ShellBrand href="/" logoSrc={symbolSrc(theme)} logoAlt="" label={PRODUCT_DOMAIN} />
+        <ShellBrand href="/" logoSrc={markSrc(theme)} logoAlt="" label={ruyinBrand.productDomain} />
         <div className="admin-topbar-end">
           <span className="admin-env" aria-hidden="true">
             Admin
@@ -97,6 +90,13 @@ export function AdminShell({
 
         <main className="admin-content">{children}</main>
       </div>
+
+      <ShellLegalFooter
+        className="admin-footer"
+        innerClassName="admin-footer-inner"
+        copyright={ruyinBrand.copyright}
+        links={ruyinBrand.legalLinks.map(([label, href]) => ({ label, href }))}
+      />
     </div>
   );
 }

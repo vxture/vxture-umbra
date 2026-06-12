@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Icon,
   Input,
   MetricGrid,
   SectionCard,
@@ -92,6 +93,7 @@ export function VpnApp({
       <Shell user={session.user}>
         <section className="auth-card page-stack">
           <PageHeader
+            icon="shield-check"
             title="Set up VPN"
             description="Your Vxture account is active. Bind the one-time invite code to reveal your VPN subscription."
           />
@@ -106,10 +108,14 @@ export function VpnApp({
             </label>
             <div className="actions">
               <Button onClick={bindInvite} disabled={busy || !inviteCode.trim()}>
+                <Icon name="check" size="sm" />
                 Bind invite
               </Button>
               <Button variant="secondary" asChild>
-                <a href="/">Back to apps</a>
+                <a href="/">
+                  <Icon name="arrow-left" size="sm" />
+                  Back to apps
+                </a>
               </Button>
             </div>
           </div>
@@ -131,6 +137,7 @@ export function VpnApp({
     <Shell user={session.user}>
       <div className="page-stack">
         <PageHeader
+          icon="shield-check"
           title={account.displayName}
           description="Your Ruyin VPN subscription status and client address."
           actions={<StatusBadge tone={statusTone(account.status)} dot>{account.status}</StatusBadge>}
@@ -151,13 +158,18 @@ export function VpnApp({
                   toast({ tone: "success", title: "Subscription URL copied." });
                 }}
               >
+                <Icon name="copy" size="sm" />
                 Copy URL
               </Button>
               <Button variant="destructive" disabled={busy} onClick={() => setConfirmReset(true)}>
+                <Icon name="clock-counter-clockwise" size="sm" />
                 Reset URL
               </Button>
               <Button variant="secondary" asChild>
-                <a href="/">Back to apps</a>
+                <a href="/">
+                  <Icon name="arrow-left" size="sm" />
+                  Back to apps
+                </a>
               </Button>
             </div>
           </SectionCard>

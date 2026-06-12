@@ -101,6 +101,21 @@ a {
   color: var(--vx-color-primary);
 }
 
+/* Legal footer: DS ShellLegalFooter pinned to the bottom of the shell column
+   (admin-body grows, so the band sits at the viewport bottom on short pages).
+   Same copyright + legal links as the console portal; only the alignment is
+   fitted to the app shell (full-width band, topbar-matching gutter). */
+.admin-footer {
+  border-top: 1px solid var(--vx-color-border);
+}
+
+.admin-footer-inner {
+  min-height: 48px;
+  padding: 0 var(--vx-space-2xl);
+  font-size: 14px;
+  color: var(--vx-color-text-muted);
+}
+
 /* Content */
 
 .admin-content {
@@ -158,5 +173,17 @@ a {
     grid-auto-flow: column;
     grid-auto-columns: max-content;
     overflow-x: auto;
+  }
+}
+
+/* Stack the copyright above the legal links on narrow screens - mirrors the
+   console portal footer. */
+@media (max-width: 640px) {
+  .admin-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--vx-space-md);
+    padding-top: var(--vx-space-md);
+    padding-bottom: var(--vx-space-md);
   }
 }

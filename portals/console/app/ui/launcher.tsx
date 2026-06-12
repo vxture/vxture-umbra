@@ -1,19 +1,17 @@
 "use client";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
   Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Icon,
   StatusBadge,
 } from "@vxture/design-system";
-import type { StatusBadgeTone } from "@vxture/design-system";
-import { Shell } from "./shell";
+import type { IconName, StatusBadgeTone } from "@vxture/design-system";
+import { PageHeader, Shell } from "./shell";
 import type { AppCard, SessionPayload } from "./types";
 
 const STATUS: Record<AppCard["status"], { label: string; tone: StatusBadgeTone }> = {
@@ -21,6 +19,16 @@ const STATUS: Record<AppCard["status"], { label: string; tone: StatusBadgeTone }
   unbound: { label: "Not set up", tone: "neutral" },
   disabled: { label: "Coming soon", tone: "neutral" },
 };
+
+/** Per-app glyph (Phosphor). Unknown keys fall back to the generic app grid. */
+const APP_ICON: Record<string, IconName> = {
+  vpn: "shield-check",
+  vault: "key",
+};
+
+function appIcon(key: string): IconName {
+  return APP_ICON[key] ?? "app-grid";
+}
 
 function greeting(session: SessionPayload): string {
   const user = session.user;
@@ -42,7 +50,10 @@ function AppTile({ app }: { app: AppCard }) {
   return (
     <Card className="app-tile">
       <CardHeader className="app-tile-head">
-        <CardTitle>{app.name}</CardTitle>
+        <CardTitle className="app-tile-title">
+          <Icon name={appIcon(app.key)} size="sm" />
+          {app.name}
+        </CardTitle>
         <StatusBadge tone={status.tone}>{status.label}</StatusBadge>
       </CardHeader>
       <CardContent className="app-tile-body">
@@ -58,6 +69,7 @@ function AppTile({ app }: { app: AppCard }) {
           <Button variant="secondary" asChild>
             <a href={app.href} {...(external ? { target: "_blank", rel: "noreferrer" } : {})}>
               {actionLabel}
+              <Icon name="arrow-right" size="sm" />
             </a>
           </Button>
         )}
@@ -69,21 +81,15 @@ function AppTile({ app }: { app: AppCard }) {
 export function Launcher({ session }: { session: SessionPayload }) {
   const apps = session.apps ?? [];
   const name = greeting(session);
-  const avatarUrl = session.user?.avatarUrl;
 
   return (
     <Shell user={session.user}>
       <div className="page-stack">
-        <header className="launcher-greeting">
-          <Avatar>
-            {avatarUrl ? <AvatarImage src={avatarUrl} alt="" /> : null}
-            <AvatarFallback>{name.slice(0, 1).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h1>Welcome, {name}</h1>
-            <p className="muted">Choose an application to open or set up.</p>
-          </div>
-        </header>
+        <PageHeader
+          icon="app-grid"
+          title={`Welcome, ${name}`}
+          description="Choose an application to open or set up."
+        />
         <section className="card-grid">
           {apps.map((app) => (
             <AppTile key={app.key} app={app} />

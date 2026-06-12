@@ -6,8 +6,10 @@ import {
   Button,
   DataTable,
   EmptyState,
+  Icon,
   Input,
   MetricGrid,
+  Skeleton,
   StatusBadge,
   useToast,
 } from "@vxture/design-system";
@@ -146,7 +148,9 @@ export function InviteConsole() {
   if (!data) {
     return (
       <Shell>
-        <section className="auth-card page-stack">Loading...</section>
+        <section className="auth-card page-stack">
+          <Skeleton variant="line" lines={3} />
+        </section>
       </Shell>
     );
   }
@@ -156,6 +160,7 @@ export function InviteConsole() {
       <Shell>
         <section className="auth-card page-stack">
           <PageHeader
+            icon="user"
             title="Admin Sign In"
             description="Use the same Marzban admin account to manage Ruyin invites."
           />
@@ -180,6 +185,7 @@ export function InviteConsole() {
               />
             </label>
             <Button type="submit" disabled={busy === "login"}>
+              <Icon name="arrow-right" size="sm" />
               Sign in
             </Button>
           </form>
@@ -193,11 +199,13 @@ export function InviteConsole() {
       <Shell>
         <section className="auth-card page-stack">
           <PageHeader
+            icon="warning"
             title="Invite Console Unavailable"
             description="Marzban could not be reached. Try again after services recover."
           />
           <div className="actions">
             <Button variant="secondary" onClick={() => refresh().catch(() => undefined)}>
+              <Icon name="clock-counter-clockwise" size="sm" />
               Retry
             </Button>
           </div>
@@ -248,6 +256,7 @@ export function InviteConsole() {
                 size="sm"
                 onClick={() => copy(row.subscriptionUrl || "", "Subscription URL copied.")}
               >
+                <Icon name="copy" size="sm" />
                 Copy
               </Button>
               <Button
@@ -256,6 +265,7 @@ export function InviteConsole() {
                 disabled={busy === row.username}
                 onClick={() => reset(row.username)}
               >
+                <Icon name="clock-counter-clockwise" size="sm" />
                 Reset
               </Button>
             </>
@@ -266,6 +276,7 @@ export function InviteConsole() {
                 size="sm"
                 onClick={() => copy(row.inviteUrl || row.inviteCode || "", "Invite link copied.")}
               >
+                <Icon name="copy" size="sm" />
                 Copy link
               </Button>
               <Button
@@ -273,6 +284,7 @@ export function InviteConsole() {
                 size="sm"
                 onClick={() => copy(row.inviteCode || "", "Invite code copied.")}
               >
+                <Icon name="copy" size="sm" />
                 Copy code
               </Button>
               <Button
@@ -281,11 +293,13 @@ export function InviteConsole() {
                 disabled={busy === String(row.inviteId)}
                 onClick={() => revoke(row.inviteId)}
               >
+                <Icon name="trash" size="sm" />
                 Revoke
               </Button>
             </>
           ) : (
             <Button size="sm" disabled={busy === row.username} onClick={() => generate(row.username)}>
+              <Icon name="plus" size="sm" />
               Generate
             </Button>
           )}
@@ -298,14 +312,19 @@ export function InviteConsole() {
     <Shell>
       <div className="page-stack">
         <PageHeader
+          icon="users"
           title="Invite Console"
           description="Generate one-time VPN invites for existing Marzban users and manage bound subscriptions."
           actions={
             <div className="actions">
               <Button variant="secondary" asChild>
-                <a href="/dashboard/">Marzban Dashboard</a>
+                <a href="/dashboard/">
+                  <Icon name="table" size="sm" />
+                  Marzban Dashboard
+                </a>
               </Button>
               <Button variant="secondary" disabled={busy === "logout"} onClick={logout}>
+                <Icon name="sign-out" size="sm" />
                 Sign out
               </Button>
             </div>

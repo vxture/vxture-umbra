@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Skeleton } from "@vxture/design-system";
+import { Button, Icon, Skeleton } from "@vxture/design-system";
 import { PageHeader, Shell } from "./shell";
 import { fetchJson, ssoStartUrl } from "./api";
 import { Launcher } from "./launcher";
@@ -43,12 +43,16 @@ export function AccountApp({
       <Shell>
         <section className="auth-card page-stack">
           <PageHeader
+            icon="user"
             title="Sign in with Vxture"
             description="Use your unified Vxture account to access Ruyin applications."
           />
           <div className="actions">
             <Button asChild>
-              <a href={ssoStartUrl(session, initialInvite)}>Continue with Vxture</a>
+              <a href={ssoStartUrl(session, initialInvite)}>
+                Continue with Vxture
+                <Icon name="arrow-right" size="sm" />
+              </a>
             </Button>
           </div>
           <p className="muted">

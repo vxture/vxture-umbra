@@ -8,13 +8,28 @@
 :root {
   /* Fixed header height (matches the website portal). */
   --ruyin-header-height: 64px;
-  /* Content track shared by header inner, main, and footer inner. */
-  --ruyin-shell-max-width: 1536px;
+  /* Content track shared by header inner, main, and footer inner. Matches the
+     website portal (1680px) so the chrome aligns identically. */
+  --ruyin-shell-max-width: 1680px;
+  /* Outer page inset for the fixed header/footer bars - mirrors the website
+     portal (48px outer margin + 32px inner padding). Drops to 16px on mobile. */
+  --ruyin-shell-margin-x: 48px;
 }
 
 /* Shell + layout */
 
+/* Page column: pins the footer to the viewport bottom on short pages (mirrors
+   the website portal's .ruyin-page). The fixed header is out of flow, so only
+   main grows to fill the remaining height. */
+.app-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .app-shell {
+  /* Grow to push the footer to the bottom when content is short. */
+  flex: 1 0 auto;
   /* Shared content track + 32px (--vx-space-2xl) gutter. Top padding clears the
      fixed header. */
   width: min(100%, var(--ruyin-shell-max-width));
@@ -37,6 +52,7 @@ body {
   left: 0;
   z-index: 50;
   width: 100%;
+  padding-inline: var(--ruyin-shell-margin-x);
   background: color-mix(in srgb, var(--vx-color-surface) 0%, transparent);
   transition:
     background var(--vx-duration-moderate) var(--vx-ease-standard),
@@ -68,6 +84,21 @@ body {
   gap: var(--vx-space-sm);
 }
 
+/* DS Button asChild renders an <a>, but `a { color: inherit }` (DS globals-base)
+   outranks the button's zero-specificity color, so a filled button in the header
+   would inherit dark text. Re-assert the DS colors at class specificity, scoped
+   to the header actions - identical to the website portal. Ghost/outline after
+   default so they win the size-class collision (size="default" also emits
+   .vx-btn--default). */
+.site-actions .vx-btn--default {
+  color: var(--vx-control-on-brand);
+}
+
+.site-actions .vx-btn--ghost,
+.site-actions .vx-btn--outline {
+  color: var(--vx-control-brand);
+}
+
 .site-tools {
   display: flex;
   align-items: center;
@@ -84,7 +115,12 @@ body {
 }
 
 /* Footer: DS ShellLegalFooter aligned to the same content track, with a top
-   hairline and small muted legal text - identical to the website portal. */
+   hairline and small muted legal text - identical to the website portal. The
+   outer bar carries the same page inset as the header. */
+.site-footer {
+  padding-inline: var(--ruyin-shell-margin-x);
+}
+
 .site-footer-inner {
   width: min(100%, var(--ruyin-shell-max-width));
   min-height: 48px;
@@ -126,12 +162,6 @@ body {
 
 /* Launcher app grid */
 
-.launcher-greeting {
-  display: flex;
-  align-items: center;
-  gap: var(--vx-space-md);
-}
-
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -142,6 +172,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--vx-space-sm);
+}
+
+/* Card title with a leading app glyph (DS Icon). */
+.app-tile-title {
+  display: flex;
+  align-items: center;
   gap: var(--vx-space-sm);
 }
 
@@ -190,5 +227,21 @@ body {
 @media (max-width: 800px) {
   .split {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --ruyin-shell-margin-x: 16px;
+  }
+
+  /* Stack the copyright above the legal links on narrow screens - mirrors the
+     website portal footer. */
+  .site-footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--vx-space-md);
+    padding-top: var(--vx-space-md);
+    padding-bottom: var(--vx-space-md);
   }
 }

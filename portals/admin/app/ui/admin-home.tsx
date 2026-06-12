@@ -19,15 +19,25 @@ interface Tool {
   href: string;
   action: string;
   icon: IconName;
+  /** Opens an external tool in a new tab. Same-origin tools navigate in place. */
+  external?: boolean;
 }
 
 const TOOLS: Tool[] = [
+  {
+    title: "Invites & Users",
+    description: "Generate one-time VPN invites and manage bound subscriptions.",
+    href: "/invites",
+    action: "Open invites",
+    icon: "users",
+  },
   {
     title: "VPN Management",
     description: "Manage users, traffic, and proxy settings in the Marzban dashboard.",
     href: "/dashboard/",
     action: "Open Marzban",
     icon: "shield-check",
+    external: true,
   },
   {
     title: "Password Management",
@@ -35,6 +45,7 @@ const TOOLS: Tool[] = [
     href: "https://pass.ruyin.ai/admin",
     action: "Open Vaultwarden",
     icon: "key",
+    external: true,
   },
 ];
 
@@ -43,6 +54,7 @@ export function AdminHome() {
     <AdminShell active="overview">
       <div className="admin-stack">
         <PageHeader
+          icon="squares-four"
           title="Ruyin Admin"
           description="Platform operations hub. Manage VPN access, invites, and passwords."
         />
@@ -58,8 +70,12 @@ export function AdminHome() {
               <CardContent className="admin-tool-body">
                 <CardDescription>{tool.description}</CardDescription>
                 <Button variant="secondary" asChild>
-                  <a href={tool.href} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={tool.href}
+                    {...(tool.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
                     {tool.action}
+                    <Icon name="arrow-right" size="sm" />
                   </a>
                 </Button>
               </CardContent>
