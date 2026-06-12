@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import {
+  Icon,
   MetricCard,
   PageHeader as DsPageHeader,
   ShellBrand,
@@ -99,7 +100,17 @@ export function Shell({
                   avatarFallback: initials(displayName),
                   badges: user.role ? [{ key: "role", label: user.role }] : undefined,
                 }}
-                actions={[{ key: "logout", label: "Log out", onClick: logout }]}
+                actions={[
+                  {
+                    key: "profile",
+                    label: "Personal info",
+                    icon: "user",
+                    onClick: () => {
+                      window.location.href = "/account";
+                    },
+                  },
+                  { key: "logout", label: "Log out", icon: "sign-out", onClick: logout },
+                ]}
               />
             ) : null}
           </div>
@@ -130,6 +141,38 @@ export function PageHeader({
   actions?: ReactNode;
 }) {
   return <DsPageHeader icon={icon} title={title} description={description} actions={actions} />;
+}
+
+/**
+ * Left-aligned section heading: a 24px brand-primary icon at the far left, a
+ * bold brand-primary title, and a muted description below. Used for console
+ * content sections; the DS PageHeader's title sizing relies on shell-scoped
+ * tokens this portal's website-style chrome does not provide.
+ */
+export function SectionHeading({
+  icon,
+  title,
+  description,
+  badge,
+  actions,
+}: {
+  icon: IconName;
+  title: string;
+  description?: string;
+  badge?: ReactNode;
+  actions?: ReactNode;
+}) {
+  return (
+    <div className="section-heading">
+      <div className="section-heading-row">
+        <Icon name={icon} size={24} className="section-heading-icon" />
+        <h2 className="section-heading-title">{title}</h2>
+        {badge ? <span className="section-heading-badge">{badge}</span> : null}
+        {actions ? <div className="section-heading-actions">{actions}</div> : null}
+      </div>
+      {description ? <p className="section-heading-desc">{description}</p> : null}
+    </div>
+  );
 }
 
 export function Metric({ label, value }: { label: string; value: ReactNode }) {
