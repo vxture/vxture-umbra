@@ -30,18 +30,22 @@
 .app-shell {
   /* Grow to push the footer to the bottom when content is short. */
   flex: 1 0 auto;
-  /* Shared content track + 32px (--vx-space-2xl) gutter. Top padding clears the
-     fixed header. */
-  width: min(100%, var(--ruyin-shell-max-width));
+  /* Align the content box to the SAME inset as the header/footer bars: those use
+     an outer page margin (--ruyin-shell-margin-x) plus a 32px inner gutter on a
+     1680 track. Mirror that here so the whitespace is identical at every width. */
+  width: 100%;
+  max-width: calc(var(--ruyin-shell-max-width) + 2 * var(--ruyin-shell-margin-x));
   margin: 0 auto;
   padding:
     calc(var(--ruyin-header-height) + var(--vx-space-xl))
-    var(--vx-space-2xl)
+    calc(var(--ruyin-shell-margin-x) + var(--vx-space-2xl))
     var(--vx-space-3xl);
 }
 
 body {
-  background: var(--vx-color-background);
+  /* White page (--vx-color-page = white in light, dark surface in dark); the
+     DS default --vx-color-background is a brand-tinted (light blue) wash. */
+  background: var(--vx-color-page);
 }
 
 /* Header chrome: fixed, transparent, glass on scroll - mirrors the website
@@ -104,6 +108,8 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: var(--vx-space-sm);
+  /* Separate the display tools (theme/locale) from the account menu / CTA area. */
+  margin-inline-end: var(--vx-space-xl);
 }
 
 /* Brand wordmark: Funnel Display at the DS heading-3 size with the DS logo
@@ -144,7 +150,58 @@ body {
 
 .page-stack {
   display: grid;
+  gap: var(--vx-space-xl);
+}
+
+/* Vertical stack for content INSIDE a card. The DS SectionCard does not gap its
+   own children, so controls would otherwise touch the content above them. */
+.card-stack {
+  display: grid;
   gap: var(--vx-space-lg);
+}
+
+/* Left-aligned section heading (DS SectionHeading): 24px brand-primary icon at
+   the far left, bold brand-primary title, muted description below. */
+.section-heading {
+  display: grid;
+  gap: var(--vx-space-sm);
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-sm);
+}
+
+.section-heading-icon {
+  flex: none;
+  color: var(--vx-color-primary);
+}
+
+.section-heading-title {
+  margin: 0;
+  color: var(--vx-color-primary);
+  font-weight: 700;
+  font-size: var(--vx-typography-heading-3-size);
+  line-height: 1.24;
+}
+
+/* Inline status tag rendered right after the title. */
+.section-heading-badge {
+  display: inline-flex;
+  align-items: center;
+}
+
+.section-heading-actions {
+  margin-left: auto;
+}
+
+.section-heading-desc {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--vx-color-text-secondary);
+  font-size: var(--vx-typography-body-size);
+  line-height: 1.5;
 }
 
 .split {
@@ -160,31 +217,40 @@ body {
   align-items: center;
 }
 
-/* Launcher app grid */
+/* Personal-info block: avatar + name header, then label/value identity rows. */
 
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--vx-space-lg);
-}
-
-.app-tile-head {
+.info-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--vx-space-sm);
-}
-
-/* Card title with a leading app glyph (DS Icon). */
-.app-tile-title {
-  display: flex;
-  align-items: center;
-  gap: var(--vx-space-sm);
-}
-
-.app-tile-body {
-  display: grid;
   gap: var(--vx-space-md);
+  margin-bottom: var(--vx-space-md);
+}
+
+.info-head-text {
+  display: grid;
+}
+
+.info-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: minmax(80px, 140px) 1fr;
+  gap: var(--vx-space-md);
+  align-items: baseline;
+}
+
+.info-label {
+  color: var(--vx-color-text-muted);
+  font-size: 14px;
+}
+
+.info-value {
+  color: var(--vx-color-text-primary);
+  font-size: 14px;
+  overflow-wrap: anywhere;
 }
 
 /* Auth / form composition (DS Input + Button supply the control looks) */

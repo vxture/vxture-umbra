@@ -109,6 +109,8 @@ a {
   align-items: center;
   justify-content: flex-end;
   gap: var(--vx-space-sm);
+  /* Separate the display tools (theme/locale) from the sign up / log in CTAs. */
+  margin-inline-end: var(--vx-space-xl);
 }
 
 /* Brand wordmark: DS ShellBrand's label uses neither the brand typeface nor a

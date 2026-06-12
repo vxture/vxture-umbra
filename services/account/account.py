@@ -163,6 +163,7 @@ def public_vxture_user(payload: dict[str, Any]) -> dict[str, Any]:
         "role": str(payload.get("role") or "member"),
         "permissions": payload.get("permissions") if isinstance(payload.get("permissions"), list) else [],
         "provider": str(payload.get("provider") or ""),
+        "phone": str(payload.get("phone_number") or payload.get("phone") or ""),
     }
 
 
@@ -489,6 +490,16 @@ def account_for_vxture_user(vxture_user_id: str) -> sqlite3.Row | None:
         ).fetchone()
 
 
+def format_reset_strategy(value: Any) -> str:
+    return {
+        "no_reset": "No reset",
+        "day": "Daily",
+        "week": "Weekly",
+        "month": "Monthly",
+        "year": "Yearly",
+    }.get(str(value or ""), "No reset")
+
+
 def account_payload(row: sqlite3.Row | None) -> dict[str, Any] | None:
     if not row:
         return None
@@ -515,6 +526,13 @@ def account_payload(row: sqlite3.Row | None) -> dict[str, Any] | None:
         "remainingText": format_bytes(max(total - used, 0)) if total else "Unlimited",
         "expireText": format_epoch(info.get("expire")),
         "onlineText": format_datetime(info.get("online_at")),
+        # Extended Marzban subscription fields (from /sub/{token}/info).
+        "usagePercent": round(used / total * 100) if total else 0,
+        "resetText": format_reset_strategy(info.get("data_limit_reset_strategy")),
+        "lastClient": str(info.get("sub_last_user_agent") or ""),
+        "subUpdatedText": format_datetime(info.get("sub_updated_at")),
+        "createdText": format_datetime(info.get("created_at")),
+        "lifetimeUsedText": format_bytes(int(info.get("lifetime_used_traffic") or 0)),
         "vxtureAccountId": row["vxture_account_id"],
         "vxtureEmail": row["vxture_email"],
         "vxtureTenantId": row["vxture_tenant_id"],
