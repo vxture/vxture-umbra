@@ -9,6 +9,9 @@ export function markSrc(resolved: string): string {
  *  chrome/footer renders identically across portals. */
 export const ruyinBrand = {
   productDomain: "ruyin.ai",
+  // Header wordmark for the admin portal (the management surface, distinct from
+  // the marketing site / tenant console which show the bare "ruyin.ai" domain).
+  productName: "Ruyin Admin Platform",
   studioUrl: "https://vxture.com",
   // ASCII source escape so the contract check (portals/admin/lib is scanned)
   // passes, while the rendered footer shows the same copyright glyph as the

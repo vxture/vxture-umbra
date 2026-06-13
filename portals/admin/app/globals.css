@@ -1,9 +1,22 @@
-/* ===== Admin shell composition =====
- * Thin sidebar + topbar shell composed from DS Shell* primitives, standing in
- * for the DS AppShell (see docs/design/ds-extension-requests.md) until it lands.
- * Layout only - colors, fonts, and control looks come from
- * @vxture/design-system. Do not add design primitives here.
+/* ===== Admin layout composition =====
+ * The admin portal wears the same chrome as the marketing site and tenant
+ * console: a fixed glass-on-scroll header, a content-aligned legal footer, and
+ * DS Shell* controls. This file holds layout-only composition - all colors,
+ * typography, and control looks come from @vxture/design-system. Do not add
+ * design primitives here; extend the DS package instead (see
+ * docs/design/ds-extension-requests.md).
  */
+
+:root {
+  /* Fixed header height (matches the website + console portals). */
+  --ruyin-header-height: 64px;
+  /* Content track shared by header inner, main, and footer inner. Matches the
+     website + console portals so the chrome aligns identically across portals. */
+  --ruyin-shell-max-width: 1680px;
+  /* Outer page inset for the fixed header/footer bars - mirrors the website +
+     console portals (48px outer margin + 32px inner padding). 16px on mobile. */
+  --ruyin-shell-margin-x: 48px;
+}
 
 * {
   box-sizing: border-box;
@@ -13,8 +26,10 @@ html,
 body {
   min-height: 100vh;
   margin: 0;
-  background: var(--vx-color-background);
   color: var(--vx-color-text-primary);
+  /* White page (matches the console portal); the DS default background is a
+     brand-tinted wash. */
+  background: var(--vx-color-page);
 }
 
 a {
@@ -22,59 +37,136 @@ a {
   text-decoration: none;
 }
 
-/* Shell frame */
-
-.admin-shell {
-  min-height: 100vh;
+/* Page column: pins the footer to the viewport bottom on short pages. The fixed
+   header is out of flow, so only main grows to fill the remaining height. */
+.app-page {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-.admin-topbar {
-  position: sticky;
+.app-shell {
+  /* Grow to push the footer to the bottom when content is short. */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  /* Align the content box to the SAME inset as the header/footer bars - mirrors
+     the website + console portals so the whitespace is identical at every width. */
+  width: 100%;
+  max-width: calc(var(--ruyin-shell-max-width) + 2 * var(--ruyin-shell-margin-x));
+  margin: 0 auto;
+  padding:
+    calc(var(--ruyin-header-height) + var(--vx-space-xl))
+    calc(var(--ruyin-shell-margin-x) + var(--vx-space-2xl))
+    var(--vx-space-3xl);
+}
+
+/* ===== Header chrome (fixed, transparent, glass on scroll) ===== */
+
+.site-header {
+  position: fixed;
   top: 0;
-  z-index: 30;
+  left: 0;
+  z-index: 50;
+  width: 100%;
+  padding-inline: var(--ruyin-shell-margin-x);
+  background: color-mix(in srgb, var(--vx-color-surface) 0%, transparent);
+  transition:
+    background var(--vx-duration-moderate) var(--vx-ease-standard),
+    box-shadow var(--vx-duration-moderate) var(--vx-ease-standard),
+    backdrop-filter var(--vx-duration-moderate) var(--vx-ease-standard);
+}
+
+.site-header.is-scrolled {
+  background: color-mix(in srgb, var(--vx-color-surface) 82%, transparent);
+  box-shadow: var(--vx-shadow-lg);
+  backdrop-filter: blur(18px);
+}
+
+.site-header-inner {
+  width: min(100%, var(--ruyin-shell-max-width));
+  min-height: var(--ruyin-header-height);
+  margin: 0 auto;
+  padding: 0 var(--vx-space-2xl);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--vx-space-lg);
-  min-height: var(--vx-space-4xl);
-  padding: 0 var(--vx-space-2xl);
-  border-bottom: 1px solid var(--vx-color-border);
-  background: color-mix(in srgb, var(--vx-color-surface) 86%, transparent);
-  backdrop-filter: blur(12px);
 }
 
-.admin-topbar-end {
+.site-actions {
   display: flex;
   align-items: center;
-  gap: var(--vx-space-md);
+  justify-content: flex-end;
+  gap: var(--vx-space-sm);
 }
 
-.admin-env {
-  font-size: var(--vx-typography-body-sm-size);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+/* DS Button asChild renders an <a>, but `a { color: inherit }` outranks the
+   button's zero-specificity color. Re-assert the DS colors at class specificity,
+   scoped to the header actions - identical to the website + console portals. */
+.site-actions .vx-btn--default {
+  color: var(--vx-control-on-brand);
+}
+
+.site-actions .vx-btn--ghost,
+.site-actions .vx-btn--outline {
+  color: var(--vx-control-brand);
+}
+
+.site-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--vx-space-sm);
+  /* Separate the display tools (theme/locale) from the account menu by 24px
+     (--vx-space-xl), matching the console portal. */
+  margin-inline-end: var(--vx-space-xl);
+}
+
+/* Brand wordmark: Funnel Display at the DS heading-3 size with the DS logo
+   tracking - identical to the website + console portals. */
+.site-brand-name {
+  font-family: var(--font-brand);
+  font-size: var(--vx-typography-heading-3-size);
+  letter-spacing: var(--vx-typography-logo-letter-spacing);
+}
+
+/* ===== Footer ===== */
+
+.site-footer {
+  padding-inline: var(--ruyin-shell-margin-x);
+}
+
+.site-footer-inner {
+  width: min(100%, var(--ruyin-shell-max-width));
+  min-height: 48px;
+  border-top: 1px solid var(--vx-color-border);
+  margin: 0 auto;
+  padding: 0 var(--vx-space-2xl);
+  /* Compact 12px legal text (smaller than the website/console 14px). */
+  font-size: 12px;
   color: var(--vx-color-text-muted);
 }
+
+/* ===== Signed-in body: nav rail + content ===== */
 
 .admin-body {
   flex: 1;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
+  gap: var(--vx-space-2xl);
 }
 
 .admin-sidebar {
   border-right: 1px solid var(--vx-color-border);
-  padding: var(--vx-space-lg) var(--vx-space-md);
+  padding-right: var(--vx-space-md);
 }
 
 .admin-nav {
   display: grid;
   gap: 4px;
   position: sticky;
-  top: calc(var(--vx-space-4xl) + var(--vx-space-lg));
+  top: calc(var(--ruyin-header-height) + var(--vx-space-lg));
 }
 
 .admin-nav-item {
@@ -101,44 +193,132 @@ a {
   color: var(--vx-color-primary);
 }
 
-/* Legal footer: DS ShellLegalFooter pinned to the bottom of the shell column
-   (admin-body grows, so the band sits at the viewport bottom on short pages).
-   Same copyright + legal links as the console portal; only the alignment is
-   fitted to the app shell (full-width band, topbar-matching gutter). */
-.admin-footer {
-  border-top: 1px solid var(--vx-color-border);
-}
-
-.admin-footer-inner {
-  min-height: 48px;
-  padding: 0 var(--vx-space-2xl);
-  font-size: 14px;
-  color: var(--vx-color-text-muted);
-}
-
-/* Content */
-
 .admin-content {
   min-width: 0;
-  width: min(100%, 1280px);
-  padding: var(--vx-space-2xl);
 }
 
-/* Bare (pre-auth) main: top-centered login card, footer stays at the bottom. */
-.admin-auth {
+/* ===== Pre-auth sign-in (split brand panel + form card) ===== */
+
+.admin-login {
   flex: 1;
   display: grid;
-  place-items: start center;
-  padding-top: var(--vx-space-4xl);
+  place-items: center;
+  padding-block: var(--vx-space-2xl);
 }
+
+.admin-login-card {
+  width: min(100%, 920px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  overflow: hidden;
+  border: 1px solid var(--vx-color-border);
+  border-radius: var(--vx-radius-2xl);
+  background: var(--vx-color-surface);
+  box-shadow: var(--vx-shadow-xl);
+}
+
+/* Left brand panel: gradient fill with the product lockup and value props. */
+.admin-login-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-2xl);
+  padding: var(--vx-space-3xl);
+  background: var(--vx-gradient-brand);
+  color: var(--vx-color-text-inverse);
+}
+
+.admin-login-mark {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.admin-login-aside-text {
+  display: grid;
+  gap: var(--vx-space-sm);
+}
+
+.admin-login-eyebrow {
+  margin: 0;
+  font-size: var(--vx-typography-body-sm-size);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, currentColor 76%, transparent);
+}
+
+.admin-login-aside-title {
+  margin: 0;
+  font-family: var(--font-brand);
+  font-size: var(--vx-typography-heading-2-size);
+  line-height: 1.16;
+  letter-spacing: var(--vx-typography-logo-letter-spacing);
+}
+
+.admin-login-aside-lead {
+  margin: 0;
+  max-width: 36ch;
+  font-size: var(--vx-typography-body-lg-size);
+  line-height: 1.5;
+  color: color-mix(in srgb, currentColor 88%, transparent);
+}
+
+.admin-login-features {
+  display: grid;
+  gap: var(--vx-space-md);
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-login-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-sm);
+  font-size: var(--vx-typography-body-size);
+  color: color-mix(in srgb, currentColor 92%, transparent);
+}
+
+.admin-login-features li svg {
+  flex: none;
+}
+
+/* Right form panel. */
+.admin-login-main {
+  display: grid;
+  align-content: center;
+  gap: var(--vx-space-xl);
+  padding: var(--vx-space-3xl);
+}
+
+.admin-login-head {
+  display: grid;
+  gap: var(--vx-space-xs);
+}
+
+.admin-login-head .admin-login-eyebrow {
+  color: var(--vx-color-primary);
+}
+
+.admin-login-title {
+  margin: 0;
+  font-size: var(--vx-typography-heading-2-size);
+  line-height: 1.16;
+  color: var(--vx-color-text-primary);
+}
+
+.admin-login-sub {
+  margin: 0;
+  color: var(--vx-color-text-secondary);
+  font-size: var(--vx-typography-body-size);
+  line-height: 1.5;
+}
+
+/* ===== Shared content composition ===== */
 
 .page-stack {
   display: grid;
   gap: var(--vx-space-lg);
-}
-
-.auth-card {
-  width: min(100%, 480px);
 }
 
 .actions {
@@ -148,7 +328,6 @@ a {
   align-items: center;
 }
 
-/* Auth / form composition (DS Input + Button supply the control looks). */
 .form {
   display: grid;
   gap: var(--vx-space-md);
@@ -180,16 +359,37 @@ a {
   font-size: 13px;
 }
 
-/* Responsive: collapse the sidebar into a horizontal nav strip. */
+/* ===== Responsive ===== */
 
+/* Collapse the login split into a single column; the brand panel stacks above. */
 @media (max-width: 760px) {
+  .admin-login-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-login-aside {
+    padding: var(--vx-space-2xl);
+  }
+
+  .admin-login-features {
+    margin-top: var(--vx-space-lg);
+  }
+
+  .admin-login-main {
+    padding: var(--vx-space-2xl);
+  }
+
+  /* Collapse the nav rail into a horizontal strip above the content. */
   .admin-body {
     grid-template-columns: 1fr;
+    gap: var(--vx-space-lg);
   }
 
   .admin-sidebar {
     border-right: none;
     border-bottom: 1px solid var(--vx-color-border);
+    padding-right: 0;
+    padding-bottom: var(--vx-space-md);
   }
 
   .admin-nav {
@@ -200,10 +400,14 @@ a {
   }
 }
 
-/* Stack the copyright above the legal links on narrow screens - mirrors the
-   console portal footer. */
 @media (max-width: 640px) {
-  .admin-footer-inner {
+  :root {
+    --ruyin-shell-margin-x: 16px;
+  }
+
+  /* Stack the copyright above the legal links on narrow screens - mirrors the
+     website + console portal footers. */
+  .site-footer-inner {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--vx-space-md);

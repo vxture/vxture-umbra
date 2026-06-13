@@ -12,11 +12,19 @@ import {
   PageHeader,
   Skeleton,
   StatusBadge,
+  useTheme,
   useToast,
 } from "@vxture/design-system";
-import type { DataTableColumn, MetricGridItem, StatusBadgeTone } from "@vxture/design-system";
+import type { DataTableColumn, IconName, MetricGridItem, StatusBadgeTone } from "@vxture/design-system";
 import { AdminShell } from "./admin-shell";
+import { markSrc, ruyinBrand } from "../../lib/brand";
 import type { AdminInvitesPayload, AdminUserRow } from "./types";
+
+const LOGIN_FEATURES: { icon: IconName; label: string }[] = [
+  { icon: "users", label: "Issue invites and bind subscriber accounts" },
+  { icon: "shield-check", label: "Manage Marzban VPN subscriptions" },
+  { icon: "key", label: "Reach the shared password vault" },
+];
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -59,6 +67,7 @@ export function AdminApp() {
   const [busy, setBusy] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { theme } = useTheme();
   const { toast } = useToast();
 
   async function refresh() {
@@ -153,9 +162,13 @@ export function AdminApp() {
 
   if (!data) {
     return (
-      <AdminShell bare>
-        <section className="auth-card page-stack">
-          <Skeleton variant="line" lines={3} />
+      <AdminShell>
+        <section className="admin-login">
+          <div className="admin-login-card">
+            <div className="admin-login-main">
+              <Skeleton variant="line" lines={4} />
+            </div>
+          </div>
         </section>
       </AdminShell>
     );
@@ -163,38 +176,63 @@ export function AdminApp() {
 
   if (data.status === "admin_login_required") {
     return (
-      <AdminShell bare>
-        <section className="auth-card page-stack">
-          <PageHeader
-            icon="user"
-            title="Admin Sign In"
-            description="Sign in with the Ruyin management credential to manage invites and subscriptions."
-          />
-          <form className="form" onSubmit={login}>
-            <label className="field">
-              Admin username
-              <Input
-                autoComplete="username"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                required
-              />
-            </label>
-            <label className="field">
-              Admin password
-              <Input
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
-            </label>
-            <Button type="submit" disabled={busy === "login"}>
-              <Icon name="arrow-right" size="sm" />
-              Sign in
-            </Button>
-          </form>
+      <AdminShell>
+        <section className="admin-login">
+          <div className="admin-login-card">
+            <aside className="admin-login-aside">
+              <img className="admin-login-mark" src={markSrc(theme)} alt="" />
+              <div className="admin-login-aside-text">
+                <p className="admin-login-eyebrow">Management console</p>
+                <h2 className="admin-login-aside-title">{ruyinBrand.productName}</h2>
+                <p className="admin-login-aside-lead">
+                  One secure place to operate invites, VPN subscriptions, and credentials.
+                </p>
+              </div>
+              <ul className="admin-login-features">
+                {LOGIN_FEATURES.map((feature) => (
+                  <li key={feature.label}>
+                    <Icon name={feature.icon} size="sm" />
+                    <span>{feature.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+
+            <div className="admin-login-main">
+              <div className="admin-login-head">
+                <p className="admin-login-eyebrow">Admin access</p>
+                <h1 className="admin-login-title">Sign in</h1>
+                <p className="admin-login-sub">
+                  Use your Ruyin management credential to continue.
+                </p>
+              </div>
+              <form className="form" onSubmit={login}>
+                <label className="field">
+                  Admin username
+                  <Input
+                    autoComplete="username"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    required
+                  />
+                </label>
+                <label className="field">
+                  Admin password
+                  <Input
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                  />
+                </label>
+                <Button type="submit" disabled={busy === "login"}>
+                  <Icon name="arrow-right" size="sm" />
+                  Sign in
+                </Button>
+              </form>
+            </div>
+          </div>
         </section>
       </AdminShell>
     );
@@ -202,18 +240,12 @@ export function AdminApp() {
 
   if (data.status !== "ok") {
     return (
-      <AdminShell active="invites">
+      <AdminShell active="invites" authed onSignOut={logout}>
         <div className="page-stack">
           <PageHeader
             icon="warning"
             title="Invite Console Unavailable"
             description="Marzban could not be reached. Try again after services recover."
-            actions={
-              <Button variant="secondary" disabled={busy === "logout"} onClick={logout}>
-                <Icon name="sign-out" size="sm" />
-                Sign out
-              </Button>
-            }
           />
           <div className="actions">
             <Button variant="secondary" onClick={() => refresh().catch(() => undefined)}>
@@ -321,18 +353,12 @@ export function AdminApp() {
   ];
 
   return (
-    <AdminShell active="invites">
+    <AdminShell active="invites" authed onSignOut={logout}>
       <div className="page-stack">
         <PageHeader
           icon="users"
           title="Invites & Users"
           description="Issue one-time VPN invites for Marzban users and manage bound subscriptions."
-          actions={
-            <Button variant="secondary" disabled={busy === "logout"} onClick={logout}>
-              <Icon name="sign-out" size="sm" />
-              Sign out
-            </Button>
-          }
         />
         <MetricGrid items={metrics} />
         <DataTable
