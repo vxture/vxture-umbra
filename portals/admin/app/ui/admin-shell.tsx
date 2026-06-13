@@ -12,8 +12,34 @@ import {
 } from "@vxture/design-system";
 import type { IconName } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
-import { useLocale } from "../locale-provider";
+import { DEFAULT_LOCALE, LOCALE_CONSTANTS, SUPPORTED_LOCALES } from "@vxture/shared";
 import { markSrc, ruyinBrand } from "../../lib/brand";
+
+/**
+ * Minimal locale state for the header language switcher. The admin app has a
+ * single locale consumer, so it needs only persisted state wired to the shared
+ * locale constants - not the full React context provider the console/website
+ * carry for their many locale-aware components.
+ */
+function useAdminLocale() {
+  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(LOCALE_CONSTANTS.STORAGE_KEY) as Locale | null;
+    if (stored && SUPPORTED_LOCALES.includes(stored)) {
+      setLocaleState(stored);
+      document.documentElement.lang = stored;
+    }
+  }, []);
+
+  const setLocale = (next: Locale) => {
+    setLocaleState(next);
+    localStorage.setItem(LOCALE_CONSTANTS.STORAGE_KEY, next);
+    document.documentElement.lang = next;
+  };
+
+  return { locale, setLocale };
+}
 
 /**
  * Admin chrome - the same fixed glass-on-scroll header/footer treatment as the
@@ -50,7 +76,7 @@ export function AdminShell({
   onSignOut?: () => void | Promise<void>;
 }) {
   const { theme, setTheme } = useTheme();
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale } = useAdminLocale();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
