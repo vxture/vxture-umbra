@@ -60,6 +60,10 @@ rules:
   - DOMAIN-SUFFIX,microsoftonline-p.com,PROXY
   - DOMAIN-SUFFIX,sharepoint.com,PROXY
 
+  # 0b. Blocked telemetry. Datadog log/RUM intake (http-intake.logs.us5...) is
+  #     third-party telemetry from local apps; drop it instead of proxying.
+  - DOMAIN-SUFFIX,datadoghq.com,REJECT
+
   # 1. Local, LAN, link-local, and fake-ip direct
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve

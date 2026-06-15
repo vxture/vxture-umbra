@@ -65,6 +65,10 @@ DOMAIN-SUFFIX,xboxlive.com
 DOMAIN-SUFFIX,vultr.com
 DOMAIN-SUFFIX,vultrobjects.com
 
+# Bright Data. Proxy/data-collection network; route its endpoints direct so
+# they are not double-proxied through the node.
+DOMAIN-SUFFIX,brightdata.com
+
 # TeamViewer. Remote-control traffic uses TeamViewer's own protocol over port
 # 5938 (TCP/UDP) with 443/80 fallback, reaching master and router servers under
 # teamviewer.com. Forcing it through the proxy breaks the low-latency 5938 path
