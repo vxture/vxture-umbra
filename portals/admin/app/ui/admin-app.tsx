@@ -13,9 +13,128 @@ import {
   useToast,
 } from "@vxture/design-system";
 import type { IconName, MetricGridItem, StatusBadgeTone } from "@vxture/design-system";
+import type { Locale } from "@vxture/shared";
 import { AdminShell } from "./admin-shell";
 import { ruyinBrand } from "../../lib/brand";
+import { useLocale } from "../locale-provider";
 import type { AdminInvitesPayload, AdminUserRow } from "./types";
+
+/**
+ * Localized copy for the signed-in invites surface. The English side must keep
+ * the literal phrases "Invite link", "Subscription URL", "Copy link", and
+ * "Copy code" - a deploy contract check (06-check-deploy-contracts.py) asserts
+ * they are present in this file. The pre-auth login screen stays English.
+ */
+type AdminCopy = {
+  title: string;
+  description: string;
+  vpnConsole: string;
+  metrics: { users: string; bound: string; invitePending: string; pendingBinding: string };
+  binding: Record<AdminUserRow["bindingState"], string>;
+  used: string;
+  total: string;
+  expire: string;
+  lastOnline: string;
+  inviteCode: string;
+  subscriptionUrl: string;
+  inviteLink: string;
+  copyUrl: string;
+  reset: string;
+  copyLink: string;
+  copyCode: string;
+  revoke: string;
+  generate: string;
+  emptyTitle: string;
+  emptyDesc: string;
+  unavailableTitle: string;
+  unavailableDesc: string;
+  retry: string;
+  toastInviteGenerated: string;
+  toastInviteDesc: (user: string, url: string) => string;
+  toastReset: (user: string) => string;
+  toastRevoked: string;
+  toastSubCopied: string;
+  toastLinkCopied: string;
+  toastCodeCopied: string;
+};
+
+const MESSAGES: Record<Locale, AdminCopy> = {
+  "en-US": {
+    title: "Invites & users",
+    description:
+      "Issue one-time VPN invites for Marzban users and manage bound subscriptions.",
+    vpnConsole: "VPN console",
+    metrics: {
+      users: "Users",
+      bound: "Bound",
+      invitePending: "Invite pending",
+      pendingBinding: "Pending binding",
+    },
+    binding: { bound: "Bound", invite_pending: "Invite pending", pending_binding: "Pending binding" },
+    used: "Used",
+    total: "Total",
+    expire: "Expire",
+    lastOnline: "Last online",
+    inviteCode: "Invite code",
+    subscriptionUrl: "Subscription URL",
+    inviteLink: "Invite link",
+    copyUrl: "Copy URL",
+    reset: "Reset",
+    copyLink: "Copy link",
+    copyCode: "Copy code",
+    revoke: "Revoke",
+    generate: "Generate invite",
+    emptyTitle: "No Marzban users",
+    emptyDesc: "Create users in the Marzban dashboard first, then generate invites here.",
+    unavailableTitle: "Invite console unavailable",
+    unavailableDesc: "Marzban could not be reached. Try again after services recover.",
+    retry: "Retry",
+    toastInviteGenerated: "Invite generated.",
+    toastInviteDesc: (user, url) => `Invite link for ${user}: ${url}`,
+    toastReset: (user) => `Subscription URL reset requested for ${user}.`,
+    toastRevoked: "Invite revoked.",
+    toastSubCopied: "Subscription URL copied.",
+    toastLinkCopied: "Invite link copied.",
+    toastCodeCopied: "Invite code copied.",
+  },
+  "zh-CN": {
+    title: "邀请与用户",
+    description: "为 Marzban 用户签发一次性 VPN 邀请，并管理已绑定的订阅。",
+    vpnConsole: "VPN 控制台",
+    metrics: {
+      users: "用户",
+      bound: "已绑定",
+      invitePending: "待领取邀请",
+      pendingBinding: "待绑定",
+    },
+    binding: { bound: "已绑定", invite_pending: "待领取邀请", pending_binding: "待绑定" },
+    used: "已用",
+    total: "总量",
+    expire: "到期",
+    lastOnline: "最近在线",
+    inviteCode: "邀请码",
+    subscriptionUrl: "订阅地址",
+    inviteLink: "邀请链接",
+    copyUrl: "复制地址",
+    reset: "重置",
+    copyLink: "复制链接",
+    copyCode: "复制邀请码",
+    revoke: "撤销",
+    generate: "生成邀请",
+    emptyTitle: "暂无 Marzban 用户",
+    emptyDesc: "请先在 Marzban 控制台创建用户，然后在此生成邀请。",
+    unavailableTitle: "邀请控制台不可用",
+    unavailableDesc: "无法连接 Marzban，请在服务恢复后重试。",
+    retry: "重试",
+    toastInviteGenerated: "邀请已生成。",
+    toastInviteDesc: (user, url) => `${user} 的邀请链接：${url}`,
+    toastReset: (user) => `已请求重置 ${user} 的订阅地址。`,
+    toastRevoked: "邀请已撤销。",
+    toastSubCopied: "订阅地址已复制。",
+    toastLinkCopied: "邀请链接已复制。",
+    toastCodeCopied: "邀请码已复制。",
+  },
+};
 
 /**
  * Content-area section heading. The DS PageHeader sizes its title from
@@ -81,12 +200,6 @@ const BINDING_TONE: Record<AdminUserRow["bindingState"], StatusBadgeTone> = {
   pending_binding: "neutral",
 };
 
-function bindingLabel(row: AdminUserRow): string {
-  if (row.bindingState === "bound") return `Bound: ${row.displayName ?? row.username}`;
-  if (row.bindingState === "invite_pending") return "Invite pending";
-  return "Pending binding";
-}
-
 /** Tone for the upstream Marzban account status (active / limited / expired ...). */
 function statusTone(status: string): StatusBadgeTone {
   const value = status.toLowerCase();
@@ -99,7 +212,8 @@ function statusTone(status: string): StatusBadgeTone {
 /**
  * Admin management surface (admin.ruyin.ai). Built-in credential login, then the
  * vpn-invites block: every subscription link, invite-code issuance, and bound
- * accounts. Marzban and Vault are sidebar jump-links (see AdminShell).
+ * accounts. The header carries the business nav (VPN access, password security);
+ * the Marzban dashboard jump-link sits in the title bar (see AdminShell).
  */
 export function AdminApp() {
   const [data, setData] = useState<AdminInvitesPayload | null>(null);
@@ -107,6 +221,8 @@ export function AdminApp() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { toast } = useToast();
+  const { locale } = useLocale();
+  const m = MESSAGES[locale];
 
   async function refresh() {
     setData(await api<AdminInvitesPayload>("/api/account/admin/invites"));
@@ -158,8 +274,8 @@ export function AdminApp() {
       );
       toast({
         tone: "success",
-        title: "Invite generated.",
-        description: payload.inviteUrl ? `Invite link for ${user}: ${payload.inviteUrl}` : undefined,
+        title: m.toastInviteGenerated,
+        description: payload.inviteUrl ? m.toastInviteDesc(user, payload.inviteUrl) : undefined,
       });
       await refresh();
     } finally {
@@ -174,7 +290,7 @@ export function AdminApp() {
         method: "POST",
         body: JSON.stringify({ username: user }),
       });
-      toast({ tone: "success", title: `Subscription URL reset requested for ${user}.` });
+      toast({ tone: "success", title: m.toastReset(user) });
       await refresh();
     } finally {
       setBusy("");
@@ -186,7 +302,7 @@ export function AdminApp() {
     setBusy(String(id));
     try {
       await api("/api/account/admin/revoke", { method: "POST", body: JSON.stringify({ id }) });
-      toast({ tone: "success", title: "Invite revoked." });
+      toast({ tone: "success", title: m.toastRevoked });
       await refresh();
     } finally {
       setBusy("");
@@ -277,17 +393,17 @@ export function AdminApp() {
 
   if (data.status !== "ok") {
     return (
-      <AdminShell active="invites" authed onSignOut={logout}>
+      <AdminShell active="vpn" authed onSignOut={logout}>
         <div className="page-stack">
           <SectionHeading
             icon="warning"
-            title="Invite console unavailable"
-            description="Marzban could not be reached. Try again after services recover."
+            title={m.unavailableTitle}
+            description={m.unavailableDesc}
           />
           <div className="actions">
             <Button variant="secondary" onClick={() => refresh().catch(() => undefined)}>
               <Icon name="clock-counter-clockwise" size="sm" />
-              Retry
+              {m.retry}
             </Button>
           </div>
         </div>
@@ -296,10 +412,10 @@ export function AdminApp() {
   }
 
   const metrics: MetricGridItem[] = [
-    { label: "Users", value: data.summary.users },
-    { label: "Bound", value: data.summary.bound, tone: "success" },
-    { label: "Invite pending", value: data.summary.invitePending, tone: "warning" },
-    { label: "Pending binding", value: data.summary.pendingBinding },
+    { label: m.metrics.users, value: data.summary.users },
+    { label: m.metrics.bound, value: data.summary.bound, tone: "success" },
+    { label: m.metrics.invitePending, value: data.summary.invitePending, tone: "warning" },
+    { label: m.metrics.pendingBinding, value: data.summary.pendingBinding },
   ];
 
   function renderActions(row: AdminUserRow): ReactNode {
@@ -309,10 +425,10 @@ export function AdminApp() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => copy(row.subscriptionUrl || "", "Subscription URL copied.")}
+            onClick={() => copy(row.subscriptionUrl || "", m.toastSubCopied)}
           >
             <Icon name="copy" size="sm" />
-            Copy URL
+            {m.copyUrl}
           </Button>
           <Button
             variant="destructive"
@@ -321,7 +437,7 @@ export function AdminApp() {
             onClick={() => reset(row.username)}
           >
             <Icon name="clock-counter-clockwise" size="sm" />
-            Reset
+            {m.reset}
           </Button>
         </>
       );
@@ -332,18 +448,18 @@ export function AdminApp() {
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => copy(row.inviteUrl || row.inviteCode || "", "Invite link copied.")}
+            onClick={() => copy(row.inviteUrl || row.inviteCode || "", m.toastLinkCopied)}
           >
             <Icon name="copy" size="sm" />
-            Copy link
+            {m.copyLink}
           </Button>
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => copy(row.inviteCode || "", "Invite code copied.")}
+            onClick={() => copy(row.inviteCode || "", m.toastCodeCopied)}
           >
             <Icon name="copy" size="sm" />
-            Copy code
+            {m.copyCode}
           </Button>
           <Button
             variant="secondary"
@@ -352,7 +468,7 @@ export function AdminApp() {
             onClick={() => revoke(row.inviteId)}
           >
             <Icon name="trash" size="sm" />
-            Revoke
+            {m.revoke}
           </Button>
         </>
       );
@@ -360,68 +476,85 @@ export function AdminApp() {
     return (
       <Button size="sm" disabled={busy === row.username} onClick={() => generate(row.username)}>
         <Icon name="plus" size="sm" />
-        Generate invite
+        {m.generate}
       </Button>
     );
   }
 
   return (
-    <AdminShell active="invites" authed onSignOut={logout}>
+    <AdminShell active="vpn" authed onSignOut={logout}>
       <div className="page-stack">
         <SectionHeading
           icon="users"
-          title="Invites & users"
-          description="Issue one-time VPN invites for Marzban users and manage bound subscriptions."
+          title={m.title}
+          description={m.description}
+          actions={
+            <Button asChild variant="secondary" size="sm">
+              <a href="/dashboard/" target="_blank" rel="noopener noreferrer">
+                <Icon name="shield-check" size="sm" />
+                {m.vpnConsole}
+              </a>
+            </Button>
+          }
         />
-        <MetricGrid items={metrics} />
+        <div className="admin-metrics">
+          <MetricGrid items={metrics} />
+        </div>
 
         {data.users.length === 0 ? (
-          <EmptyState
-            title="No Marzban users"
-            description="Create users in the Marzban dashboard first, then generate invites here."
-          />
+          <EmptyState title={m.emptyTitle} description={m.emptyDesc} />
         ) : (
           <ul className="invite-list">
             {data.users.map((row) => {
-              const link = row.subscriptionUrl || row.inviteUrl || row.inviteCode;
+              // Invite code shows in its own chip below, so the URL box carries
+              // only the subscription URL (bound) or the invite URL (unbound).
+              const link = row.subscriptionUrl || row.inviteUrl;
               const linkLabel = row.subscriptionUrl
-                ? "Subscription URL"
-                : row.inviteUrl || row.inviteCode
-                  ? "Invite link"
+                ? m.subscriptionUrl
+                : row.inviteUrl
+                  ? m.inviteLink
                   : null;
               return (
                 <li key={row.username} className="invite-card">
                   <div className="invite-card-head">
-                    <div className="invite-identity">
-                      <span className="invite-code">{row.username}</span>
-                      {row.displayName ? <span className="invite-name">{row.displayName}</span> : null}
-                    </div>
-                    <div className="invite-badges">
-                      <StatusBadge tone={statusTone(row.status)} dot>
-                        {row.status}
-                      </StatusBadge>
-                      <StatusBadge tone={BINDING_TONE[row.bindingState]}>{bindingLabel(row)}</StatusBadge>
-                    </div>
+                    <span className="invite-code">{row.username}</span>
+                    <StatusBadge tone={statusTone(row.status)} dot>
+                      {row.status}
+                    </StatusBadge>
+                    <StatusBadge tone={BINDING_TONE[row.bindingState]}>
+                      {m.binding[row.bindingState]}
+                    </StatusBadge>
+                    {row.bindingState === "bound" && row.displayName ? (
+                      <span className="invite-name">{row.displayName}</span>
+                    ) : null}
+                    <div className="invite-card-actions">{renderActions(row)}</div>
                   </div>
 
                   <dl className="invite-meta">
                     <div className="invite-meta-item">
-                      <dt>Used</dt>
+                      <dt>{m.used}</dt>
                       <dd>{row.usedText}</dd>
                     </div>
                     <div className="invite-meta-item">
-                      <dt>Total</dt>
+                      <dt>{m.total}</dt>
                       <dd>{row.dataLimitText}</dd>
                     </div>
                     <div className="invite-meta-item">
-                      <dt>Expire</dt>
+                      <dt>{m.expire}</dt>
                       <dd>{row.expireText}</dd>
                     </div>
                     <div className="invite-meta-item">
-                      <dt>Last online</dt>
+                      <dt>{m.lastOnline}</dt>
                       <dd>{row.onlineText}</dd>
                     </div>
                   </dl>
+
+                  {row.inviteCode ? (
+                    <div className="invite-code-chip">
+                      <span className="invite-code-chip-label">{m.inviteCode}</span>
+                      <code>{row.inviteCode}</code>
+                    </div>
+                  ) : null}
 
                   {link && linkLabel ? (
                     <div className="invite-link">
@@ -429,8 +562,6 @@ export function AdminApp() {
                       <code className="url-box">{link}</code>
                     </div>
                   ) : null}
-
-                  <div className="invite-card-foot">{renderActions(row)}</div>
                 </li>
               );
             })}

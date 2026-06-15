@@ -115,6 +115,9 @@ LOCALIZED_CONTENT_PREFIXES = (
     Path("portals/website/lib"),
     Path("portals/website/public"),
     Path("portals/console/public"),
+    # admin signed-in surface carries zh/en copy (nav, title, stats, cards);
+    # admin/lib stays ASCII-scanned (non-content code).
+    Path("portals/admin/app"),
 )
 
 

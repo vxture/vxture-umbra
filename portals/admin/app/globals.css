@@ -148,32 +148,20 @@ a {
   color: var(--vx-color-text-muted);
 }
 
-/* ===== Signed-in body: nav rail + content ===== */
+/* ===== Signed-in header nav (two business links, centered between the brand
+   and the display tools) ===== */
 
-.admin-body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-  gap: var(--vx-space-2xl);
-}
-
-.admin-sidebar {
-  border-right: 1px solid var(--vx-color-border);
-  padding-right: var(--vx-space-md);
-}
-
-.admin-nav {
-  display: grid;
-  gap: 4px;
-  position: sticky;
-  top: calc(var(--ruyin-header-height) + var(--vx-space-lg));
-}
-
-.admin-nav-item {
+.site-nav {
   display: flex;
   align-items: center;
-  gap: var(--vx-space-sm);
-  padding: 10px 12px;
+  gap: var(--vx-space-xs);
+}
+
+.site-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-xs);
+  padding: 8px 14px;
   border-radius: var(--vx-radius-md);
   color: var(--vx-color-text-secondary);
   font-size: 14px;
@@ -183,17 +171,19 @@ a {
     color var(--vx-duration-fast) var(--vx-ease-standard);
 }
 
-.admin-nav-item:hover {
+.site-nav-item:hover {
   background: var(--vx-color-surface-muted);
   color: var(--vx-color-text-primary);
 }
 
-.admin-nav-item.is-active {
+.site-nav-item.is-active {
   background: var(--vx-color-primary-soft);
   color: var(--vx-color-primary);
 }
 
+/* Signed-in body: content fills the full track (no nav rail). */
 .admin-content {
+  flex: 1;
   min-width: 0;
 }
 
@@ -327,6 +317,13 @@ a {
   gap: var(--vx-space-lg);
 }
 
+/* Stats row: force the four DS metric cards onto a single elastic row
+   (minmax(0,1fr) lets them shrink instead of wrapping). Drops to two columns
+   on narrow screens (see responsive block). */
+.admin-metrics .vx-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 /* Content-area heading (DS PageHeader sizes its title from shell-scoped tokens
    this website-style chrome lacks, so we mirror the console SectionHeading on
    root-level DS tokens): 24px brand icon, bold brand title, muted description. */
@@ -381,13 +378,14 @@ a {
   list-style: none;
 }
 
+/* Compact card: ~half the previous height so more users fit per screen. */
 .invite-card {
   display: grid;
-  gap: var(--vx-space-md);
+  gap: var(--vx-space-sm);
   border: 1px solid var(--vx-color-border);
   border-radius: var(--vx-radius-xl);
   background: var(--vx-color-surface);
-  padding: var(--vx-space-lg);
+  padding: var(--vx-space-md);
   transition: border-color var(--vx-duration-fast) var(--vx-ease-standard),
     box-shadow var(--vx-duration-fast) var(--vx-ease-standard);
 }
@@ -397,26 +395,19 @@ a {
   box-shadow: var(--vx-shadow-sm);
 }
 
-/* Identity + status badges. Wraps to two rows when the badges run out of room. */
+/* Row 1: username, then the status + binding tags, then the bound email - all
+   left-aligned; the action buttons sit at the far right. */
 .invite-card-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--vx-space-sm) var(--vx-space-lg);
-}
-
-.invite-identity {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
+  justify-content: flex-start;
   gap: var(--vx-space-xs) var(--vx-space-sm);
-  min-width: 0;
 }
 
 .invite-code {
   font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
-  font-size: var(--vx-typography-body-lg-size);
+  font-size: var(--vx-typography-body-size);
   font-weight: 700;
   color: var(--vx-color-text-primary);
 }
@@ -426,27 +417,28 @@ a {
   font-size: var(--vx-typography-body-sm-size);
 }
 
-.invite-badges {
+.invite-card-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--vx-space-sm);
+  gap: var(--vx-space-xs);
+  margin-left: auto;
 }
 
-/* Compact metric strip: label over value, auto-fitting columns. */
+/* Row 2: compact single-line metric strip (label + value inline). */
 .invite-meta {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--vx-space-sm) var(--vx-space-lg);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--vx-space-lg);
   margin: 0;
-  padding: var(--vx-space-md) 0;
-  border-top: 1px solid var(--vx-color-border);
-  border-bottom: 1px solid var(--vx-color-border);
+  padding: 0;
 }
 
 .invite-meta-item {
-  display: grid;
-  gap: 2px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--vx-space-xs);
   min-width: 0;
 }
 
@@ -465,6 +457,33 @@ a {
   overflow-wrap: anywhere;
 }
 
+/* Row 3a: invite code shown on its own, distinct from the invite URL below. */
+.invite-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vx-space-xs);
+  width: fit-content;
+}
+
+.invite-code-chip-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--vx-color-text-muted);
+}
+
+.invite-code-chip code {
+  border: 1px solid var(--vx-color-border);
+  border-radius: var(--vx-radius-md);
+  background: var(--vx-color-surface-muted);
+  padding: 2px 8px;
+  color: var(--vx-color-text-primary);
+  font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  font-size: 13px;
+}
+
+/* Row 3b: subscription / invite URL. */
 .invite-link {
   display: grid;
   gap: var(--vx-space-xs);
@@ -476,13 +495,6 @@ a {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--vx-color-text-muted);
-}
-
-.invite-card-foot {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--vx-space-sm);
-  align-items: center;
 }
 
 .actions {
@@ -543,24 +555,9 @@ a {
     padding: var(--vx-space-2xl);
   }
 
-  /* Collapse the nav rail into a horizontal strip above the content. */
-  .admin-body {
-    grid-template-columns: 1fr;
-    gap: var(--vx-space-lg);
-  }
-
-  .admin-sidebar {
-    border-right: none;
-    border-bottom: 1px solid var(--vx-color-border);
-    padding-right: 0;
-    padding-bottom: var(--vx-space-md);
-  }
-
-  .admin-nav {
-    position: static;
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    overflow-x: auto;
+  /* Stats drop to two columns when a single elastic row gets too cramped. */
+  .admin-metrics .vx-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

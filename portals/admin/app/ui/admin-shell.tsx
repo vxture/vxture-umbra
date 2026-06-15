@@ -12,42 +12,17 @@ import {
 } from "@vxture/design-system";
 import type { IconName } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
-import { DEFAULT_LOCALE, LOCALE_CONSTANTS, SUPPORTED_LOCALES } from "@vxture/shared";
 import { markSrc, ruyinBrand } from "../../lib/brand";
-
-/**
- * Minimal locale state for the header language switcher. The admin app has a
- * single locale consumer, so it needs only persisted state wired to the shared
- * locale constants - not the full React context provider the console/website
- * carry for their many locale-aware components.
- */
-function useAdminLocale() {
-  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(LOCALE_CONSTANTS.STORAGE_KEY) as Locale | null;
-    if (stored && SUPPORTED_LOCALES.includes(stored)) {
-      setLocale(stored);
-      document.documentElement.lang = stored;
-    }
-  }, []);
-
-  const changeLocale = (next: Locale) => {
-    setLocale(next);
-    localStorage.setItem(LOCALE_CONSTANTS.STORAGE_KEY, next);
-    document.documentElement.lang = next;
-  };
-
-  return { locale, changeLocale };
-}
+import { useLocale } from "../locale-provider";
 
 /**
  * Admin chrome - the same fixed glass-on-scroll header/footer treatment as the
  * marketing site and tenant console, so the three portals read as one product.
  * The brand wordmark is the admin platform name; the right side carries the
  * display tools (theme + language) and, once authenticated, the account menu
- * (avatar + sign out). The signed-in body adds a left nav rail for the two
- * external jump-links (Marzban, Vaultwarden) plus the in-app invites surface.
+ * (avatar + sign out). The signed-in header also carries the two business nav
+ * links (VPN access, password security); the Marzban dashboard jump-link lives
+ * in the content title bar (see AdminApp).
  */
 
 interface NavItem {
@@ -58,11 +33,11 @@ interface NavItem {
   external?: boolean;
 }
 
-const NAV: NavItem[] = [
-  { id: "invites", label: "Invites & Users", href: "/", icon: "users" },
-  { id: "marzban", label: "VPN console", href: "/dashboard/", icon: "shield-check", external: true },
-  { id: "vault", label: "Passwords", href: "https://pass.ruyin.ai/admin", icon: "key", external: true },
-];
+/** Header nav labels, localized. Account-menu / aria copy stays English. */
+const SHELL_COPY: Record<Locale, { navVpn: string; navPass: string; nav: string }> = {
+  "en-US": { navVpn: "VPN access", navPass: "Password security", nav: "Admin navigation" },
+  "zh-CN": { navVpn: "科学上网", navPass: "密码安全", nav: "管理导航" },
+};
 
 export function AdminShell({
   children,
@@ -76,8 +51,14 @@ export function AdminShell({
   onSignOut?: () => void | Promise<void>;
 }) {
   const { theme, setTheme } = useTheme();
-  const { locale, changeLocale } = useAdminLocale();
+  const { locale, setLocale } = useLocale();
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const m = SHELL_COPY[locale];
+  const nav: NavItem[] = [
+    { id: "vpn", label: m.navVpn, href: "/", icon: "shield-check" },
+    { id: "pass", label: m.navPass, href: "https://pass.ruyin.ai/admin", icon: "key", external: true },
+  ];
 
   useEffect(() => {
     const update = () => setIsScrolled(window.scrollY > 50);
@@ -97,6 +78,40 @@ export function AdminShell({
             label={ruyinBrand.productName}
             labelClassName="site-brand-name"
           />
+          {authed ? (
+            <nav className="site-nav" aria-label={m.nav}>
+              {nav.map((item) => {
+                const isActive = item.id === active;
+                const className = `site-nav-item${isActive ? " is-active" : ""}`;
+                const inner = (
+                  <>
+                    <Icon name={item.icon} size="sm" />
+                    <span>{item.label}</span>
+                  </>
+                );
+                return item.external ? (
+                  <a
+                    key={item.id}
+                    className={className}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <a
+                    key={item.id}
+                    className={className}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {inner}
+                  </a>
+                );
+              })}
+            </nav>
+          ) : null}
           <div className="site-actions">
             <div className="site-tools" aria-label="Display controls">
               <ShellThemeToggle
@@ -107,7 +122,7 @@ export function AdminShell({
               <ShellLocaleSwitcher
                 currentLocale={locale as Locale}
                 buttonLabel="Language"
-                onLocaleChange={(next) => changeLocale(next)}
+                onLocaleChange={(next) => setLocale(next)}
               />
             </div>
             {authed ? (
@@ -132,48 +147,7 @@ export function AdminShell({
       </header>
 
       <main className="app-shell">
-        {authed ? (
-          <div className="admin-body">
-            <aside className="admin-sidebar" aria-label="Admin navigation">
-              <nav className="admin-nav">
-                {NAV.map((item) => {
-                  const isActive = item.id === active;
-                  const className = `admin-nav-item${isActive ? " is-active" : ""}`;
-                  const inner = (
-                    <>
-                      <Icon name={item.icon} size="md" />
-                      <span>{item.label}</span>
-                    </>
-                  );
-                  return item.external ? (
-                    <a
-                      key={item.id}
-                      className={className}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {inner}
-                    </a>
-                  ) : (
-                    <a
-                      key={item.id}
-                      className={className}
-                      href={item.href}
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      {inner}
-                    </a>
-                  );
-                })}
-              </nav>
-            </aside>
-
-            <div className="admin-content">{children}</div>
-          </div>
-        ) : (
-          children
-        )}
+        {authed ? <div className="admin-content">{children}</div> : children}
       </main>
 
       <ShellLegalFooter
