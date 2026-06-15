@@ -480,54 +480,30 @@ export function AdminApp() {
     },
   ];
 
-  // Primary action only; copy lives inline next to each value (see card body).
-  function renderActions(row: AdminUserRow): ReactNode {
-    if (row.subscriptionUrl) {
-      return (
-        <Button
-          variant="destructive"
-          size="sm"
-          disabled={busy === row.username}
-          onClick={() => reset(row.username)}
-        >
-          <Icon name="clock-counter-clockwise" size="sm" />
-          {m.reset}
-        </Button>
-      );
-    }
-    if (row.inviteCode) {
-      return (
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={busy === String(row.inviteId)}
-          onClick={() => revoke(row.inviteId)}
-        >
-          <Icon name="trash" size="sm" />
-          {m.revoke}
-        </Button>
-      );
-    }
-    return (
-      <Button size="sm" disabled={busy === row.username} onClick={() => generate(row.username)}>
-        <Icon name="plus" size="sm" />
-        {m.generate}
-      </Button>
-    );
-  }
-
-  /** Inline "Label: [value] [copy]" row, one line with breathing room. */
+  /**
+   * Inline "Label: [value] [copy] [action]" row. URL rows (truncate) stay on a
+   * single line and ellipsis-clip the value when the viewport is too narrow; the
+   * action button (Reset / Revoke) sits at the far right of its own row.
+   */
   function copyLine(opts: {
     label: string;
     copyLabel: string;
     copyValue: string;
     toastMsg: string;
     value?: string;
+    truncate?: boolean;
+    action?: ReactNode;
   }): ReactNode {
     return (
-      <div className="invite-line">
+      <div className={`invite-line${opts.truncate ? " invite-line--url" : ""}`}>
         <span className="invite-line-label">{opts.label}</span>
-        {opts.value ? <code className="invite-line-value">{opts.value}</code> : null}
+        {opts.value ? (
+          <code
+            className={`invite-line-value${opts.truncate ? " invite-line-value--truncate" : ""}`}
+          >
+            {opts.value}
+          </code>
+        ) : null}
         <button
           type="button"
           className="invite-copy"
@@ -537,6 +513,7 @@ export function AdminApp() {
         >
           <Icon name="copy" size="sm" />
         </button>
+        {opts.action ?? null}
       </div>
     );
   }
@@ -588,58 +565,100 @@ export function AdminApp() {
                     {row.bindingState === "bound" && row.displayName ? (
                       <span className="invite-name">{row.displayName}</span>
                     ) : null}
-                    <div className="invite-card-actions">{renderActions(row)}</div>
                   </div>
 
-                  <dl className="invite-meta">
-                    <div className="invite-meta-item">
-                      <dt>{m.used}</dt>
-                      <dd>{row.usedText}</dd>
-                    </div>
-                    <div className="invite-meta-item">
-                      <dt>{m.total}</dt>
-                      <dd>{row.dataLimitText}</dd>
-                    </div>
-                    <div className="invite-meta-item">
-                      <dt>{m.expire}</dt>
-                      <dd>{row.expireText}</dd>
-                    </div>
-                    <div className="invite-meta-item">
-                      <dt>{m.lastOnline}</dt>
-                      <dd className="invite-online">
-                        {online ? <StatusBadge tone="neutral">{online}</StatusBadge> : null}
-                        <span>{row.onlineText}</span>
-                      </dd>
-                    </div>
-                  </dl>
+                  <div className="invite-card-body">
+                    <dl className="invite-meta">
+                      <div className="invite-meta-item">
+                        <dt>{m.used}</dt>
+                        <dd>{row.usedText}</dd>
+                      </div>
+                      <div className="invite-meta-item">
+                        <dt>{m.total}</dt>
+                        <dd>{row.dataLimitText}</dd>
+                      </div>
+                      <div className="invite-meta-item">
+                        <dt>{m.expire}</dt>
+                        <dd>{row.expireText}</dd>
+                      </div>
+                      <div className="invite-meta-item">
+                        <dt>{m.lastOnline}</dt>
+                        <dd className="invite-online">
+                          {online ? <StatusBadge tone="neutral">{online}</StatusBadge> : null}
+                          <span>{row.onlineText}</span>
+                        </dd>
+                      </div>
+                    </dl>
 
-                  {row.inviteCode
-                    ? copyLine({
+                    {/* Invite code stays visible whether or not the account is bound.
+                        Revoke sits on this row while the invite is still pending; with
+                        no code yet, the Generate invite button takes the row instead. */}
+                    {row.inviteCode ? (
+                      copyLine({
                         label: m.inviteCode,
                         copyLabel: m.copyCode,
                         copyValue: row.inviteCode,
                         toastMsg: m.toastCodeCopied,
                         value: row.inviteCode,
+                        action: row.subscriptionUrl ? undefined : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="invite-line-action"
+                            disabled={busy === String(row.inviteId)}
+                            onClick={() => revoke(row.inviteId)}
+                          >
+                            <Icon name="trash" size="sm" />
+                            {m.revoke}
+                          </Button>
+                        ),
                       })
-                    : null}
+                    ) : row.subscriptionUrl ? null : (
+                      <div className="invite-line invite-line--generate">
+                        <Button
+                          size="sm"
+                          disabled={busy === row.username}
+                          onClick={() => generate(row.username)}
+                        >
+                          <Icon name="plus" size="sm" />
+                          {m.generate}
+                        </Button>
+                      </div>
+                    )}
 
-                  {!row.subscriptionUrl && row.inviteUrl
-                    ? copyLine({
-                        label: m.inviteLink,
-                        copyLabel: m.copyLink,
-                        copyValue: row.inviteUrl,
-                        toastMsg: m.toastLinkCopied,
-                      })
-                    : null}
-
-                  {row.subscriptionUrl
-                    ? copyLine({
-                        label: m.subscriptionUrl,
-                        copyLabel: m.copyUrl,
-                        copyValue: row.subscriptionUrl,
-                        toastMsg: m.toastSubCopied,
-                      })
-                    : null}
+                    {/* After binding: subscription URL (+ Reset). Before: invite link. */}
+                    {row.subscriptionUrl
+                      ? copyLine({
+                          label: m.subscriptionUrl,
+                          copyLabel: m.copyUrl,
+                          copyValue: row.subscriptionUrl,
+                          toastMsg: m.toastSubCopied,
+                          value: row.subscriptionUrl,
+                          truncate: true,
+                          action: (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="invite-line-action"
+                              disabled={busy === row.username}
+                              onClick={() => reset(row.username)}
+                            >
+                              <Icon name="clock-counter-clockwise" size="sm" />
+                              {m.reset}
+                            </Button>
+                          ),
+                        })
+                      : row.inviteUrl
+                        ? copyLine({
+                            label: m.inviteLink,
+                            copyLabel: m.copyLink,
+                            copyValue: row.inviteUrl,
+                            toastMsg: m.toastLinkCopied,
+                            value: row.inviteUrl,
+                            truncate: true,
+                          })
+                        : null}
+                  </div>
                 </li>
               );
             })}

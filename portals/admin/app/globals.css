@@ -405,14 +405,13 @@ a {
   list-style: none;
 }
 
-/* Compact card: ~half the previous height so more users fit per screen. */
+/* Compact card: a tinted title bar flush to the edges, then a padded body. The
+   card itself carries no padding so the title background reaches every edge. */
 .invite-card {
-  display: grid;
-  gap: var(--vx-space-sm);
   border: 1px solid var(--vx-color-border);
   border-radius: var(--vx-radius-xl);
   background: var(--vx-color-surface);
-  padding: var(--vx-space-md);
+  overflow: hidden;
   transition: border-color var(--vx-duration-fast) var(--vx-ease-standard),
     box-shadow var(--vx-duration-fast) var(--vx-ease-standard);
 }
@@ -422,14 +421,28 @@ a {
   box-shadow: var(--vx-shadow-sm);
 }
 
-/* Row 1: username, then the status + binding tags, then the bound email - all
-   left-aligned; the action buttons sit at the far right. */
+/* Title bar: tinted background spanning the full card width so each account is
+   easy to pick out. Username, then the status + binding tags, then the bound
+   email - all left-aligned. */
 .invite-card-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
   gap: var(--vx-space-xs) var(--vx-space-sm);
+  padding: var(--vx-space-sm) var(--vx-space-md);
+  background: var(--vx-color-surface-muted);
+  border-bottom: 1px solid var(--vx-color-border);
+}
+
+/* Body: param strip, then invite-code row, then subscription/invite-link row.
+   minmax(0,1fr) keeps the single column from growing to a nowrap URL's width so
+   the truncated address can ellipsis-clip instead of overflowing the card. */
+.invite-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--vx-space-sm);
+  padding: var(--vx-space-md);
 }
 
 .invite-code {
@@ -442,14 +455,6 @@ a {
 .invite-name {
   color: var(--vx-color-text-muted);
   font-size: var(--vx-typography-body-sm-size);
-}
-
-.invite-card-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--vx-space-xs);
-  margin-left: auto;
 }
 
 /* Row 2: compact single-line metric strip (label + value inline). */
@@ -501,7 +506,13 @@ a {
   gap: var(--vx-space-sm);
 }
 
+/* URL rows stay on a single line; the value ellipsis-clips when space runs out. */
+.invite-line--url {
+  flex-wrap: nowrap;
+}
+
 .invite-line-label {
+  flex: none;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -518,6 +529,27 @@ a {
   font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
   font-size: 13px;
   overflow-wrap: anywhere;
+}
+
+/* Single-line address: fill the row and clip with an ellipsis when too narrow. */
+.invite-line-value--truncate {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  overflow-wrap: normal;
+}
+
+/* Inline row action (Reset / Revoke) pinned to the far right of its row. */
+.invite-line-action {
+  flex: none;
+  margin-left: auto;
+}
+
+.invite-line--url .invite-copy,
+.invite-line--url .invite-line-action {
+  flex: none;
 }
 
 /* Compact icon-only copy button (DS has no inline icon-button primitive). */
