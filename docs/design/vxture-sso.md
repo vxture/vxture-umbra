@@ -13,9 +13,17 @@ ruyin is an **OIDC Authorization-Code + PKCE(S256) RP** against
 `accounts.vxture.com` (the single identity center for the whole product).
 
 - `client_id`: `ruyin`, `realm`: `tenant`, mode B (cross-domain).
-- `redirect_uri`: `https://ruyin.ai/auth/callback`.
-- `back_channel_logout_uri`: `https://ruyin.ai/auth/backchannel-logout`.
+- `redirect_uri`: `https://console.ruyin.ai/auth/callback`.
+- `back_channel_logout_uri`: `https://console.ruyin.ai/auth/backchannel-logout`.
 - `scopes`: `openid profile ruyin`.
+
+> Host note: the `/auth/*` routes are served by `umbra-account-web` on
+> `CONSOLE_DOMAIN` (`console.ruyin.ai`); the apex (`ruyin.ai`) serves the
+> marketing site and has no `/auth` handler. The standard's section 11 lists the
+> apex (`https://ruyin.ai/auth/callback`) as an illustrative example - the
+> registered `redirect_uri` / `back_channel_logout_uri` must use the host that
+> actually serves the routes (here, `console.ruyin.ai`). Confirm the upstream
+> `ruyin` oidc_client is registered with these console-host URIs.
 
 The console portal (`umbra-account-web`) is the RP / app-bff. OIDC tokens live
 server-side in Redis; the browser only ever holds an opaque `vx_rp_session`
@@ -98,7 +106,7 @@ backchannel-logout event + `sid` and must not carry `nonce`.
 OIDC_ISSUER=https://accounts.vxture.com
 OIDC_CLIENT_ID=ruyin
 OIDC_CLIENT_SECRET=<provisioned via secret manager; never committed>
-OIDC_REDIRECT_URI=https://ruyin.ai/auth/callback
+OIDC_REDIRECT_URI=https://console.ruyin.ai/auth/callback
 OIDC_SCOPES=openid profile ruyin
 OIDC_POST_LOGOUT_REDIRECT_URI=https://ruyin.ai/
 REDIS_URL=redis://umbra-redis:6379
@@ -122,7 +130,7 @@ Account web (RP)
 
 accounts.vxture.com
   -> browser is first-party here; if vx_sid present, issue code silently
-  -> 302 https://ruyin.ai/auth/callback?code=<code>&state=<state>
+  -> 302 https://console.ruyin.ai/auth/callback?code=<code>&state=<state>
 
 Account web (RP)
   -> validate state; GETDEL authreq:<state>
