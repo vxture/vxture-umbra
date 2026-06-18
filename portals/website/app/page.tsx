@@ -28,16 +28,16 @@ export default function HomePage() {
     <div className="ruyin-page">
       <NetworkCanvas />
       <SiteHeader />
-      <main className="body-section">
+      <main className="hero-section">
         <section className="hero" aria-labelledby="hero-title">
-          <div className="eyebrow">
+          <p className="hero-eyebrow">
             <span className="eyebrow-studio">Vxture Studio</span>
             <span className="eyebrow-sep"> | </span>
             <span className="eyebrow-product">Ruyin Agent</span>
-          </div>
-          <div className="signature">
+          </p>
+          <div className="hero-signature">
             <img
-              className="signature-art"
+              className="hero-signature-art"
               src={signatureSrc(theme)}
               alt={ruyinBrand.fullName}
             />
@@ -45,8 +45,8 @@ export default function HomePage() {
           <h1 id="hero-title" className="hero-title">
             {ruyinBrand.fullName}
           </h1>
-          <p className="lead">{text.lead}</p>
-          <a className="hero-action" href={ruyinBrand.studioUrl}>
+          <p className="hero-lead">{text.lead}</p>
+          <a className="hero-cta" href={ruyinBrand.studioUrl}>
             {text.action}
           </a>
         </section>

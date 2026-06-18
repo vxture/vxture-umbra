@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Button,
   ShellBrand,
@@ -57,18 +56,10 @@ function authStartUrl(_hint: "login" | "signup"): string {
 }
 
 export function SiteHeader() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   const { locale, setLocale } = useLocale();
   const session = useSession();
   const text = HEADER_TEXT[locale] ?? HEADER_TEXT["en-US"];
-
-  useEffect(() => {
-    const update = () => setIsScrolled(window.scrollY > 50);
-    update();
-    window.addEventListener("scroll", update);
-    return () => window.removeEventListener("scroll", update);
-  }, []);
 
   const user = session.user;
   const displayName = user?.displayName || user?.username || user?.email || user?.phone || "";
@@ -81,10 +72,7 @@ export function SiteHeader() {
     : [];
 
   return (
-    <header
-      className={`site-header${isScrolled ? " is-scrolled" : ""}`}
-      aria-label={ruyinBrand.productName}
-    >
+    <header className="site-header" aria-label={ruyinBrand.productName}>
       <div className="site-header-inner">
         <ShellBrand
           href="/"
