@@ -99,11 +99,93 @@ a {
   color: var(--vx-control-brand);
 }
 
-/* Keep the account avatar (DS user-menu trigger) at least 24px from the button
-   area; the shared .site-actions gap alone (~8px) sits it too close to the
-   Workspace button. */
-.site-actions .vx-shell-user-trigger {
+/* Keep the account menu trigger at least 24px from the button area; the shared
+   .site-actions gap alone (~8px) sits it too close to the Workspace button. */
+.site-actions .acct-trigger {
   margin-inline-start: 24px;
+}
+
+/* -- Signed-in account menu (DS DropdownMenu; trigger = <button>) ------------
+   Layout-only composition; all colors/looks come from DS primitives. */
+.acct-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vx-space-2xs);
+  padding: var(--vx-space-2xs);
+  border: none;
+  background: transparent;
+  border-radius: var(--vx-radius-md);
+  color: var(--vx-color-text-primary);
+  cursor: pointer;
+  transition: background var(--vx-duration-fast) var(--vx-ease-standard);
+}
+
+.acct-trigger:hover,
+.acct-trigger[data-state="open"] {
+  background: var(--vx-color-surface-muted);
+}
+
+/* Header account avatar: 32px. */
+.acct-avatar {
+  width: 32px;
+  height: 32px;
+  flex: none;
+}
+
+.acct-caret {
+  color: var(--vx-color-text-muted);
+  flex: none;
+}
+
+/* DS DropdownMenuContent already supplies background / radius / shadow. */
+.acct-menu {
+  min-width: 288px;
+}
+
+.acct-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vx-space-2xs);
+}
+
+.acct-identity-name {
+  font-weight: 600;
+}
+
+.acct-identity-line {
+  color: var(--vx-color-text-muted);
+  font-size: var(--vx-typography-body-sm-size);
+  overflow-wrap: anywhere;
+}
+
+/* One identity claim per row: muted fixed-width label + value (+ optional
+   verification / status badge). */
+.acct-row {
+  display: flex;
+  align-items: center;
+  gap: var(--vx-space-sm);
+  padding: var(--vx-space-2xs) var(--vx-space-sm);
+}
+
+.acct-label {
+  color: var(--vx-color-text-muted);
+  font-size: var(--vx-typography-body-sm-size);
+  flex: none;
+  min-width: 68px;
+}
+
+.acct-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vx-space-2xs);
+  flex: 1 1 auto;
+  font-size: var(--vx-typography-body-sm-size);
+  overflow-wrap: anywhere;
+}
+
+.acct-value--mono {
+  font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
 }
 
 .site-tools {
