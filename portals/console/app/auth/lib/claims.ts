@@ -15,19 +15,30 @@ function bool(v: unknown): boolean {
   return v === true;
 }
 
+function strList(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map((x) => String(x)).filter(Boolean);
+  return typeof v === "string" && v ? [v] : [];
+}
+
 export function toIdentityClaims(idClaims: JWTPayload, accessClaims: JWTPayload): IdentityClaims {
   const sid = str(idClaims.sid) || str(accessClaims.sid);
+  // Live IdP claim names are org/workspace/roles; fall back to the older
+  // active_tenant* names the standard documented, just in case.
+  const roles = accessClaims.roles !== undefined
+    ? strList(accessClaims.roles)
+    : strList(accessClaims.active_tenant_role);
   return {
     sub: str(accessClaims.sub) || str(idClaims.sub),
     sid,
     email: str(accessClaims.email),
     email_verified: bool(accessClaims.email_verified),
     phone: str(accessClaims.phone),
+    phone_verified: bool(accessClaims.phone_verified),
     account_status: str(accessClaims.account_status),
-    active_tenant: str(accessClaims.active_tenant),
-    active_tenant_type: str(accessClaims.active_tenant_type),
-    active_tenant_role: str(accessClaims.active_tenant_role),
-    active_tenant_status: str(accessClaims.active_tenant_status),
+    active_org: str(accessClaims.active_org) || str(accessClaims.active_tenant),
+    active_workspace: str(accessClaims.active_workspace),
+    roles,
+    user_type: str(accessClaims.userType) || str(idClaims.userType),
     exp: typeof accessClaims.exp === "number" ? accessClaims.exp : 0,
   };
 }

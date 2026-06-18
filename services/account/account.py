@@ -179,31 +179,49 @@ def vxture_payload_from_session(rpsid: str | None) -> dict[str, Any] | None:
     sub = str(data.get("sub") or "")
     if not sub:
         return None
+    roles = data.get("roles") if isinstance(data.get("roles"), list) else []
     return {
         "sub": sub,
         "email": str(data.get("email") or ""),
+        "email_verified": bool(data.get("email_verified")),
         "phone": str(data.get("phone") or ""),
-        "tenantId": str(data.get("active_tenant") or ""),
-        "role": str(data.get("active_tenant_role") or "member"),
+        "phone_verified": bool(data.get("phone_verified")),
         "account_status": str(data.get("account_status") or ""),
+        "active_org": str(data.get("active_org") or ""),
+        "active_workspace": str(data.get("active_workspace") or ""),
+        "roles": [str(r) for r in roles],
+        "user_type": str(data.get("user_type") or ""),
     }
 
 
 def public_vxture_user(payload: dict[str, Any]) -> dict[str, Any]:
-    # Display fields (username handle, name, avatar) come from Vxture claims, the
-    # source of truth. They may be empty until Vxture backfills the claims; the
-    # UI falls back. See docs/design/platform-identity.md.
+    # Public identity DTO surfaced to the portals. Field set mirrors the IdP's
+    # claims_supported: it exposes no name/username/picture claim, so email +
+    # phone are the only human-readable identifiers; tenant context is
+    # org/workspace/roles. See docs/design/platform-identity.md.
+    roles = payload.get("roles") if isinstance(payload.get("roles"), list) else []
+    roles = [str(r) for r in roles]
+    org = str(payload.get("active_org") or "")
     return {
         "id": str(payload.get("sub") or ""),
         "email": str(payload.get("email") or ""),
-        "username": str(payload.get("preferred_username") or payload.get("username") or ""),
-        "displayName": str(payload.get("name") or payload.get("display_name") or ""),
-        "avatarUrl": str(payload.get("picture") or payload.get("avatar") or ""),
-        "tenantId": str(payload.get("tenantId") or ""),
-        "role": str(payload.get("role") or "member"),
-        "permissions": payload.get("permissions") if isinstance(payload.get("permissions"), list) else [],
-        "provider": str(payload.get("provider") or ""),
-        "phone": str(payload.get("phone_number") or payload.get("phone") or ""),
+        "emailVerified": bool(payload.get("email_verified")),
+        "phone": str(payload.get("phone") or ""),
+        "phoneVerified": bool(payload.get("phone_verified")),
+        "accountStatus": str(payload.get("account_status") or ""),
+        "orgId": org,
+        "workspaceId": str(payload.get("active_workspace") or ""),
+        "roles": roles,
+        "role": roles[0] if roles else "member",
+        "userType": str(payload.get("user_type") or ""),
+        # IdP exposes no name/username/picture claim; kept for UI compatibility.
+        "username": "",
+        "displayName": "",
+        "avatarUrl": "",
+        # Legacy aliases so existing bindings keep working.
+        "tenantId": org,
+        "permissions": roles,
+        "provider": "",
     }
 
 

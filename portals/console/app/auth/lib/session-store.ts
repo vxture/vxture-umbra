@@ -18,18 +18,22 @@ export interface AuthRequest {
   invite: string;
 }
 
-/** Identity subset shared with account.py; keep field names stable. */
+/** Identity subset shared with account.py; keep field names stable. Field set
+ * mirrors the IdP's claims_supported (openid-configuration): the platform exposes
+ * no name/username/picture claim, so email + phone are the only human-readable
+ * identifiers. Tenant context uses org/workspace/roles (the live claim names). */
 export interface IdentityClaims {
   sub: string;
   sid: string;
   email: string;
   email_verified: boolean;
   phone: string;
+  phone_verified: boolean;
   account_status: string;
-  active_tenant: string;
-  active_tenant_type: string;
-  active_tenant_role: string;
-  active_tenant_status: string;
+  active_org: string;
+  active_workspace: string;
+  roles: string[];
+  user_type: string;
   exp: number;
 }
 

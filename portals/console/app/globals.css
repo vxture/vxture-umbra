@@ -227,7 +227,10 @@ body {
 }
 
 .info-head-text {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--vx-space-2xs);
 }
 
 .info-grid {
@@ -251,6 +254,18 @@ body {
   color: var(--vx-color-text-primary);
   font-size: 14px;
   overflow-wrap: anywhere;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--vx-space-xs);
+}
+
+.info-value--mono {
+  font-family: var(--vx-font-mono);
+}
+
+.info-tag {
+  display: inline-flex;
 }
 
 /* Auth / form composition (DS Input + Button supply the control looks) */

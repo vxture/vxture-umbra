@@ -53,11 +53,12 @@ export async function GET(request: NextRequest) {
       email: identity.email,
       emailVerified: identity.email_verified,
       phone: identity.phone,
+      phoneVerified: identity.phone_verified,
       accountStatus: identity.account_status,
-      activeTenant: identity.active_tenant,
-      activeTenantType: identity.active_tenant_type,
-      activeTenantRole: identity.active_tenant_role,
-      activeTenantStatus: identity.active_tenant_status,
+      orgId: identity.active_org,
+      workspaceId: identity.active_workspace,
+      roles: identity.roles,
+      userType: identity.user_type,
     },
   });
 }

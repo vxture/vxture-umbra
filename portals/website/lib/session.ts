@@ -13,6 +13,14 @@ import { ruyinBrand } from "@/lib/brand";
 export interface SessionUser {
   id: string;
   email: string;
+  emailVerified?: boolean;
+  phone?: string;
+  phoneVerified?: boolean;
+  accountStatus?: string;
+  orgId?: string;
+  workspaceId?: string;
+  roles?: string[];
+  userType?: string;
   username?: string;
   displayName?: string;
   avatarUrl?: string;

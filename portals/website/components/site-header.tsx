@@ -71,7 +71,14 @@ export function SiteHeader() {
   }, []);
 
   const user = session.user;
-  const displayName = user?.displayName || user?.username || user?.email || "";
+  const displayName = user?.displayName || user?.username || user?.email || user?.phone || "";
+  const uniqueLine = user?.email || user?.phone || "";
+  const userBadges = user
+    ? [
+        ...(user.accountStatus ? [{ key: "status", label: user.accountStatus }] : []),
+        ...(user.roles ?? []).map((r, i) => ({ key: `role-${i}`, label: r })),
+      ]
+    : [];
 
   return (
     <header
@@ -110,11 +117,11 @@ export function SiteHeader() {
                 openLabel={text.account}
                 user={{
                   displayName,
-                  uniqueLine: user.email,
+                  uniqueLine,
                   avatarSrc: user.avatarUrl,
                   avatarAlt: displayName,
                   avatarFallback: initials(displayName),
-                  badges: user.role ? [{ key: "role", label: user.role }] : undefined,
+                  badges: userBadges.length ? userBadges : undefined,
                 }}
                 actions={[
                   {
