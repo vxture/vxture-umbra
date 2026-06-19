@@ -121,13 +121,6 @@ a {
   background: var(--vx-shell-tool-button-hover-background);
 }
 
-/* Separate the account menu trigger from the button area (the shared
-   .site-actions gap alone, ~8px, sits it too close to the Workspace button).
-   DS spacing token (density-fluid 20-28px). */
-.site-actions .acct-trigger {
-  margin-inline-start: var(--vx-space-xl);
-}
-
 /* -- Signed-in account menu (DS DropdownMenu; trigger = <button>) ------------
    Layout-only composition; all colors/looks come from DS primitives. */
 .acct-trigger {
