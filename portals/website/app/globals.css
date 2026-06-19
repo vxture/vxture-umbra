@@ -290,11 +290,19 @@ a {
   display: block;
   width: 100%;
   height: auto;
-  /* Inline SVG wordmark: fill follows the theme brand color via currentColor, so
-     a theme toggle is an instant CSS recolor (no per-theme image to reload). */
+  /* Inline SVG wordmark: theme recolor is instant CSS (no per-theme image to
+     reload). Light = brand blue via currentColor; dark is overridden below to the
+     metallic gold gradient, matching the original per-theme artwork. */
   color: var(--vx-color-primary);
   fill: currentColor;
   filter: drop-shadow(0 18px 48px color-mix(in srgb, var(--vx-color-black) 28%, transparent));
+}
+
+/* Dark theme: luminous cool-blue metallic calligraphy (gradient defined inside
+   the inline SVG; here we just point fill at it). next-themes sets .dark on
+   <html>. */
+.dark .hero-signature-art {
+  fill: url(#ruyin-hero-dark-fill);
 }
 
 /* Visual title is the signature artwork; keep an accessible text title for SR /
@@ -327,7 +335,9 @@ a {
   padding: 0 var(--vx-space-xl);
   border-radius: var(--vx-radius-lg);
   background: var(--vx-gradient-brand);
-  color: var(--vx-color-text-inverse);
+  /* Text on the brand fill is on-brand white in both themes; do NOT use
+     text-inverse, which flips to near-black in dark and kills contrast. */
+  color: var(--vx-control-on-brand);
   font-size: var(--vx-typography-body-size);
   font-weight: 700;
   line-height: var(--vx-typography-metric-lg-line-height);
@@ -344,6 +354,27 @@ a {
   transform: translateY(-1px);
   filter: brightness(1.04);
   box-shadow: var(--vx-shadow-xl);
+}
+
+/* Dark theme CTA: the shared brand gradient's deep-navy end (#061b75) sits too
+   close to the dark navy page, so the button blends in. Use a brighter brand-blue
+   gradient that pops, plus a soft brand glow and a faint top ring for elevation;
+   text stays on-brand white. Harmonizes with the hero's cool-blue gradient. */
+.dark .hero-cta {
+  background: linear-gradient(
+    145deg,
+    var(--vx-color-brand-500) 0%,
+    var(--vx-color-brand-400) 100%
+  );
+  box-shadow:
+    0 12px 30px -10px color-mix(in srgb, var(--vx-color-brand-500) 60%, transparent),
+    inset 0 1px 0 0 color-mix(in srgb, var(--vx-color-brand-100) 30%, transparent);
+}
+
+.dark .hero-cta:hover {
+  box-shadow:
+    0 16px 38px -10px color-mix(in srgb, var(--vx-color-brand-400) 65%, transparent),
+    inset 0 1px 0 0 color-mix(in srgb, var(--vx-color-brand-100) 40%, transparent);
 }
 
 /* Footer band: in-flow, fixed 48px, DS ShellLegalFooter aligned to the same
