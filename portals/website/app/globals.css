@@ -104,14 +104,11 @@ a {
   color: var(--vx-control-on-brand);
 }
 
-.site-actions .vx-btn--outline {
-  color: var(--vx-control-brand);
-}
-
-/* Register (ghost): fully transparent background + no border (DS ghost otherwise
-   carries a faint brand-soft wash). Quiet, harmonious secondary label color from
-   DS - text-secondary adapts per theme (dark gray on light, soft cool gray on
-   dark) and lets the filled Log in stay the primary action. */
+/* Register (signed-out) and Workspace (signed-in) are both ghost buttons: fully
+   transparent background + no border (DS ghost otherwise carries a faint
+   brand-soft wash). Quiet, harmonious secondary label color from DS -
+   text-secondary adapts per theme (dark gray on light, soft cool gray on dark)
+   and lets the filled Log in stay the primary action. */
 .site-actions .vx-btn--ghost {
   background: transparent;
   color: var(--vx-color-text-secondary);
@@ -151,10 +148,10 @@ a {
   background: var(--vx-color-surface-muted);
 }
 
-/* Header account avatar: 32px. */
+/* Header account avatar: the DS avatar size token (2.25rem = 36px). */
 .acct-avatar {
-  width: 32px;
-  height: 32px;
+  width: var(--vx-avatar-size);
+  height: var(--vx-avatar-size);
   flex: none;
 }
 
@@ -166,11 +163,6 @@ a {
   width: 100%;
   height: 100%;
   color: var(--vx-color-text-muted);
-}
-
-.acct-caret {
-  color: var(--vx-color-text-muted);
-  flex: none;
 }
 
 /* DS DropdownMenuContent already supplies background / radius / shadow. */

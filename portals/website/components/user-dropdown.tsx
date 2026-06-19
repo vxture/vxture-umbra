@@ -79,7 +79,6 @@ export function UserDropdown({ user }: { user: SessionUser }) {
             <DefaultAvatar />
           </AvatarFallback>
         </Avatar>
-        <Icon name="arrow-down" size="sm" className="acct-caret" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="acct-menu">
