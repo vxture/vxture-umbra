@@ -182,6 +182,8 @@ def vxture_payload_from_session(rpsid: str | None) -> dict[str, Any] | None:
     roles = data.get("roles") if isinstance(data.get("roles"), list) else []
     return {
         "sub": sub,
+        "display_name": str(data.get("display_name") or ""),
+        "username": str(data.get("username") or ""),
         "email": str(data.get("email") or ""),
         "email_verified": bool(data.get("email_verified")),
         "phone": str(data.get("phone") or ""),
@@ -195,10 +197,11 @@ def vxture_payload_from_session(rpsid: str | None) -> dict[str, Any] | None:
 
 
 def public_vxture_user(payload: dict[str, Any]) -> dict[str, Any]:
-    # Public identity DTO surfaced to the portals. Field set mirrors the IdP's
-    # claims_supported: it exposes no name/username/picture claim, so email +
-    # phone are the only human-readable identifiers; tenant context is
-    # org/workspace/roles. See docs/design/platform-identity.md.
+    # Public identity DTO surfaced to the portals. Human identifiers come from the
+    # platform claims: displayName (name) and username (preferred_username) ride
+    # the profile scope; email/phone need the email/phone scopes and an account
+    # value. avatarUrl (picture) is not wired yet (pending platform release).
+    # Tenant context is org/workspace/roles. See docs/design/platform-identity.md.
     roles = payload.get("roles") if isinstance(payload.get("roles"), list) else []
     roles = [str(r) for r in roles]
     org = str(payload.get("active_org") or "")
@@ -214,9 +217,9 @@ def public_vxture_user(payload: dict[str, Any]) -> dict[str, Any]:
         "roles": roles,
         "role": roles[0] if roles else "member",
         "userType": str(payload.get("user_type") or ""),
-        # IdP exposes no name/username/picture claim; kept for UI compatibility.
-        "username": "",
-        "displayName": "",
+        "username": str(payload.get("username") or ""),
+        "displayName": str(payload.get("display_name") or ""),
+        # picture claim not carried yet; populated when the platform releases it.
         "avatarUrl": "",
         # Legacy aliases so existing bindings keep working.
         "tenantId": org,

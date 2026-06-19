@@ -162,7 +162,7 @@ services:
       OIDC_CLIENT_ID: "${OIDC_CLIENT_ID:-ruyin}"
       OIDC_CLIENT_SECRET: "${OIDC_CLIENT_SECRET:-}"
       OIDC_REDIRECT_URI: "${OIDC_REDIRECT_URI:-}"
-      OIDC_SCOPES: "${OIDC_SCOPES:-openid profile ruyin}"
+      OIDC_SCOPES: "${OIDC_SCOPES:-openid profile email phone ruyin}"
       OIDC_POST_LOGOUT_REDIRECT_URI: "${OIDC_POST_LOGOUT_REDIRECT_URI:-}"
       REDIS_URL: "${REDIS_URL:-redis://umbra-redis:6379}"
       RP_SESSION_TTL: "${RP_SESSION_TTL:-2592000}"

@@ -51,7 +51,7 @@ export function getOidcConfig(): OidcConfig | null {
     clientId,
     clientSecret,
     redirectUri,
-    scopes: (process.env.OIDC_SCOPES || "openid profile ruyin").trim(),
+    scopes: (process.env.OIDC_SCOPES || "openid profile email phone ruyin").trim(),
     postLogoutRedirectUri: (process.env.OIDC_POST_LOGOUT_REDIRECT_URI || "").trim(),
     redisUrl,
     sessionTtlSeconds: Number.isFinite(ttl) && ttl > 0 ? ttl : 2592000,

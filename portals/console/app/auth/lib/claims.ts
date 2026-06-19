@@ -22,22 +22,23 @@ function strList(v: unknown): string[] {
 
 export function toIdentityClaims(idClaims: JWTPayload, accessClaims: JWTPayload): IdentityClaims {
   const sid = str(idClaims.sid) || str(accessClaims.sid);
-  // Live IdP claim names are org/workspace/roles; fall back to the older
-  // active_tenant* names the standard documented, just in case.
-  const roles = accessClaims.roles !== undefined
-    ? strList(accessClaims.roles)
-    : strList(accessClaims.active_tenant_role);
+  // Live IdP context claim names are org/workspace/roles. The old active_tenant*
+  // contract (standard section 8) is retired, so we read only the live names.
   return {
     sub: str(accessClaims.sub) || str(idClaims.sub),
     sid,
+    // name / preferred_username ride the profile scope; email / phone need the
+    // email / phone scopes (and an account value) to be present.
+    display_name: str(accessClaims.name),
+    username: str(accessClaims.preferred_username),
     email: str(accessClaims.email),
     email_verified: bool(accessClaims.email_verified),
     phone: str(accessClaims.phone),
     phone_verified: bool(accessClaims.phone_verified),
     account_status: str(accessClaims.account_status),
-    active_org: str(accessClaims.active_org) || str(accessClaims.active_tenant),
+    active_org: str(accessClaims.active_org),
     active_workspace: str(accessClaims.active_workspace),
-    roles,
+    roles: strList(accessClaims.roles),
     user_type: str(accessClaims.userType) || str(idClaims.userType),
     exp: typeof accessClaims.exp === "number" ? accessClaims.exp : 0,
   };
