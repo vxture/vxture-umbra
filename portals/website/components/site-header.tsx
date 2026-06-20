@@ -62,7 +62,7 @@ export function SiteHeader() {
 
           {session.status === "loading" ? null : session.status === "active" && user ? (
             <>
-              <Button variant="ghost" asChild>
+              <Button variant="ghost" className="site-workspace-btn" asChild>
                 <a href={ruyinBrand.consoleUrl}>{text.workspace}</a>
               </Button>
               <UserDropdown user={user} />
