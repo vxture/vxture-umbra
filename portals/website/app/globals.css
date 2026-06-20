@@ -142,16 +142,36 @@ a {
   transition: background var(--vx-duration-fast) var(--vx-ease-standard);
 }
 
+/* Hover/open affordance moved to the avatar halo below; keep the trigger chrome
+   transparent so only the circular glow reads. */
 .acct-trigger:hover,
 .acct-trigger[data-state="open"] {
-  background: var(--vx-color-surface-muted);
+  background: transparent;
 }
 
-/* Header account avatar: the DS avatar size token (2.25rem = 36px). */
+/* Header account avatar: the DS avatar size token (2.25rem = 36px). The full
+   radius lets the hover halo (box-shadow rings) trace the circle, not a square. */
 .acct-avatar {
   width: var(--vx-avatar-size);
   height: var(--vx-avatar-size);
   flex: none;
+  border-radius: var(--vx-radius-full);
+  transition:
+    box-shadow var(--vx-duration-fast) var(--vx-ease-standard),
+    transform var(--vx-duration-fast) var(--vx-ease-standard);
+}
+
+/* Hover/open halo: a crisp brand ring hugging the avatar, a soft brand glow
+   diffusing outward, and a faint drop glow under it, with a small lift. All
+   brand-token driven so it tracks the theme (color-mix derives the translucent
+   halo layers from the same brand token). */
+.acct-trigger:hover .acct-avatar,
+.acct-trigger[data-state="open"] .acct-avatar {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 0 2px var(--vx-control-brand),
+    0 0 0 5px color-mix(in srgb, var(--vx-control-brand) 28%, transparent),
+    0 4px 16px color-mix(in srgb, var(--vx-control-brand) 38%, transparent);
 }
 
 /* Default account silhouette, shown when the session carries no picture (no
