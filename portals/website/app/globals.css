@@ -121,6 +121,12 @@ a {
   background: var(--vx-shell-tool-button-hover-background);
 }
 
+/* Workspace (signed-in) is a lighter, secondary CTA than the signed-out auth
+   pair, so it gets a tighter horizontal padding (xl) than the shared 2xl. */
+.site-actions .site-workspace-btn {
+  padding-inline: var(--vx-space-xl);
+}
+
 /* -- Signed-in account menu (DS DropdownMenu; trigger = <button>) ------------
    Layout-only composition; all colors/looks come from DS primitives. */
 .acct-trigger {
