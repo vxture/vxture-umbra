@@ -240,6 +240,13 @@ jobs:
       name: worker-03
 
     steps:
+      # rsync pushes the deploy subset from the runner checkout (no git on the
+      # server), so the deploy job must check out the built revision first.
+      - name: Checkout deploy sources
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+
       - name: Validate deployment secrets
         shell: bash
         env:
