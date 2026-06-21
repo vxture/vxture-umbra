@@ -32,27 +32,27 @@ Key implementation paths:
 | `portals/admin/` | Temporary admin portal boundary; invite UI will move here after route split |
 | `services/account/account.py` | Current lightweight Python account/invite API; future formal business backend should be NestJS |
 | `services/subproxy/subproxy.py` | Lightweight Python subscription response metadata adapter |
-| `deploy/worker-03/` | worker-03 server deployment package |
-| `deploy/worker-03/scripts/` | Numbered worker-03 deploy, ops, and recovery steps |
+| `deploy/` | production server deployment package |
+| `deploy/scripts/` | Numbered production deploy, ops, and recovery steps |
 | `scripts/checks/` | Development and CI checks |
-| `deploy/worker-03/lib/` | Shared worker-03 shell helpers |
+| `deploy/lib/` | Shared production shell helpers |
 
 Deployment ownership boundary:
 
 | Path | Owner | Worker deploy relationship |
 |---|---|---|
-| `docker-compose.yml` | Repository runtime contract | Used by worker-03 to pull and start the same services validated by CI |
-| `configs/nginx/` | Shared runtime config templates | Rendered into `DATA_DIR/nginx/` by worker-03 deploy scripts |
-| `configs/marzban/` | Shared subscription config templates and rules | Rendered into `DATA_DIR/marzban/` by worker-03 deploy scripts |
+| `docker-compose.yml` | Repository runtime contract | Used by production to pull and start the same services validated by CI |
+| `configs/nginx/` | Shared runtime config templates | Rendered into `DATA_DIR/nginx/` by production deploy scripts |
+| `configs/marzban/` | Shared subscription config templates and rules | Rendered into `DATA_DIR/marzban/` by production deploy scripts |
 | `services/subproxy/` | Application/edge adapter source | Mounted or packaged as the `umbra-subproxy` service through compose |
 | `services/account/` | Application API source | Mounted or packaged as the `umbra-account` service through compose |
-| `deploy/worker-03/` | worker-03 server deployment package | Calls, validates, renders, and operates the shared repo resources |
+| `deploy/` | production server deployment package | Calls, validates, renders, and operates the shared repo resources |
 
 Do not move `docker-compose.yml`, `configs/`, or `services/` under
-`deploy/worker-03/`. The deploy package owns server-specific orchestration, not
+`deploy/`. The deploy package owns server-specific orchestration, not
 the shared runtime contract, config templates, or application source. If a
 worker needs host-specific compose changes, add a worker-scoped override such as
-`deploy/worker-03/compose.override.yml` instead of duplicating or relocating the
+`deploy/compose.override.yml` instead of duplicating or relocating the
 root compose file.
 
 ## Portal boundaries

@@ -39,6 +39,6 @@ bash scripts/deploy.sh config
 abort even if services were running. Now verify/backup are non-fatal warnings
 in deploy-all.sh.
 
-> Note: the worker-03 production pipeline uses the modular scripts under
-> `deploy/worker-03/` driven by CI/CD; see
+> Note: the production production pipeline uses the modular scripts under
+> `deploy/` driven by CI/CD; see
 > [`cicd-deploy-flow.md`](cicd-deploy-flow.md).

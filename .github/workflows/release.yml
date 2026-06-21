@@ -8,7 +8,7 @@ on:
 # Serialize releases: a build+deploy must finish before the next one starts, and
 # an in-flight deploy must never be cancelled.
 concurrency:
-  group: release-worker-03
+  group: release-production
   cancel-in-progress: false
 
 permissions:
@@ -228,7 +228,7 @@ jobs:
           done
 
   deploy:
-    name: deploy-worker-03
+    name: deploy
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: [detect, build]
@@ -237,7 +237,7 @@ jobs:
       contents: read
       packages: read
     environment:
-      name: worker-03
+      name: production
 
     steps:
       # rsync pushes the deploy subset from the runner checkout (no git on the
@@ -250,48 +250,48 @@ jobs:
       - name: Validate deployment secrets
         shell: bash
         env:
-          WORKER_03_HOST: ${{ secrets.WORKER_03_HOST }}
-          WORKER_03_USER: ${{ secrets.WORKER_03_USER }}
-          WORKER_03_SSH_KEY: ${{ secrets.WORKER_03_SSH_KEY }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           ALIYUN_ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
           ALIYUN_ACR_NAMESPACE: ${{ secrets.ALIYUN_ACR_NAMESPACE }}
         run: |
           set -euo pipefail
-          test -n "$WORKER_03_HOST"
-          test -n "$WORKER_03_USER"
-          test -n "$WORKER_03_SSH_KEY"
+          test -n "$DEPLOY_HOST"
+          test -n "$DEPLOY_USER"
+          test -n "$DEPLOY_SSH_KEY"
           test -n "$ALIYUN_ACR_REGISTRY"
           test -n "$ALIYUN_ACR_NAMESPACE"
 
       - name: Prepare SSH
         shell: bash
         env:
-          WORKER_03_HOST: ${{ secrets.WORKER_03_HOST }}
-          WORKER_03_PORT: ${{ secrets.WORKER_03_PORT }}
-          WORKER_03_SSH_KEY: ${{ secrets.WORKER_03_SSH_KEY }}
-          WORKER_03_KNOWN_HOSTS: ${{ secrets.WORKER_03_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          printf '%s\n' "$WORKER_03_SSH_KEY" > ~/.ssh/worker_03
-          chmod 600 ~/.ssh/worker_03
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
-          port="${WORKER_03_PORT:-22}"
-          if [ -n "${WORKER_03_KNOWN_HOSTS:-}" ]; then
-            printf '%s\n' "$WORKER_03_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          port="${DEPLOY_PORT:-22}"
+          if [ -n "${DEPLOY_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           else
-            ssh-keyscan -p "$port" "$WORKER_03_HOST" > ~/.ssh/known_hosts
+            ssh-keyscan -p "$port" "$DEPLOY_HOST" > ~/.ssh/known_hosts
           fi
           chmod 600 ~/.ssh/known_hosts
 
       - name: Deploy over SSH
         shell: bash
         env:
-          WORKER_03_HOST: ${{ secrets.WORKER_03_HOST }}
-          WORKER_03_USER: ${{ secrets.WORKER_03_USER }}
-          WORKER_03_PORT: ${{ secrets.WORKER_03_PORT }}
-          WORKER_03_REPO_DIR: ${{ secrets.WORKER_03_REPO_DIR }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+          DEPLOY_REPO_DIR: ${{ secrets.DEPLOY_REPO_DIR }}
           PASSED_SHA: ${{ github.sha }}
           ALIYUN_ACR_REGISTRY: ${{ secrets.ALIYUN_ACR_REGISTRY }}
           ALIYUN_ACR_NAMESPACE: ${{ secrets.ALIYUN_ACR_NAMESPACE }}
@@ -303,8 +303,8 @@ jobs:
           GHCR_NAMESPACE: vxture
         run: |
           set -euo pipefail
-          port="${WORKER_03_PORT:-22}"
-          deploy_dir="${WORKER_03_REPO_DIR:-/srv/umbra/deploy}"
+          port="${DEPLOY_PORT:-22}"
+          deploy_dir="${DEPLOY_REPO_DIR:-/srv/umbra/deploy}"
           short_sha="${PASSED_SHA::7}"
           image_tag="sha-$short_sha"
 
@@ -313,24 +313,24 @@ jobs:
           # exact built SHA, so a VERSION file records provenance in place of a
           # remote `git rev-parse`. deploy/ is disposable: the operator .env lives
           # at /srv/umbra/etc/.env, outside the rsync target, so --delete is safe.
-          ssh -i ~/.ssh/worker_03 -p "$port" \
+          ssh -i ~/.ssh/deploy_key -p "$port" \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=20 \
             -o ConnectTimeout=30 \
-            "$WORKER_03_USER@$WORKER_03_HOST" "mkdir -p '$deploy_dir'"
+            "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$deploy_dir'"
 
           rsync_srcs=(deploy/ configs docker-compose.yml)
           [ -d docs-site ] && rsync_srcs+=(docs-site)
           rsync -az --delete --exclude='VERSION' \
-            -e "ssh -i ~/.ssh/worker_03 -p $port -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ConnectTimeout=30" \
+            -e "ssh -i ~/.ssh/deploy_key -p $port -o ServerAliveInterval=30 -o ServerAliveCountMax=20 -o ConnectTimeout=30" \
             "${rsync_srcs[@]}" \
-            "$WORKER_03_USER@$WORKER_03_HOST:$deploy_dir/"
+            "$DEPLOY_USER@$DEPLOY_HOST:$deploy_dir/"
 
-          ssh -i ~/.ssh/worker_03 -p "$port" \
+          ssh -i ~/.ssh/deploy_key -p "$port" \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=20 \
             -o ConnectTimeout=30 \
-            "$WORKER_03_USER@$WORKER_03_HOST" "printf '%s\n' '$PASSED_SHA' > '$deploy_dir/VERSION'"
+            "$DEPLOY_USER@$DEPLOY_HOST" "printf '%s\n' '$PASSED_SHA' > '$deploy_dir/VERSION'"
 
           cat > /tmp/deploy.sh <<'REMOTE_SCRIPT'
           set -euo pipefail
@@ -370,12 +370,12 @@ jobs:
           bash deploy.sh verify
           REMOTE_SCRIPT
 
-          scp -i ~/.ssh/worker_03 -P "$port" \
+          scp -i ~/.ssh/deploy_key -P "$port" \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=20 \
             -o ConnectTimeout=30 \
             /tmp/deploy.sh \
-            "$WORKER_03_USER@$WORKER_03_HOST:/tmp/deploy.sh"
+            "$DEPLOY_USER@$DEPLOY_HOST:/tmp/deploy.sh"
 
           remote_env=(
             "REPO_DIR=$deploy_dir"
@@ -399,8 +399,8 @@ jobs:
           done
           remote_cmd+="bash /tmp/deploy.sh"
 
-          ssh -i ~/.ssh/worker_03 -p "$port" \
+          ssh -i ~/.ssh/deploy_key -p "$port" \
             -o ServerAliveInterval=30 \
             -o ServerAliveCountMax=20 \
             -o ConnectTimeout=30 \
-            "$WORKER_03_USER@$WORKER_03_HOST" "$remote_cmd"
+            "$DEPLOY_USER@$DEPLOY_HOST" "$remote_cmd"

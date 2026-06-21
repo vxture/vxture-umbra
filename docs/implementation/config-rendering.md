@@ -1,11 +1,11 @@
 # Config Rendering
 
-`deploy/worker-03/scripts/22-render-runtime-configs.py` is the only config renderer.
+`deploy/scripts/22-render-runtime-configs.py` is the only config renderer.
 
 Run it with Python:
 
 ```bash
-python3 deploy/worker-03/scripts/22-render-runtime-configs.py
+python3 deploy/scripts/22-render-runtime-configs.py
 ```
 
 Do not run it with `bash`.

@@ -102,7 +102,7 @@ Microsoft, Vultr, Umbra public service domains, DeepSeek, and other must-direct 
 are rendered from `must-direct-rules.txt` before any `PROXY` rule. Cloudflare
 account, dashboard, challenge, and edge service domains are explicit `PROXY`
 rules so login flows do not get stuck on direct routing. The
-validator `deploy/worker-03/scripts/19-check-clash-rules.py` fails config rendering if
+validator `deploy/scripts/19-check-clash-rules.py` fails config rendering if
 a must-direct domain is missing, appears after the first proxy boundary, or
 overlaps any `PROXY` rule.
 

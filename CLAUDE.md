@@ -62,11 +62,11 @@ re-fires the downstream chain.
 feature -> PR to develop -> ci (quality-gate) -> squash-merge to develop
   -> ci on develop -> promote.yml (manual, fast-forward) -> main
   -> release on main: detect -> docker-build (6 images: GHCR + Aliyun ACR)
-  -> deploy-worker-03 (auto SSH deploy + verify)
+  -> deploy (auto SSH deploy + verify)
 ```
 
 Workflows: `.github/workflows/{ci,promote,release}.yml`. `docker-build` and
-`deploy-worker-03` are jobs inside `release.yml` (gated by a `detect` job that
+`deploy` are jobs inside `release.yml` (gated by a `detect` job that
 skips docs-only changes and builds only the images whose sources changed), not
 standalone workflow files - the contract check forbids the retired
 `docker-build.yml`/`deploy-worker-03.yml` filenames from reappearing. `ci.yml`

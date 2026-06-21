@@ -14,7 +14,7 @@
 |------|------|---------|
 | [`project-overview.md`](project-overview.md) | project | Stack, domain layout, architecture, Marzban HTTP-proxy decision |
 | [`deployment-modules.md`](deployment-modules.md) | project | `deploy.sh` dispatcher, step scripts, config update workflow |
-| [`cicd-deploy-flow.md`](cicd-deploy-flow.md) | project | Git flow to worker-03, promotion command, deploy gotchas |
+| [`cicd-deploy-flow.md`](cicd-deploy-flow.md) | project | Git flow to production, promotion command, deploy gotchas |
 | [`memory-versioning-preference.md`](memory-versioning-preference.md) | feedback | Version memory inside `vxture/umbra` on the `claude-memory` branch |
 
 ## Sync model

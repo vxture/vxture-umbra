@@ -60,7 +60,7 @@ Purpose:    Production overseas edge entry node
 ## Current State
 
 The v1.0 production edge node runs in production with automated CI/CD deploys to
-worker-03: all services in the inventory above are live behind the unified 443
+production: all services in the inventory above are live behind the unified 443
 entry, with HTTPS, REALITY ingress, Marzban subscriptions, backup automation,
 and daily cert renewal in place. External uptime monitoring stays
 operator-optional. Current work evolves the account portal toward a multi-app
@@ -89,14 +89,14 @@ identity model - see [`design/platform-identity.md`](design/platform-identity.md
 | [`deployment/deployment.md`](deployment/deployment.md) | Deploy steps, .env reference, verification checklist, migration |
 | [`deployment/checklists.md`](deployment/checklists.md) | Scenario matrix, preservation contracts, and deployment safety checklists |
 | [`operations/operations.md`](operations/operations.md) | Backup, rollback, cert renewal, user management, monitoring |
-| [`operations/github-actions.md`](operations/github-actions.md) | CI/CD branch flow, promotion contract, and worker-03 deployment design |
+| [`operations/github-actions.md`](operations/github-actions.md) | CI/CD branch flow, promotion contract, and production deployment design |
 | [`operations/github-actions-enablement.md`](operations/github-actions-enablement.md) | Secrets, rulesets, and first-run checklist for enabling CI/CD |
 | [`operations/certificate-incident.md`](operations/certificate-incident.md) | Certificate incident ledger and non-regression guardrails |
 | [`operations/local-dev-environment.md`](operations/local-dev-environment.md) | Operator workstation notes for TUN, DeepSeek API, and Roo Code |
 | [`memory/README.md`](memory/README.md) | **Memory mirror index.** AI-assistant persistent memory, summaries and pointers |
 | [`memory/project-overview.md`](memory/project-overview.md) | Memory: stack, domain layout, architecture, Marzban HTTP-proxy decision |
 | [`memory/deployment-modules.md`](memory/deployment-modules.md) | Memory: `deploy.sh` dispatcher, step scripts, config update workflow |
-| [`memory/cicd-deploy-flow.md`](memory/cicd-deploy-flow.md) | Memory: git flow to worker-03, promotion command, deploy gotchas |
+| [`memory/cicd-deploy-flow.md`](memory/cicd-deploy-flow.md) | Memory: git flow to production, promotion command, deploy gotchas |
 | [`memory/memory-versioning-preference.md`](memory/memory-versioning-preference.md) | Memory: how the memory store is versioned in this repo |
 
 ---

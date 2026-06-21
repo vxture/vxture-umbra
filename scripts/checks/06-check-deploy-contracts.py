@@ -627,7 +627,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "expected_sha",
             "git merge --ff-only origin/develop",
             "develop CI success must not automatically push main.",
-            "deploy-worker-03` job runs inside `release.yml` after the `build` job",
+            "deploy` job runs inside `release.yml` after the `build` job",
             "No automatic develop-to-main promotion without release confirmation.",
         ],
     ),
@@ -638,7 +638,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "GitHub Actions Enablement Checklist",
             "Required Repository Secrets",
             "Repository Rulesets",
-            "worker-03 Runtime Prerequisites",
+            "Production Runtime Prerequisites",
             "First Enablement Sequence",
             "NODE_AUTH_TOKEN",
             "ALIYUN_ACR_REGISTRY",
@@ -647,9 +647,9 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "ALIYUN_ACR_PASSWORD",
             "PROMOTION_TOKEN",
             "GitHub does not trigger downstream",
-            "WORKER_03_HOST",
-            "WORKER_03_USER",
-            "WORKER_03_SSH_KEY",
+            "DEPLOY_HOST",
+            "DEPLOY_USER",
+            "DEPLOY_SSH_KEY",
             "develop` CI success must not automatically update `main`",
             "IMAGE_NAMESPACE=vxture",
             "sha-<short-sha>",
@@ -662,15 +662,15 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             'param(',
             '$Repo = "vxture/umbra"',
             '$EnvFile = "private/github-actions.local.env"',
-            '$EnvironmentName = "worker-03"',
+            '$EnvironmentName = "production"',
             "Read-LocalEnvFile",
             "Ensure-GitHubEnvironment",
             'gh api --method PUT "repos/$Repo/environments/$EnvironmentName"',
             "Set-RepoSecret",
             "Set-EnvironmentSecret",
             '"PROMOTION_TOKEN"',
-            "WORKER_03_SSH_KEY_FILE",
-            "WORKER_03_KNOWN_HOSTS_FILE",
+            "DEPLOY_SSH_KEY_FILE",
+            "DEPLOY_KNOWN_HOSTS_FILE",
             "NODE_AUTH_TOKEN",
             "ALIYUN_ACR_REGISTRY",
             "ALIYUN_ACR_NAMESPACE",
@@ -715,10 +715,10 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
-        "worker-03 deploy consumes build output with GHCR primary and ACR fallback",
+        "production deploy consumes build output with GHCR primary and ACR fallback",
         Path(RELEASE_WORKFLOW),
         [
-            "name: deploy-worker-03",
+            "name: deploy",
             "needs: [detect, build]",
             "PASSED_SHA: ${{ github.sha }}",
             'image_tag="sha-$short_sha"',
@@ -1417,17 +1417,17 @@ def check_worker_deploy_fallback_contract() -> list[str]:
     problems: list[str] = []
 
     if "GHCR_TOKEN: ${{ github.token }}" in workflow and "packages: read" not in workflow:
-        problems.append("deploy-worker-03 uses github.token for GHCR but lacks packages: read")
+        problems.append("deploy uses github.token for GHCR but lacks packages: read")
     if (
         "export IMAGE_REGISTRY=\"$GHCR_REGISTRY\"" not in workflow
         or "export IMAGE_NAMESPACE=\"$GHCR_NAMESPACE\"" not in workflow
     ):
-        problems.append("deploy workflow must pull GHCR as worker-03 primary registry")
+        problems.append("deploy workflow must pull GHCR as production primary registry")
     if (
         "export FALLBACK_IMAGE_REGISTRY=\"$ALIYUN_ACR_REGISTRY\"" not in workflow
         or "export FALLBACK_IMAGE_NAMESPACE=\"$ALIYUN_ACR_NAMESPACE\"" not in workflow
     ):
-        problems.append("deploy workflow must use Aliyun ACR as worker-03 fallback registry")
+        problems.append("deploy workflow must use Aliyun ACR as production fallback registry")
     if (
         "FALLBACK_IMAGE_REGISTRY" not in start_script
         or "FALLBACK_IMAGE_NAMESPACE" not in start_script
@@ -1540,7 +1540,7 @@ def check_brand_assets_use_png_and_ico() -> list[str]:
 
 
 def check_env_example_is_source_safe() -> list[str]:
-    # The worker-03 deploy sources .env via bash (set -a; source .env). A bare
+    # The production deploy sources .env via bash (set -a; source .env). A bare
     # multi-word value like `KEY=a b c` makes bash run `b c` as a command (exit
     # 127), aborting the deploy. docker compose --env-file does not word-split, so
     # this slips past compose validation; guard it here. Values with whitespace

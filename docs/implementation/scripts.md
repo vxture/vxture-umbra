@@ -6,22 +6,22 @@ Scripts are organized by lifecycle boundary.
 
 | Entrypoint | Scope | Purpose |
 |---|---|---|
-| `deploy/worker-03/server.sh` | Server | Bootstrap or reset the host machine |
-| `deploy/worker-03/deploy.sh` | Deploy | Build the service from repo/config into running containers |
-| `deploy/worker-03/ops.sh` | Ops | Operate an already deployed node |
+| `deploy/server.sh` | Server | Bootstrap or reset the host machine |
+| `deploy/deploy.sh` | Deploy | Build the service from repo/config into running containers |
+| `deploy/ops.sh` | Ops | Operate an already deployed node |
 
 ## Internal Directories
 
 | Directory | Purpose |
 |---|---|
-| `deploy/worker-03/` | worker-03 server deployment package |
-| `deploy/worker-03/scripts/` | Numbered worker-03 deploy, ops, and recovery steps |
+| `deploy/` | production server deployment package |
+| `deploy/scripts/` | Numbered production deploy, ops, and recovery steps |
 | `scripts/checks/` | Development and CI checks |
-| `deploy/worker-03/lib/` | Shared worker-03 shell helpers |
+| `deploy/lib/` | Shared production shell helpers |
 
 ## Deploy Dependency Boundary
 
-`deploy/worker-03/` is the worker-specific control plane. It should contain
+`deploy/` is the worker-specific control plane. It should contain
 entrypoints, numbered deployment steps, ops scripts, recovery scripts, local
 worker examples, and worker-local secret placeholders.
 
@@ -36,16 +36,16 @@ It must not own the shared runtime resources below:
 | `services/account/` | Account/invite API source |
 
 Worker scripts may read, validate, render, mount, and operate those root paths.
-They should not duplicate them inside `deploy/worker-03/`. A worker-specific
+They should not duplicate them inside `deploy/`. A worker-specific
 compose change belongs in a worker-scoped override file, for example
-`deploy/worker-03/compose.override.yml`.
+`deploy/compose.override.yml`.
 
 ## Server Commands
 
 | Command | Purpose |
 |---|---|
-| `bash deploy/worker-03/server.sh init` | Install packages, Docker, admin user, SSH keys, firewall |
-| `bash deploy/worker-03/server.sh reset [--full]` | Stop containers or wipe runtime data after confirmation |
+| `bash deploy/server.sh init` | Install packages, Docker, admin user, SSH keys, firewall |
+| `bash deploy/server.sh reset [--full]` | Stop containers or wipe runtime data after confirmation |
 
 `server.sh reset` has a result contract:
 
@@ -57,32 +57,32 @@ compose change belongs in a worker-scoped override file, for example
 
 | Command | Purpose |
 |---|---|
-| `bash deploy/worker-03/deploy.sh all` | Run the full deploy pipeline and install cron jobs |
-| `bash deploy/worker-03/deploy.sh environment` | Validate env, Docker, DNS, ports |
-| `bash deploy/worker-03/deploy.sh directories` | Create runtime directories |
-| `bash deploy/worker-03/deploy.sh reality-keys` | Generate or reuse REALITY keys |
-| `bash deploy/worker-03/deploy.sh certificates` | Issue initial Let's Encrypt certificates |
-| `bash deploy/worker-03/deploy.sh config` | Render configs and reload nginx if running |
-| `python3 deploy/worker-03/scripts/19-check-clash-rules.py --config <default.yml>` | Validate generated Clash must-direct rules |
-| `bash deploy/worker-03/deploy.sh start` | Start containers and restart repo-mounted Python services |
-| `bash deploy/worker-03/deploy.sh verify` | Verify runtime behavior |
-| `bash deploy/worker-03/deploy.sh wizard` | Configure Marzban hosts, users, and subscription URLs |
+| `bash deploy/deploy.sh all` | Run the full deploy pipeline and install cron jobs |
+| `bash deploy/deploy.sh environment` | Validate env, Docker, DNS, ports |
+| `bash deploy/deploy.sh directories` | Create runtime directories |
+| `bash deploy/deploy.sh reality-keys` | Generate or reuse REALITY keys |
+| `bash deploy/deploy.sh certificates` | Issue initial Let's Encrypt certificates |
+| `bash deploy/deploy.sh config` | Render configs and reload nginx if running |
+| `python3 deploy/scripts/19-check-clash-rules.py --config <default.yml>` | Validate generated Clash must-direct rules |
+| `bash deploy/deploy.sh start` | Start containers and restart repo-mounted Python services |
+| `bash deploy/deploy.sh verify` | Verify runtime behavior |
+| `bash deploy/deploy.sh wizard` | Configure Marzban hosts, users, and subscription URLs |
 | `python3 scripts/checks/06-check-deploy-contracts.py` | Static guardrails for high-risk script contracts |
 
 ## Ops Commands
 
 | Command | Purpose |
 |---|---|
-| `bash deploy/worker-03/ops.sh status` | Show container status |
-| `bash deploy/worker-03/ops.sh logs [service]` | Tail logs |
-| `bash deploy/worker-03/ops.sh restart [service]` | Restart services |
-| `bash deploy/worker-03/ops.sh reload` | Reload nginx |
-| `bash deploy/worker-03/ops.sh backup` | Create backup archives |
-| `bash deploy/worker-03/ops.sh certs --status` | Show certificate expiry |
-| `bash deploy/worker-03/ops.sh certs --renew` | Run certificate renewal check; reload services only when certbot renews something |
-| `bash deploy/worker-03/ops.sh certs --upgrade` | Stage new trusted certs, then activate only after all domains issue successfully |
-| `bash deploy/worker-03/ops.sh certs --clean-renewal-state` | Remove invalid zero-byte Certbot renewal configs |
-| `bash deploy/worker-03/ops.sh certs --clean-workdirs` | Migrate legacy staged state and remove obsolete certificate work directories |
+| `bash deploy/ops.sh status` | Show container status |
+| `bash deploy/ops.sh logs [service]` | Tail logs |
+| `bash deploy/ops.sh restart [service]` | Restart services |
+| `bash deploy/ops.sh reload` | Reload nginx |
+| `bash deploy/ops.sh backup` | Create backup archives |
+| `bash deploy/ops.sh certs --status` | Show certificate expiry |
+| `bash deploy/ops.sh certs --renew` | Run certificate renewal check; reload services only when certbot renews something |
+| `bash deploy/ops.sh certs --upgrade` | Stage new trusted certs, then activate only after all domains issue successfully |
+| `bash deploy/ops.sh certs --clean-renewal-state` | Remove invalid zero-byte Certbot renewal configs |
+| `bash deploy/ops.sh certs --clean-workdirs` | Migrate legacy staged state and remove obsolete certificate work directories |
 
 Compatibility wrappers remain in the `scripts/` root for old server habits. Do not use them in new docs.
 
@@ -93,9 +93,9 @@ delete.
 
 ## Certificate Safety Rules
 
-`deploy/worker-03/ops.sh certs --upgrade` must never clear `DATA_DIR/letsencrypt` before issuance succeeds.
+`deploy/ops.sh certs --upgrade` must never clear `DATA_DIR/letsencrypt` before issuance succeeds.
 
-`deploy.sh all` must detect existing self-signed, staging, fake, unreadable, or otherwise non-trusted cert directories and route certificate replacement through `deploy/worker-03/ops.sh certs --upgrade`.
+`deploy.sh all` must detect existing self-signed, staging, fake, unreadable, or otherwise non-trusted cert directories and route certificate replacement through `deploy/ops.sh certs --upgrade`.
 
 The required upgrade flow is:
 
@@ -114,7 +114,7 @@ The required upgrade flow is:
 
 If Marzban TLS sync or the service restart fails after activation, the script attempts to restore `DATA_DIR/letsencrypt.backup.<timestamp>` and moves the failed new directory to `DATA_DIR/letsencrypt.failed.<timestamp>`.
 
-Certbot writes certificate files as root from inside Docker. Scripts must use `deploy/worker-03/lib/02-certs.sh` for Marzban TLS sync instead of reading `privkey.pem` directly as the deploy user.
+Certbot writes certificate files as root from inside Docker. Scripts must use `deploy/lib/02-certs.sh` for Marzban TLS sync instead of reading `privkey.pem` directly as the deploy user.
 
 Certificate scripts must validate domain names before building paths under `live/`, `archive/`, or `renewal/`.
 

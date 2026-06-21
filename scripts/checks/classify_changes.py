@@ -3,7 +3,7 @@
 
 Given a list of changed file paths (repo-root-relative), decide:
 
-  - deployable    : whether worker-03 should run a deploy at all
+  - deployable    : whether the production target should run a deploy at all
   - build_images  : which images must be rebuilt (subset of ALL_IMAGES)
 
 Model: allow-list / default-skip. A path ships nothing to the runtime unless a

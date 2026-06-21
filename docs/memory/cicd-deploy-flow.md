@@ -11,7 +11,7 @@ This is the actionable runbook plus gotchas verified in practice.
 ```
 feature branch -> PR to develop -> ci (quality-gate) -> squash-merge to develop
   -> ci on develop -> controlled promotion develop->main (promote.yml, workflow_dispatch)
-  -> ci on main -> docker-build (6 images, GHCR+ACR) -> deploy-worker-03 (auto SSH)
+  -> ci on main -> docker-build (6 images, GHCR+ACR) -> deploy (auto SSH)
 ```
 `develop` = integration branch; updating `main` == production release approved.
 Always branch off `origin/develop`, never off a stale local branch.
@@ -29,7 +29,7 @@ expected_sha == origin/develop, main is ancestor of develop, and develop's
 
 **Gotchas:**
 - `PROMOTION_TOKEN` IS configured, so the fast-forward push to main triggers the
-  downstream `ci -> docker-build -> deploy-worker-03` chain (a `GITHUB_TOKEN` push
+  downstream `ci -> docker-build -> deploy` chain (a `GITHUB_TOKEN` push
   would not).
 - `docker-build` intermittently fails at "Set up Docker Buildx" (infra flake, not
   code). Fix: `gh run rerun <run-id> --failed`; the re-run's success re-fires deploy.
@@ -39,7 +39,7 @@ expected_sha == origin/develop, main is ancestor of develop, and develop's
   use `-D` after confirming the PR is MERGED via `gh pr view`.
 - CI has an ASCII-only contract check on source/docs - non-ASCII (em-dashes, smart
   quotes) fails `Static script checks`. Keep docs ASCII.
-- Clash rule renders are guarded by `deploy/worker-03/scripts/19-check-clash-rules.py`
+- Clash rule renders are guarded by `deploy/scripts/19-check-clash-rules.py`
   during deploy `verify`; a green deploy means the rendered config passed it.
 - After deploy, `git branch -vv` shows merged remotes as `: gone` (prune with
   `git fetch --prune`); local `main` can drift behind/diverge - realign with

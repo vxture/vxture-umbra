@@ -1,7 +1,7 @@
 param(
   [string]$Repo = "vxture/umbra",
   [string]$EnvFile = "private/github-actions.local.env",
-  [string]$EnvironmentName = "worker-03",
+  [string]$EnvironmentName = "production",
   [switch]$DryRun
 )
 
@@ -110,7 +110,7 @@ function Read-SecretFile {
     [switch]$Required
   )
 
-  # Supported file variables: WORKER_03_SSH_KEY_FILE, WORKER_03_KNOWN_HOSTS_FILE.
+  # Supported file variables: DEPLOY_SSH_KEY_FILE, DEPLOY_KNOWN_HOSTS_FILE.
   $fileVar = "${Name}_FILE"
   if (-not $Values.ContainsKey($fileVar) -or [string]::IsNullOrWhiteSpace($Values[$fileVar])) {
     if ($Required) {
@@ -142,16 +142,16 @@ $required = @(
   "ALIYUN_ACR_USERNAME",
   "ALIYUN_ACR_PASSWORD",
   "PROMOTION_TOKEN",
-  "WORKER_03_HOST",
-  "WORKER_03_USER"
+  "DEPLOY_HOST",
+  "DEPLOY_USER"
 )
 
 foreach ($name in $required) {
   Require-Value -Values $values -Name $name
 }
 
-$workerKey = Read-SecretFile -Values $values -Name "WORKER_03_SSH_KEY" -Required
-$knownHosts = Read-SecretFile -Values $values -Name "WORKER_03_KNOWN_HOSTS"
+$workerKey = Read-SecretFile -Values $values -Name "DEPLOY_SSH_KEY" -Required
+$knownHosts = Read-SecretFile -Values $values -Name "DEPLOY_KNOWN_HOSTS"
 
 Ensure-GitHubEnvironment
 
@@ -170,12 +170,12 @@ foreach ($name in $repoSecrets) {
 }
 
 $environmentSecrets = @{
-  WORKER_03_HOST = $values["WORKER_03_HOST"]
-  WORKER_03_USER = $values["WORKER_03_USER"]
-  WORKER_03_PORT = if ($values.ContainsKey("WORKER_03_PORT")) { $values["WORKER_03_PORT"] } else { "" }
-  WORKER_03_REPO_DIR = if ($values.ContainsKey("WORKER_03_REPO_DIR")) { $values["WORKER_03_REPO_DIR"] } else { "" }
-  WORKER_03_SSH_KEY = $workerKey
-  WORKER_03_KNOWN_HOSTS = $knownHosts
+  DEPLOY_HOST = $values["DEPLOY_HOST"]
+  DEPLOY_USER = $values["DEPLOY_USER"]
+  DEPLOY_PORT = if ($values.ContainsKey("DEPLOY_PORT")) { $values["DEPLOY_PORT"] } else { "" }
+  DEPLOY_REPO_DIR = if ($values.ContainsKey("DEPLOY_REPO_DIR")) { $values["DEPLOY_REPO_DIR"] } else { "" }
+  DEPLOY_SSH_KEY = $workerKey
+  DEPLOY_KNOWN_HOSTS = $knownHosts
   ALIYUN_ACR_REGISTRY = $values["ALIYUN_ACR_REGISTRY"]
   ALIYUN_ACR_NAMESPACE = $values["ALIYUN_ACR_NAMESPACE"]
   ALIYUN_ACR_USERNAME = $values["ALIYUN_ACR_USERNAME"]

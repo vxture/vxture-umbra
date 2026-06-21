@@ -113,7 +113,7 @@ CERTBOT_EMAIL=<your-email>
 
 ### Step 3: Secrets
 
-No database passwords needed - SQLite requires no credentials. The account portal secrets sign sessions and hash invite codes; generate them separately. The REALITY secret file is `DATA_DIR/private/reality.json`, which is generated automatically by [`13-generate-runtime-secrets.sh`](../../deploy/worker-03/scripts/13-generate-runtime-secrets.sh).
+No database passwords needed - SQLite requires no credentials. The account portal secrets sign sessions and hash invite codes; generate them separately. The REALITY secret file is `DATA_DIR/private/reality.json`, which is generated automatically by [`13-generate-runtime-secrets.sh`](../../deploy/scripts/13-generate-runtime-secrets.sh).
 
 ---
 
@@ -122,7 +122,7 @@ No database passwords needed - SQLite requires no credentials. The account porta
 ### One-shot deploy
 
 ```bash
-bash deploy/worker-03/deploy.sh all
+bash deploy/deploy.sh all
 ```
 
 ### Step-by-step
@@ -214,12 +214,12 @@ Renders all templates with variables from `.env` and `private/`:
 Run this step with Python, or via the deployment dispatcher:
 
 ```bash
-python3 deploy/worker-03/scripts/22-render-runtime-configs.py
+python3 deploy/scripts/22-render-runtime-configs.py
 # or
-bash deploy/worker-03/deploy.sh config
+bash deploy/deploy.sh config
 ```
 
-Do not run it with `bash deploy/worker-03/scripts/22-render-runtime-configs.py`; it is a Python script.
+Do not run it with `bash deploy/scripts/22-render-runtime-configs.py`; it is a Python script.
 
 | Source | Output |
 |--------|--------|
@@ -313,7 +313,7 @@ DOMAIN-SUFFIX,openai.com,PROXY
 MATCH,PROXY
 ```
 
-The config renderer runs `deploy/worker-03/scripts/19-check-clash-rules.py` and fails if any must-direct domain from `configs/marzban/must-direct-rules.txt` is missing, appears after the proxy boundary, or overlaps a `PROXY` rule.
+The config renderer runs `deploy/scripts/19-check-clash-rules.py` and fails if any must-direct domain from `configs/marzban/must-direct-rules.txt` is missing, appears after the proxy boundary, or overlaps a `PROXY` rule.
 
 Must NOT contain:
 ```
@@ -366,7 +366,7 @@ Expected: all files exist and are non-zero size after services have started.
 5.  Copy .env from old node
 6.  Copy DATA_DIR/private/ from old node
     (preserves REALITY keys - clients keep same public key)
-7.  Run `bash deploy/worker-03/deploy.sh all` on new VPS
+7.  Run `bash deploy/deploy.sh all` on new VPS
 8.  Verify using /etc/hosts override (point domains to new IP locally)
 9.  Switch DNS to new VPS IP
 10. Notify users to refresh subscription in Clash
@@ -384,7 +384,7 @@ Copying `private/reality.json` ensures existing Marzban users keep the same REAL
 During migration, run both nodes simultaneously:
 
 ```
-Old node: worker-03 -> vpn.ruyin.ai (current DNS)
+Old node: production -> vpn.ruyin.ai (current DNS)
 New node: edge-01   -> vpn-test.ruyin.ai (test DNS only)
 ```
 

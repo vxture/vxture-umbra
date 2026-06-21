@@ -27,7 +27,7 @@ _usage() {
   echo "  Usage: bash deploy/ops.sh <command> [args]"
   echo ""
   echo "  Purpose:"
-  echo "    Operate an already deployed worker-03 runtime."
+  echo "    Operate an already deployed production runtime."
   echo "    These commands should not bootstrap a fresh server or change release state."
   echo ""
   echo "  Runtime operations:"

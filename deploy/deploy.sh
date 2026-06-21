@@ -34,7 +34,7 @@ _usage() {
   echo "  Usage: bash deploy/deploy.sh <command> [args]"
   echo ""
   echo "  Purpose:"
-  echo "    Deploy the worker-03 runtime from repository source and environment values."
+  echo "    Deploy the production runtime from repository source and environment values."
   echo "    This is the entrypoint used by GitHub Actions after docker-build succeeds."
   echo ""
   echo "  Deployment lifecycle:"

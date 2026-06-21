@@ -5,7 +5,7 @@ on the Vxture CI/CD design in `D:\MyWebSite\vxture\docs\deployment\05-ci-cd.md`,
 but scoped to this repository's current service model.
 
 Umbra publishes deployable images to GitHub Container Registry and Aliyun ACR.
-worker-03 deploys by pulling those images and restarting Docker Compose. It
+production deploys by pulling those images and restarting Docker Compose. It
 must not build production images on the server during normal deployment.
 
 Enablement checklist:
@@ -18,9 +18,9 @@ Enablement checklist:
 2. Keep `main` as the production-approved branch.
 3. Run a repeatable quality gate before code can advance.
 4. Make promotion auditable and fast-forward only.
-5. Deploy worker-03 automatically only after images are built for the promoted,
+5. Deploy production automatically only after images are built for the promoted,
    CI-validated revision.
-6. Build and push immutable images before worker-03 deploys.
+6. Build and push immutable images before production deploys.
 7. Push each image to both GHCR and Aliyun ACR.
 8. Keep production approval before `main`, not inside the deploy job.
 
@@ -49,7 +49,7 @@ needed, it belongs in the promotion step before `main` advances.
 
 ## Trigger Matrix
 
-| Event | CI | Promotion | Docker build/push | worker-03 deploy |
+| Event | CI | Promotion | Docker build/push | production deploy |
 |---|---:|---:|---:|---:|
 | Pull request to `develop` | yes | no | no | no |
 | Pull request to `main` | yes | no | no | no |
@@ -82,7 +82,7 @@ Target workflow files:
 |---|---|---|---|
 | `.github/workflows/ci.yml` | `ci` | `quality-gate` | Static checks and portal builds |
 | `.github/workflows/promote.yml` | `branch-promotion` | `fast-forward-promotion` | Manual controlled promotion |
-| `.github/workflows/release.yml` | `release` | `detect` / `docker-build` / `deploy-worker-03` | Build and push images, then deploy worker-03 |
+| `.github/workflows/release.yml` | `release` | `detect` / `docker-build` / `deploy` | Build and push images, then deploy production |
 
 Naming policy:
 
@@ -222,7 +222,7 @@ Authentication:
 - Required: dedicated `PROMOTION_TOKEN` with permission to update protected
   branches according to the repository ruleset.
 - Do not rely on `GITHUB_TOKEN` for promotion. Pushes made with `GITHUB_TOKEN`
-  do not trigger the downstream `ci -> docker-build -> deploy-worker-03` chain.
+  do not trigger the downstream `ci -> docker-build -> deploy` chain.
 
 Audit output:
 
@@ -235,7 +235,7 @@ Audit output:
 
 `release.yml` runs on `push` to `main` and contains the whole post-promotion
 pipeline as three sequential jobs: `detect` (change detection, runs once),
-`docker-build` (build/retag the six images), and `deploy-worker-03` (SSH deploy).
+`docker-build` (build/retag the six images), and `deploy` (SSH deploy).
 `main` is only reachable by fast-forward promotion of an already-validated
 `develop` SHA, so the push is trusted and no separate `main` CI run precedes it.
 
@@ -259,7 +259,7 @@ non-deployable by default until a rule claims it - the safe direction (a missed
 path skips, it never wrongly deploys). detect emits two outputs:
 
 - `deployable` - true when any changed path maps to an image or is a deploy
-  input; false otherwise. When false, `docker-build` and `deploy-worker-03` both
+  input; false otherwise. When false, `docker-build` and `deploy` both
   skip.
 - `build_images` - the exact set of images to rebuild; every other image is
   retagged by digest, never rebuilt.
@@ -282,7 +282,7 @@ Outcomes:
 
 | Change scope | deployable | build_images | Effect |
 |---|---|---|---|
-| docs / scripts / `.github` only | false | `[]` | `docker-build` and `deploy-worker-03` skipped |
+| docs / scripts / `.github` only | false | `[]` | `docker-build` and `deploy` skipped |
 | `configs/*` or `deploy/*` only | true | `[]` | every image retags `:latest` to the per-commit tag (digest preserved); deploy re-renders config |
 | image source (portal / service / brand) | true | changed set | rebuild the changed images, retag the rest, then deploy |
 
@@ -309,7 +309,7 @@ as published packages with no local shared packages, so the only fan-out is
 `brand/**`. An image-content build change must be triggered deliberately (touch
 the relevant Dockerfile).
 
-The `docker-build` job (and the `deploy-worker-03` job) use the pushed SHA:
+The `docker-build` job (and the `deploy` job) use the pushed SHA:
 
 ```bash
 PASSED_SHA="${{ github.sha }}"
@@ -354,7 +354,7 @@ Push rules:
 2. Tag the result with both GHCR and ACR names.
 3. Push both registries in the same workflow run.
 4. If GHCR push fails, the workflow fails.
-5. If ACR push fails, the workflow fails; worker-03 should not deploy.
+5. If ACR push fails, the workflow fails; production should not deploy.
 6. Docker build must receive `NODE_AUTH_TOKEN` for private `@vxture/*` packages.
 
 Required ACR secrets:
@@ -370,12 +370,12 @@ Optional:
 
 | Secret | Purpose |
 |---|---|
-| `ALIYUN_ACR_INTERNAL_HOST` | Internal pull host for worker-03 if available |
+| `ALIYUN_ACR_INTERNAL_HOST` | Internal pull host for production if available |
 
 Compose contract:
 
 `docker-compose.yml` must use the same repository names in `image:` fields.
-For worker-03 production deploys, `image:` should resolve to GHCR first and
+For production deploys, `image:` should resolve to GHCR first and
 Aliyun ACR second.
 
 Example shape:
@@ -388,14 +388,14 @@ services:
     image: ${IMAGE_REGISTRY}/${IMAGE_NAMESPACE}/ruyin-console:${IMAGE_TAG:-latest}
 ```
 
-`IMAGE_REGISTRY` should point to GHCR on worker-03. The deploy script may fall
-back to Aliyun ACR after GHCR pull retries are exhausted. worker-03 is a Vultr
+`IMAGE_REGISTRY` should point to GHCR on production. The deploy script may fall
+back to Aliyun ACR after GHCR pull retries are exhausted. production is a Vultr
 Tokyo server, so GHCR is the primary runtime pull source and the Hangzhou ACR
 mirror is retained as a backup for the same immutable image tags.
 
 ## Deploy Job
 
-The `deploy-worker-03` job runs inside `release.yml` after the `build` job
+The `deploy` job runs inside `release.yml` after the `build` job
 completes successfully. It does not build images.
 
 Job dependency and condition:
@@ -404,7 +404,7 @@ Job dependency and condition:
 needs: [detect, build]
 if: ${{ needs.detect.outputs.deployable == 'true' }}
 environment:
-  name: worker-03
+  name: production
 ```
 
 The deploy job depends on `build`, so a failed build skips the deploy; and it
@@ -432,8 +432,8 @@ export IMAGE_TAG="sha-<short-sha>"
 export FALLBACK_IMAGE_REGISTRY="$ALIYUN_ACR_REGISTRY"
 export FALLBACK_IMAGE_NAMESPACE="${ALIYUN_ACR_NAMESPACE:-vxture}"
 
-bash deploy/worker-03/deploy.sh all
-bash deploy/worker-03/deploy.sh verify
+bash deploy/deploy.sh all
+bash deploy/deploy.sh verify
 ```
 
 Notes:
@@ -445,10 +445,10 @@ Notes:
 - Image pull uses GHCR first. If GHCR image pulls fail after retries, deployment
   may switch to Aliyun ACR (`registry.cn-hangzhou.aliyuncs.com/vxture`) for the
   same immutable `sha-<short-sha>` tag.
-- Runtime state remains on worker-03 under `.env`, `DATA_DIR`, and
+- Runtime state remains on production under `.env`, `DATA_DIR`, and
   `BACKUP_DIR`; CI must not carry production secrets except SSH credentials.
 - Config rendering and certificate lifecycle still belong to Umbra deploy
-  scripts. `deploy/worker-03/deploy.sh all` reaches `deploy/worker-03/deploy.sh start`, which
+  scripts. `deploy/deploy.sh all` reaches `deploy/deploy.sh start`, which
   pulls `IMAGE_TAG` and runs `docker compose up -d`.
 
 ## Required Secrets
@@ -480,18 +480,18 @@ Deployment:
 
 | Secret | Purpose |
 |---|---|
-| `WORKER_03_HOST` | Hostname or IP for worker-03 |
-| `WORKER_03_USER` | Non-root deploy user, normally `stone` |
-| `WORKER_03_SSH_KEY` | Private SSH key for the deploy user |
-| `WORKER_03_PORT` | Optional SSH port, defaults to `22` |
-| `WORKER_03_REPO_DIR` | Optional repo path, defaults to `/srv/vxture/repo/umbra` |
-| `WORKER_03_KNOWN_HOSTS` | Optional pinned known_hosts line |
+| `DEPLOY_HOST` | Hostname or IP for production |
+| `DEPLOY_USER` | Non-root deploy user, normally `stone` |
+| `DEPLOY_SSH_KEY` | Private SSH key for the deploy user |
+| `DEPLOY_PORT` | Optional SSH port, defaults to `22` |
+| `DEPLOY_REPO_DIR` | Optional repo path, defaults to `/srv/vxture/repo/umbra` |
+| `DEPLOY_KNOWN_HOSTS` | Optional pinned known_hosts line |
 | `ALIYUN_ACR_REGISTRY` | ACR registry host used for image pulls |
 | `ALIYUN_ACR_NAMESPACE` | ACR namespace, currently `vxture` |
-| `ALIYUN_ACR_USERNAME` | Optional if worker-03 needs `docker login` |
-| `ALIYUN_ACR_PASSWORD` | Optional if worker-03 needs `docker login` |
+| `ALIYUN_ACR_USERNAME` | Optional if production needs `docker login` |
+| `ALIYUN_ACR_PASSWORD` | Optional if production needs `docker login` |
 
-`WORKER_03_KNOWN_HOSTS` is recommended. Falling back to `ssh-keyscan` is easier
+`DEPLOY_KNOWN_HOSTS` is recommended. Falling back to `ssh-keyscan` is easier
 to bootstrap but weaker than pinning the host key.
 
 ## Repository Rulesets
@@ -509,7 +509,7 @@ fast-forward updates to `main`.
 Do not temporarily disable rulesets as a release path. If promotion is blocked,
 fix the promotion workflow or ruleset configuration first.
 
-First-time enablement (secrets, rulesets, worker-03 prerequisites, and the
+First-time enablement (secrets, rulesets, production prerequisites, and the
 activation sequence) is covered by
 [`github-actions-enablement.md`](github-actions-enablement.md).
 
