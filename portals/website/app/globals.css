@@ -129,31 +129,33 @@ a {
   padding-inline: var(--vx-space-xl);
 }
 
-/* -- Signed-in account menu (DS DropdownMenu; trigger = <button>) ------------
-   Layout-only composition; all colors/looks come from DS primitives. */
-.acct-trigger {
+/* -- Signed-in account menu (custom panel on DS primitives) -----------------
+   Popover + Avatar + StatusBadge + NativeSelect + Icon. Sections 3-5 share one
+   row grid (fixed icon column + content column) so every leading icon and every
+   label lines up across the personal-info, preference, and action blocks.
+   Layout only; all colors/typography come from DS tokens. */
+.um-menu {
+  --um-pad: var(--vx-space-md);
+  --um-icon-col: 1.5rem;
+  --um-control-w: 8.5rem;
+  width: 340px;
+  max-width: min(92vw, 380px);
+  padding: 0;
+}
+
+/* Header avatar trigger: circular, with an online status dot. */
+.um-trigger {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--vx-space-2xs);
-  padding: var(--vx-space-2xs);
   border: none;
   background: transparent;
-  border-radius: var(--vx-radius-md);
-  color: var(--vx-color-text-primary);
+  border-radius: var(--vx-radius-full);
   cursor: pointer;
-  transition: background var(--vx-duration-fast) var(--vx-ease-standard);
+  padding: 0;
 }
 
-/* Hover/open affordance moved to the avatar halo below; keep the trigger chrome
-   transparent so only the circular glow reads. */
-.acct-trigger:hover,
-.acct-trigger[data-state="open"] {
-  background: transparent;
-}
-
-/* Header account avatar: the DS avatar size token (2.25rem = 36px). The full
-   radius lets the hover halo (box-shadow rings) trace the circle, not a square. */
-.acct-avatar {
+.um-avatar {
   width: var(--vx-avatar-size);
   height: var(--vx-avatar-size);
   flex: none;
@@ -161,74 +163,195 @@ a {
   transition: box-shadow var(--vx-duration-fast) var(--vx-ease-standard);
 }
 
-/* Hover/open halo: just a soft, diffuse brand glow around the avatar - no crisp
-   ring, no lift. Brand-token driven via color-mix so it tracks the theme. */
-.acct-trigger:hover .acct-avatar,
-.acct-trigger[data-state="open"] .acct-avatar {
+.um-avatar--lg {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.um-trigger:hover .um-avatar,
+.um-trigger[data-state="open"] .um-avatar {
   box-shadow:
     0 0 0 4px color-mix(in srgb, var(--vx-control-brand) 12%, transparent),
     0 0 12px color-mix(in srgb, var(--vx-control-brand) 18%, transparent);
 }
 
-/* Default account silhouette, shown when the session carries no picture (no
-   custom or imported avatar). Inline SVG so it inherits currentColor; fills the
-   avatar circle in a muted tone. See components/default-avatar.tsx. */
-.vx-default-avatar {
-  display: block;
+/* Default silhouette / picture fill. */
+.um-avatar-fallback {
   width: 100%;
   height: 100%;
-  color: var(--vx-color-text-muted);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(
+    135deg,
+    var(--vx-color-brand-600, var(--vx-control-brand)),
+    var(--vx-color-info-500, var(--vx-control-brand))
+  );
+  color: var(--vx-color-white, #fff);
 }
 
-/* DS DropdownMenuContent already supplies background / radius / shadow. */
-.acct-menu {
-  min-width: 288px;
+/* Online dot, traced on the trigger avatar's lower-right. */
+.um-trigger-dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0.625rem;
+  height: 0.625rem;
+  border: 2px solid var(--vx-color-surface);
+  border-radius: var(--vx-radius-full);
+  background: var(--vx-color-success-400, #22c55e);
 }
 
-.acct-identity {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vx-space-2xs);
-}
-
-.acct-identity-name {
-  font-weight: 600;
-}
-
-.acct-identity-line {
-  color: var(--vx-color-text-muted);
-  font-size: var(--vx-typography-body-sm-size);
-  overflow-wrap: anywhere;
-}
-
-/* One identity claim per row: muted fixed-width label + value (+ optional
-   verification / status badge). */
-.acct-row {
+/* 1. Profile: avatar + identity, verification tag pushed to the right. */
+.um-profile {
   display: flex;
   align-items: center;
   gap: var(--vx-space-sm);
-  padding: var(--vx-space-2xs) var(--vx-space-sm);
+  padding: var(--um-pad) var(--um-pad) var(--vx-space-sm);
 }
 
-.acct-label {
+.um-identity {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.um-name,
+.um-sub {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.um-name {
+  color: var(--vx-color-text-primary);
+  font-weight: 640;
+}
+
+.um-sub {
+  margin-top: 2px;
   color: var(--vx-color-text-muted);
   font-size: var(--vx-typography-body-sm-size);
-  flex: none;
-  min-width: 68px;
 }
 
-.acct-value {
+/* Verification tag: a check glyph + label, loosely spaced from the name. */
+.um-verify {
+  margin-left: var(--vx-space-sm);
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vx-space-xs);
+  white-space: nowrap;
+}
+
+.um-verify-icon {
+  flex: none;
+}
+
+/* 2. Badges: role type + tenant type. */
+.um-badges {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: var(--vx-space-2xs);
-  flex: 1 1 auto;
-  font-size: var(--vx-typography-body-sm-size);
-  overflow-wrap: anywhere;
+  gap: var(--vx-space-xs);
+  padding: 0 var(--um-pad) var(--vx-space-sm);
 }
 
-.acct-value--mono {
+/* Full-bleed divider between sections. */
+.um-sep {
+  height: 1px;
+  background: var(--vx-color-border);
+}
+
+/* Each section (3, 4, 5) gets the same inset; rows inside share .um-row. */
+.um-section {
+  padding: var(--vx-space-xs) var(--um-pad);
+}
+
+/* Shared row grid: fixed icon column + content column. This is what keeps the
+   icons and labels strictly aligned across all three lower sections. */
+.um-row {
+  display: grid;
+  grid-template-columns: var(--um-icon-col) 1fr;
+  align-items: center;
+  gap: var(--vx-space-sm);
+  width: 100%;
+  padding: var(--vx-space-xs) var(--vx-space-xs);
+  border-radius: var(--vx-radius-md);
+  text-align: left;
+  color: var(--vx-color-text-secondary);
+}
+
+/* Interactive rows (links / actions). */
+.um-row--action {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    background var(--vx-duration-fast) var(--vx-ease-standard),
+    color var(--vx-duration-fast) var(--vx-ease-standard);
+}
+
+.um-row--action:hover {
+  background: color-mix(in srgb, var(--vx-control-brand) 10%, transparent);
+  color: var(--vx-control-brand);
+}
+
+.um-row--danger:hover {
+  background: color-mix(in srgb, var(--vx-color-danger-500, #ef4444) 12%, transparent);
+  color: var(--vx-color-danger-600, #dc2626);
+}
+
+.um-row-icon {
+  width: var(--um-icon-col);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vx-color-text-muted);
+}
+
+.um-row--danger:hover .um-row-icon {
+  color: inherit;
+}
+
+.um-row-main {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vx-space-sm);
+}
+
+.um-row-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--vx-typography-body-sm-size);
+}
+
+.um-row-value {
+  flex: none;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--vx-color-text-muted);
+  font-size: var(--vx-typography-body-sm-size);
   font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+}
+
+.um-row-ext {
+  flex: none;
+  color: var(--vx-color-text-muted);
+}
+
+/* Uniform control width so every dropdown shares the same left and right edge. */
+.um-row-control {
+  flex: none;
+}
+
+.um-select {
+  width: var(--um-control-w);
+  font-size: var(--vx-typography-body-sm-size);
 }
 
 .site-tools {

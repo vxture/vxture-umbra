@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Funnel_Display } from "next/font/google";
-import { themeBootstrapScript } from "@vxture/design-system";
+import { preferenceBootstrapScript } from "@umbra/shared/preferences";
 import "@vxture/design-system/styles/globals.css";
 import "@vxture/design-system/styles/brands/ruyin.css";
 import "./globals.css";
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en-US" className={brandFont.variable} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: preferenceBootstrapScript }} />
       </head>
       <body>
         <Providers>{children}</Providers>

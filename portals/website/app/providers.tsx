@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@vxture/design-system";
 import { LocaleProvider } from "@/lib/locale-provider";
+import { PreferenceSync } from "@/components/preference-sync";
 
 /**
  * Root providers for the Ruyin website.
@@ -13,7 +14,10 @@ import { LocaleProvider } from "@/lib/locale-provider";
 export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider defaultMode="system" defaultDensity="default">
-      <LocaleProvider>{children}</LocaleProvider>
+      <LocaleProvider>
+        <PreferenceSync />
+        {children}
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

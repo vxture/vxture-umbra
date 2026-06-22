@@ -5,7 +5,9 @@
   "exports": {
     "./health": "./src/health.ts",
     "./providers": "./src/providers.tsx",
-    "./locale-provider": "./src/locale-provider.tsx"
+    "./locale-provider": "./src/locale-provider.tsx",
+    "./preferences": "./src/preferences.ts",
+    "./preference-sync": "./src/preference-sync.tsx"
   },
   "peerDependencies": {
     "@vxture/design-system": "*",

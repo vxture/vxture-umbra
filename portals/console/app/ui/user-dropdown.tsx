@@ -17,6 +17,7 @@ import {
   useTheme,
 } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
+import { persistTheme, type PrefTheme } from "@umbra/shared/preferences";
 import { useLocale } from "@umbra/shared/locale-provider";
 import type { VxtureUser } from "./types";
 import { DefaultAvatar } from "./default-avatar";
@@ -125,7 +126,13 @@ export function UserDropdown({ user }: { user: VxtureUser }) {
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="hdr-group-title">{t.theme}</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={mode} onValueChange={(v) => setMode(v as "light" | "dark" | "system")}>
+        <DropdownMenuRadioGroup
+          value={mode}
+          onValueChange={(v) => {
+            setMode(v as PrefTheme);
+            persistTheme(v as PrefTheme);
+          }}
+        >
           <DropdownMenuRadioItem value="system">{t.system}</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="light">{t.light}</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">{t.dark}</DropdownMenuRadioItem>

@@ -8,6 +8,7 @@ import {
   useTheme,
 } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
+import { persistTheme, type PrefTheme } from "@umbra/shared/preferences";
 import { ruyinBrand, markSrc } from "@/lib/brand";
 import { useLocale } from "@/lib/locale-provider";
 import { useSession } from "@/lib/session";
@@ -51,7 +52,10 @@ export function SiteHeader() {
             <ShellThemeToggle
               currentTheme={theme}
               buttonLabel="Switch theme"
-              onThemeChange={(next) => setTheme(next)}
+              onThemeChange={(next) => {
+                setTheme(next);
+                persistTheme(next as PrefTheme);
+              }}
             />
             <ShellLocaleSwitcher
               currentLocale={locale as Locale}

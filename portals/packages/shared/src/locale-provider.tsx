@@ -13,6 +13,7 @@ import {
   SUPPORTED_LOCALES,
   LOCALE_CONSTANTS,
 } from "@vxture/shared";
+import { persistLocale } from "./preferences";
 
 const LOCALE_CYCLE: Locale[] = [...SUPPORTED_LOCALES]; // ["en-US", "zh-CN"]
 
@@ -44,8 +45,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const setLocale = (next: Locale) => {
     setLocaleState(next);
-    localStorage.setItem(LOCALE_CONSTANTS.STORAGE_KEY, next);
-    document.documentElement.lang = next;
+    // Mirror to the parent-domain cookie (+ localStorage + lang + broadcast) so
+    // the choice syncs across every *.ruyin.ai app.
+    persistLocale(next);
   };
 
   const toggle = () => {
