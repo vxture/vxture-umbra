@@ -44,7 +44,7 @@ ROOT_OWNED_DEPLOY_DEPENDENCIES = (
     Path("services/subproxy"),
     Path("services/account"),
 )
-FORBIDDEN_WORKER_DEPLOY_COPIES = (
+FORBIDDEN_DEPLOY_PACKAGE_COPIES = (
     Path("deploy/docker-compose.yml"),
     Path("deploy/configs"),
     Path("deploy/services"),
@@ -427,24 +427,24 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
-        "worker env loader resolves repository root from deploy package",
+        "deploy env loader resolves repository root from deploy package",
         Path("deploy/lib/01-env.sh"),
         [
-            'WORKER_DEPLOY_DIR="$(cd "$_UMBRA_LIB_DIR/.." && pwd)"',
+            'DEPLOY_DIR="$(cd "$_UMBRA_LIB_DIR/.." && pwd)"',
             'PROJECT_ROOT="$(cd "$_UMBRA_LIB_DIR/../.." && pwd)"',
             'source "$PROJECT_ROOT/etc/.env"',
-            'source "$WORKER_DEPLOY_DIR/.env"',
+            'source "$DEPLOY_DIR/.env"',
         ],
     ),
     (
-        "worker python scripts resolve repository root from deploy package",
+        "deploy python scripts resolve repository root from deploy package",
         Path("deploy/scripts/22-render-runtime-configs.py"),
         [
             "PROJECT_ROOT = Path(__file__).resolve().parents[2]",
         ],
     ),
     (
-        "worker clash validator resolves repository root from deploy package",
+        "deploy clash validator resolves repository root from deploy package",
         Path("deploy/scripts/19-check-clash-rules.py"),
         [
             "PROJECT_ROOT = Path(__file__).resolve().parents[1]",
@@ -655,7 +655,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
         ],
     ),
     (
-        "github secret sync script writes repo and worker secrets",
+        "github secret sync script writes repo and deploy secrets",
         Path("scripts/github/00-set-github-secrets.ps1"),
         [
             'param(',
@@ -1291,7 +1291,7 @@ FORBIDDEN: list[tuple[str, Path, str]] = [
         "DOMAIN-SUFFIX,gmail.com",
     ),
     (
-        "worker deploy must not require original push event",
+        "release deploy must not require original push event",
         Path(RELEASE_WORKFLOW),
         "github.event.workflow_run.event == 'push'",
     ),
@@ -1410,7 +1410,7 @@ def check_docker_build_image_matrix() -> list[str]:
     return problems
 
 
-def check_worker_deploy_fallback_contract() -> list[str]:
+def check_deploy_fallback_contract() -> list[str]:
     workflow = read(PROJECT_ROOT / RELEASE_WORKFLOW)
     start_script = read(PROJECT_ROOT / "deploy/scripts/23-start-docker-services.sh")
     problems: list[str] = []
@@ -1466,17 +1466,17 @@ def check_help_argument_guards() -> list[str]:
     return problems
 
 
-def check_worker_deploy_dependency_boundary() -> list[str]:
+def check_deploy_dependency_boundary() -> list[str]:
     problems: list[str] = []
 
     missing = [path.as_posix() for path in ROOT_OWNED_DEPLOY_DEPENDENCIES if not (PROJECT_ROOT / path).exists()]
     if missing:
         problems.append(f"root-owned deploy dependencies are missing: {missing!r}")
 
-    misplaced = [path.as_posix() for path in FORBIDDEN_WORKER_DEPLOY_COPIES if (PROJECT_ROOT / path).exists()]
+    misplaced = [path.as_posix() for path in FORBIDDEN_DEPLOY_PACKAGE_COPIES if (PROJECT_ROOT / path).exists()]
     if misplaced:
         problems.append(
-            "worker deploy package must not own compose/config/service copies: "
+            "deploy package must not own compose/config/service copies: "
             f"{misplaced!r}"
         )
 
@@ -1493,7 +1493,7 @@ def check_worker_deploy_dependency_boundary() -> list[str]:
 
     env_loader = read(PROJECT_ROOT / "deploy/lib/01-env.sh")
     if 'PROJECT_ROOT="$(cd "$_UMBRA_LIB_DIR/../.." && pwd)"' not in env_loader:
-        problems.append("worker env loader must resolve PROJECT_ROOT to the persistent root (etc/.env)")
+        problems.append("deploy env loader must resolve PROJECT_ROOT to the persistent root (etc/.env)")
 
     return problems
 
@@ -1569,9 +1569,9 @@ CUSTOM_CHECKS = (
     ("env.example is bash-source-safe", check_env_example_is_source_safe),
     ("compose owned image mapping is exact", check_compose_owned_image_mapping),
     ("docker build matrix publishes the exact owned images", check_docker_build_image_matrix),
-    ("worker deploy fallback contract is valid", check_worker_deploy_fallback_contract),
+    ("deploy fallback contract is valid", check_deploy_fallback_contract),
     ("standalone scripts guard optional first argument", check_help_argument_guards),
-    ("worker deploy dependency boundary is explicit", check_worker_deploy_dependency_boundary),
+    ("deploy dependency boundary is explicit", check_deploy_dependency_boundary),
     ("brand assets use PNG and ICO", check_brand_assets_use_png_and_ico),
 )
 

@@ -4,7 +4,7 @@
 _ENV_LOADED="${_UMBRA_ENV_LOADED:-0}"
 if [[ "$_ENV_LOADED" == "0" ]]; then
   _UMBRA_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  WORKER_DEPLOY_DIR="$(cd "$_UMBRA_LIB_DIR/.." && pwd)"
+  DEPLOY_DIR="$(cd "$_UMBRA_LIB_DIR/.." && pwd)"
   # lib/ sits under the DISPOSABLE deploy dir (CI rsyncs it fresh each release).
   # The operator .env is NOT kept there; it lives under the persistent root at
   # $PROJECT_ROOT/etc/.env (PROJECT_ROOT = the /srv/umbra root, lib/../..).
@@ -14,9 +14,9 @@ if [[ "$_ENV_LOADED" == "0" ]]; then
     set -a
     # shellcheck disable=SC1090
     source "$PROJECT_ROOT/etc/.env"
-    if [[ -f "$WORKER_DEPLOY_DIR/.env" ]]; then
+    if [[ -f "$DEPLOY_DIR/.env" ]]; then
       # shellcheck disable=SC1090
-      source "$WORKER_DEPLOY_DIR/.env"
+      source "$DEPLOY_DIR/.env"
     fi
     set +a
     export _UMBRA_ENV_LOADED=1

@@ -39,7 +39,7 @@ Key implementation paths:
 
 Deployment ownership boundary:
 
-| Path | Owner | Worker deploy relationship |
+| Path | Owner | Deploy relationship |
 |---|---|---|
 | `docker-compose.yml` | Repository runtime contract | Used by production to pull and start the same services validated by CI |
 | `configs/nginx/` | Shared runtime config templates | Rendered into `DATA_DIR/nginx/` by production deploy scripts |
@@ -51,7 +51,7 @@ Deployment ownership boundary:
 Do not move `docker-compose.yml`, `configs/`, or `services/` under
 `deploy/`. The deploy package owns server-specific orchestration, not
 the shared runtime contract, config templates, or application source. If a
-worker needs host-specific compose changes, add a worker-scoped override such as
+deployment needs host-specific compose changes, add a deploy-scoped override such as
 `deploy/compose.override.yml` instead of duplicating or relocating the
 root compose file.
 

@@ -150,7 +150,7 @@ foreach ($name in $required) {
   Require-Value -Values $values -Name $name
 }
 
-$workerKey = Read-SecretFile -Values $values -Name "DEPLOY_SSH_KEY" -Required
+$deployKey = Read-SecretFile -Values $values -Name "DEPLOY_SSH_KEY" -Required
 $knownHosts = Read-SecretFile -Values $values -Name "DEPLOY_KNOWN_HOSTS"
 
 Ensure-GitHubEnvironment
@@ -174,7 +174,7 @@ $environmentSecrets = @{
   DEPLOY_USER = $values["DEPLOY_USER"]
   DEPLOY_PORT = if ($values.ContainsKey("DEPLOY_PORT")) { $values["DEPLOY_PORT"] } else { "" }
   DEPLOY_REPO_DIR = if ($values.ContainsKey("DEPLOY_REPO_DIR")) { $values["DEPLOY_REPO_DIR"] } else { "" }
-  DEPLOY_SSH_KEY = $workerKey
+  DEPLOY_SSH_KEY = $deployKey
   DEPLOY_KNOWN_HOSTS = $knownHosts
   ALIYUN_ACR_REGISTRY = $values["ALIYUN_ACR_REGISTRY"]
   ALIYUN_ACR_NAMESPACE = $values["ALIYUN_ACR_NAMESPACE"]

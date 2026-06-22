@@ -21,9 +21,9 @@ Scripts are organized by lifecycle boundary.
 
 ## Deploy Dependency Boundary
 
-`deploy/` is the worker-specific control plane. It should contain
+`deploy/` is the deploy-host control plane. It should contain
 entrypoints, numbered deployment steps, ops scripts, recovery scripts, local
-worker examples, and worker-local secret placeholders.
+deploy examples, and deploy-local secret placeholders.
 
 It must not own the shared runtime resources below:
 
@@ -35,9 +35,9 @@ It must not own the shared runtime resources below:
 | `services/subproxy/` | Subscription metadata adapter source |
 | `services/account/` | Account/invite API source |
 
-Worker scripts may read, validate, render, mount, and operate those root paths.
-They should not duplicate them inside `deploy/`. A worker-specific
-compose change belongs in a worker-scoped override file, for example
+Deploy scripts may read, validate, render, mount, and operate those root paths.
+They should not duplicate them inside `deploy/`. A deploy-specific
+compose change belongs in a deploy-scoped override file, for example
 `deploy/compose.override.yml`.
 
 ## Server Commands

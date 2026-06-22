@@ -184,7 +184,7 @@ App 接入须由平台登记一行 `oidc_client`：
 | `product_ref` | 可空；置则驱动 `entitlement` claim（起步期可不置，见 §14） |
 | `display_name` / `logo_url` | 登录页/统一登出页品牌展示 |
 
-登记方式：平台在 `seed-catalog.mjs` 的 oidc_client 列表加该 client（现有 website/console/admin），secret hash 经 `27-provision-client-secrets`（worker-01 部署）注入；生产 `redirect_uris` 等由对应 `*_BASE_URL` env 派生，须与登记值一致。
+登记方式：平台在 `seed-catalog.mjs` 的 oidc_client 列表加该 client（现有 website/console/admin），secret hash 经 `27-provision-client-secrets`（生产节点部署）注入；生产 `redirect_uris` 等由对应 `*_BASE_URL` env 派生，须与登记值一致。
 
 ---
 
