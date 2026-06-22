@@ -9,7 +9,7 @@ import {
   Icon,
   StatusBadge,
 } from "@vxture/design-system";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@umbra/shared/locale-provider";
 import type { VxtureUser } from "./types";
 
 const COPY = {

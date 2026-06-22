@@ -13,7 +13,7 @@ import {
 import type { IconName } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
 import { markSrc, ruyinBrand } from "../../lib/brand";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@umbra/shared/locale-provider";
 
 /**
  * Admin chrome - the same fixed glass-on-scroll header/footer treatment as the

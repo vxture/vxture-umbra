@@ -17,7 +17,7 @@ import {
   useTheme,
 } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@umbra/shared/locale-provider";
 import type { VxtureUser } from "./types";
 import { DefaultAvatar } from "./default-avatar";
 

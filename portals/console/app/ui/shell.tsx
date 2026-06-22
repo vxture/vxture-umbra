@@ -13,7 +13,7 @@ import {
 } from "@vxture/design-system";
 import type { IconName } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@umbra/shared/locale-provider";
 import { markSrc, ruyinBrand } from "../../lib/brand";
 import { OrgDropdown } from "./org-dropdown";
 import { UserDropdown } from "./user-dropdown";

@@ -5,7 +5,7 @@ import { themeBootstrapScript } from "@vxture/design-system";
 import "@vxture/design-system/styles/globals.css";
 import "@vxture/design-system/styles/brands/ruyin.css";
 import "./globals.css";
-import { Providers } from "./providers";
+import { Providers } from "@umbra/shared/providers";
 
 /** DS brand typeface (Funnel Display) wired to the DS brand-font loader slot. */
 const brandFont = Funnel_Display({

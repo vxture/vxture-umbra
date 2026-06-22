@@ -16,7 +16,7 @@ import type { IconName, StatusBadgeTone } from "@vxture/design-system";
 import type { Locale } from "@vxture/shared";
 import { AdminShell } from "./admin-shell";
 import { ruyinBrand } from "../../lib/brand";
-import { useLocale } from "../locale-provider";
+import { useLocale } from "@umbra/shared/locale-provider";
 import type { AdminInvitesPayload, AdminUserRow } from "./types";
 
 /**

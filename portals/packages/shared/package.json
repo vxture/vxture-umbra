@@ -3,9 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./health": "./src/health.ts"
+    "./health": "./src/health.ts",
+    "./providers": "./src/providers.tsx",
+    "./locale-provider": "./src/locale-provider.tsx"
   },
   "peerDependencies": {
+    "@vxture/design-system": "*",
+    "@vxture/shared": "*",
     "next": "*",
     "react": "*",
     "react-dom": "*"
