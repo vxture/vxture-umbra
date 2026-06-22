@@ -1,0 +1,13 @@
+{
+  "name": "@umbra/shared",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./health": "./src/health.ts"
+  },
+  "peerDependencies": {
+    "next": "*",
+    "react": "*",
+    "react-dom": "*"
+  }
+}
