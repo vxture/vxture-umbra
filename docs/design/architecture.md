@@ -146,10 +146,12 @@ CI and **rsyncs only the deploy subset** (`deploy/`, `configs/`,
 |   `-- .env                          # Persistent operator config (NOT in deploy/;
 |                                     #   bash-sourced; CI/CD never overwrites it)
 |-- deploy/                           # Disposable: rsynced each release (REPO_DIR)
+|   |-- server.sh deploy.sh ops.sh    #   repo deploy/ contents, flattened in
+|   |-- lib/                          #   shared libs (01-env.sh sets PROJECT_ROOT=/srv/umbra)
+|   |-- scripts/                      #   numbered step scripts (10-bootstrap ... 30-run-full)
+|   |-- configs/                      #   nginx / xray / marzban templates
 |   |-- docker-compose.yml
-|   |-- VERSION                       # Deployed commit SHA
-|   |-- configs/                      # nginx / xray / marzban templates
-|   `-- deploy/                       # server.sh, deploy.sh, ops.sh, lib/, scripts/
+|   `-- VERSION                       #   deployed commit SHA
 |-- runtime/                          # RUNTIME_DIR: rendered, regenerable config
 |   |-- nginx/                        #   nginx.conf, conf.d/, stream.d/, snippets/,
 |   |                                 #   private/, logs/

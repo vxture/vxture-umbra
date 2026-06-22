@@ -28,8 +28,8 @@ Umbra deployment. They may only be edited when explicitly requested, and only th
 
 | State | Path / owner | Must be preserved by normal deploy? | Notes |
 |---|---|---:|---|
-| Repository | `REPO_DIR` | Yes | Code, templates, scripts, docs |
-| Environment secrets | `REPO_DIR/.env` | Yes | Never committed |
+| Deploy sources | `REPO_DIR` (`/srv/umbra/deploy`) | Re-synced | Scripts, configs, docker-compose.yml; rsynced fresh from CI each release (no git) |
+| Environment secrets | `/srv/umbra/etc/.env` | Yes | Persistent operator config; lives outside REPO_DIR; never committed, never overwritten by CI |
 | Rendered nginx config | `DATA_DIR/nginx/` | Re-rendered | Generated from `configs/nginx/` |
 | REALITY keys | `DATA_DIR/private/reality.json` | Yes | Regenerated only by explicit removal |
 | Marzban database | `DATA_DIR/marzban/db.sqlite3` | Yes | User state and usage state |
@@ -70,8 +70,16 @@ Commands:
 
 ```bash
 ssh root@<server-ip>
-git clone https://github.com/vxture/umbra.git /srv/vxture/repo/umbra
-bash /srv/vxture/repo/umbra/deploy/server.sh init
+# server.sh init prepares the host only (packages, Docker, stone user, and the
+# empty /srv/umbra/{etc,deploy,runtime,data,backup} tree). It does NOT fetch any
+# sources. Run it from a checkout of this repo (scp/rsync the repo over first, or
+# clone it to a temporary working directory - not under /srv/umbra).
+sudo bash deploy/server.sh init
+
+# One-time: place the deploy subset at /srv/umbra/deploy (CI rsync takes over
+# from the next release; there is no git checkout on the server).
+rsync -a deploy/ /srv/umbra/deploy/
+rsync -a configs docker-compose.yml /srv/umbra/deploy/
 ```
 
 Checklist:
@@ -88,7 +96,8 @@ Success criteria:
 
 ```text
 [ ] `docker info` works as `stone`
-[ ] `git -C /srv/vxture/repo/umbra status` works
+[ ] `/srv/umbra/deploy` contains the deploy subset (deploy.sh, lib/, scripts/, configs/, docker-compose.yml); no git repo on the server
+[ ] After the first release, `cat /srv/umbra/deploy/VERSION` shows the deployed SHA
 [ ] Ports 80 and 443 are not occupied by a foreign service
 ```
 
@@ -100,12 +109,16 @@ Commands:
 
 ```bash
 ssh stone@<server-ip>
-cd /srv/vxture/repo/umbra
-cp .env.example .env
-nano .env
-bash deploy/deploy.sh all
-bash deploy/deploy.sh wizard
-bash deploy/deploy.sh verify
+cd /srv/umbra/deploy
+# Create the persistent operator config at /srv/umbra/etc/.env (outside the
+# disposable deploy/ tree). Seed it from the repo .env.example - copy that file
+# in from a checkout if it is not already present on the host.
+nano /srv/umbra/etc/.env
+# deploy.sh/ops.sh/server.sh live directly under /srv/umbra/deploy (the current
+# dir), so invoke them by bare name - there is no nested deploy/ on the server.
+bash deploy.sh all
+bash deploy.sh wizard
+bash deploy.sh verify
 ```
 
 Preflight checklist:
@@ -138,11 +151,10 @@ Use after code, docs, public site, template, or script updates.
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
-git pull origin main
-bash deploy/ops.sh backup
-bash deploy/deploy.sh all
-bash deploy/deploy.sh verify
+cd /srv/umbra/deploy   # sources are rsynced here by CI; no git pull on the server
+bash ops.sh backup
+bash deploy.sh all
+bash deploy.sh verify
 ```
 
 Preservation contract:
@@ -174,10 +186,9 @@ already exist.
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
-git pull origin main
-bash deploy/deploy.sh config
-bash deploy/ops.sh reload
+cd /srv/umbra/deploy   # sources are rsynced here by CI; no git pull on the server
+bash deploy.sh config
+bash ops.sh reload
 ```
 
 Preflight checklist:
@@ -204,13 +215,12 @@ Use when changing `APEX_DOMAIN`, `EDGE_DOMAIN`, `SUB_DOMAIN`, or any public host
 Required order:
 
 ```bash
-cd /srv/vxture/repo/umbra
-git pull origin main
-nano .env
-bash deploy/ops.sh backup
-bash deploy/ops.sh certs --upgrade
-bash deploy/deploy.sh config
-bash deploy/deploy.sh verify
+cd /srv/umbra/deploy   # sources are rsynced here by CI; no git pull on the server
+nano /srv/umbra/etc/.env
+bash ops.sh backup
+bash ops.sh certs --upgrade
+bash deploy.sh config
+bash deploy.sh verify
 ```
 
 Checklist:
@@ -242,9 +252,9 @@ Use when configs rendered but nginx reload failed.
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
+cd /srv/umbra/deploy
 docker exec umbra-nginx nginx -t
-bash deploy/ops.sh certs --status
+bash ops.sh certs --status
 ```
 
 Decision tree:
@@ -260,8 +270,8 @@ Decision tree:
 Fallback only when the goal is to restore nginx loadability:
 
 ```bash
-bash deploy/scripts/21-issue-self-signed-certificates.sh
-bash deploy/deploy.sh config
+bash scripts/21-issue-self-signed-certificates.sh
+bash deploy.sh config
 ```
 
 Self-signed mode is not a trusted client solution. It only makes nginx able to
@@ -274,9 +284,9 @@ Use when containers are stuck, ports are occupied, or a clean redeploy is needed
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
-bash deploy/server.sh reset
-bash deploy/deploy.sh all
+cd /srv/umbra/deploy
+bash server.sh reset
+bash deploy.sh all
 ```
 
 Expected preservation:
@@ -316,11 +326,11 @@ Use only when intentionally rebuilding runtime state from scratch.
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
-bash deploy/ops.sh backup
-bash deploy/server.sh reset --full
-bash deploy/deploy.sh all
-bash deploy/deploy.sh wizard
+cd /srv/umbra/deploy
+bash ops.sh backup
+bash server.sh reset --full
+bash deploy.sh all
+bash deploy.sh wizard
 ```
 
 Destructive contract:
@@ -351,11 +361,11 @@ partially succeeded then failed.
 Commands:
 
 ```bash
-cd /srv/vxture/repo/umbra
-bash deploy/ops.sh certs --status
-bash deploy/ops.sh certs --clean-renewal-state
-bash deploy/ops.sh certs --clean-workdirs
-bash deploy/ops.sh certs --upgrade
+cd /srv/umbra/deploy
+bash ops.sh certs --status
+bash ops.sh certs --clean-renewal-state
+bash ops.sh certs --clean-workdirs
+bash ops.sh certs --upgrade
 ```
 
 The staged-upgrade safety mechanics (staging dir, production-cert preservation,
@@ -386,7 +396,8 @@ Use after services and certs are healthy.
 Commands:
 
 ```bash
-bash deploy/deploy.sh wizard
+cd /srv/umbra/deploy
+bash deploy.sh wizard
 ```
 
 Checklist:

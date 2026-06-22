@@ -13,7 +13,7 @@ Runs automatically:
 - Daily via cron at 02:00
 
 ```cron
-0 2 * * * /srv/vxture/repo/umbra/deploy/ops.sh backup >> /var/log/umbra-backup.log 2>&1
+0 2 * * * /srv/umbra/deploy/deploy/ops.sh backup >> /var/log/umbra-backup.log 2>&1
 ```
 
 ### What Gets Backed Up
@@ -62,7 +62,7 @@ find BACKUP_DIR/ -name "*.sql.gz" -mtime +30 -delete
 Add to cron (runs after backup):
 
 ```cron
-30 2 * * * find /srv/vxture/backup/umbra -mtime +30 -delete
+30 2 * * * find /srv/umbra/backup -mtime +30 -delete
 ```
 
 ---
@@ -125,7 +125,7 @@ Before running `certbot renew`, the script removes only invalid zero-byte files 
 ### Cron
 
 ```cron
-17 3 * * * /srv/vxture/repo/umbra/deploy/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
+17 3 * * * /srv/umbra/deploy/deploy/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
 ```
 
 ### Manual Cert Check
@@ -190,7 +190,7 @@ If managing 9 separate certs becomes burdensome, migrate to wildcard:
 
 ```bash
 certbot certonly --dns-cloudflare \
-  --dns-cloudflare-credentials /srv/vxture/data/umbra/private/cloudflare.ini \
+  --dns-cloudflare-credentials /srv/umbra/data/private/cloudflare.ini \
   -d "ruyin.ai" -d "*.ruyin.ai"
 ```
 
@@ -301,8 +301,8 @@ DATA_DIR/marzban/logs/error.log
 ### Logrotate Config
 
 ```
-/srv/vxture/data/umbra/nginx/logs/*.log
-/srv/vxture/data/umbra/marzban/logs/*.log {
+/srv/umbra/data/nginx/logs/*.log
+/srv/umbra/data/marzban/logs/*.log {
     daily
     rotate 14
     compress

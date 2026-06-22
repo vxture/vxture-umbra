@@ -57,7 +57,7 @@ export function AdminShell({
   const m = SHELL_COPY[locale];
   const nav: NavItem[] = [
     { id: "vpn", label: m.navVpn, href: "/", icon: "shield-check" },
-    { id: "pass", label: m.navPass, href: "https://pass.ruyin.ai/admin", icon: "key", external: true },
+    { id: "pass", label: m.navPass, href: "https://pas.ruyin.ai/admin", icon: "key", external: true },
   ];
 
   useEffect(() => {

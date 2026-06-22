@@ -49,16 +49,38 @@ done
 
 ## Environment Configuration
 
-### Step 1: Clone and copy env
+### Step 1: Place deploy sources and copy env
+
+The server uses a single flattened root, `/srv/umbra` (the `PROJECT_ROOT`), laid
+out as `/srv/umbra/{etc,deploy,runtime,data,backup}`. There is no git checkout on
+the server.
+
+Steady state: each release CI rsyncs the deploy subset (the contents of the repo
+`deploy/` directory, plus `configs/` and `docker-compose.yml`) directly into
+`/srv/umbra/deploy` (the `REPO_DIR`), writes a `VERSION` file recording the
+deployed SHA, then runs `deploy.sh` over SSH. No `git clone`/`git pull` ever runs
+on the server.
+
+First-time bootstrap (before the first CI release):
 
 ```bash
-cd /srv/vxture/repo
-git clone https://github.com/vxture/umbra.git
-cd umbra
-cp .env.example .env
+# As root: install packages/Docker, create the stone admin user, set up the
+# /srv/umbra/{etc,deploy,runtime,data,backup} tree. server.sh init does NOT
+# fetch any sources; it only prepares the host and empty directory structure.
+sudo bash deploy/server.sh init
+
+# Place the deploy subset at /srv/umbra/deploy (one-time copy; CI rsync takes
+# over from the next release). The contents land directly under deploy/ with no
+# nested deploy/deploy/. From a checkout of this repo, as the stone user:
+rsync -a deploy/ /srv/umbra/deploy/
+rsync -a configs docker-compose.yml /srv/umbra/deploy/
+
+# Create the persistent operator config. etc/.env lives OUTSIDE deploy/ so the
+# CI rsync --delete never touches it; CI/CD never overwrites it.
+cp .env.example /srv/umbra/etc/.env
 ```
 
-### Step 2: Edit `.env`
+### Step 2: Edit `/srv/umbra/etc/.env`
 
 ```env
 # -- Node Identity --------------------------------------
@@ -75,10 +97,9 @@ ADMIN_DOMAIN=admin.ruyin.ai
 PASS_DOMAIN=pas.ruyin.ai
 
 # -- Paths -----------------------------------------------
-ROOT_DIR=/srv/vxture
-REPO_DIR=/srv/vxture/repo/umbra
-DATA_DIR=/srv/vxture/data/umbra
-BACKUP_DIR=/srv/vxture/backup/umbra
+RUNTIME_DIR=/srv/umbra/runtime
+DATA_DIR=/srv/umbra/data
+BACKUP_DIR=/srv/umbra/backup
 
 # -- Nginx -----------------------------------------------
 NGINX_CONTAINER=umbra-nginx
@@ -341,9 +362,9 @@ see operations.md (Marzban User Management).
 ### SQLite Databases
 
 ```bash
-ls -la /srv/vxture/data/umbra/marzban/db.sqlite3
-ls -la /srv/vxture/data/umbra/account/account.db
-ls -la /srv/vxture/data/umbra/vaultwarden/data/db.sqlite3
+ls -la /srv/umbra/data/marzban/db.sqlite3
+ls -la /srv/umbra/data/account/account.db
+ls -la /srv/umbra/data/vaultwarden/data/db.sqlite3
 ```
 
 Expected: all files exist and are non-zero size after services have started.
@@ -361,17 +382,18 @@ Expected: all files exist and are non-zero size after services have started.
 
 ```
 1.  Provision new VPS (same OS as Prerequisites, Ubuntu 26.04)
-2.  Install Docker + Compose on new VPS
-3.  Create user stone, add to docker group
-4.  Clone vxture/umbra to /srv/vxture/repo/umbra
-5.  Copy .env from old node
-6.  Copy DATA_DIR/private/ from old node
+2.  Run `sudo bash deploy/server.sh init` (installs Docker + Compose, creates
+    user stone with docker group, sets up the /srv/umbra tree)
+3.  Place the deploy subset at /srv/umbra/deploy (one-time copy; see Step 1).
+    CI rsync takes over from the next release - no git clone on the server.
+4.  Copy /srv/umbra/etc/.env from old node
+5.  Copy DATA_DIR/private/ from old node
     (preserves REALITY keys - clients keep same public key)
-7.  Run `bash deploy/deploy.sh all` on new VPS
-8.  Verify using /etc/hosts override (point domains to new IP locally)
-9.  Switch DNS to new VPS IP
-10. Notify users to refresh subscription in Clash
-11. Monitor 24-72 hours
+6.  Run `bash deploy/deploy.sh all` from /srv/umbra/deploy on new VPS
+7.  Verify using /etc/hosts override (point domains to new IP locally)
+8.  Switch DNS to new VPS IP
+9.  Notify users to refresh subscription in Clash
+10. Monitor 24-72 hours
 ```
 
 Once the new node is healthy and serving production DNS, retire the old node

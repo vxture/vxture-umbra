@@ -18,7 +18,7 @@ Production VPN edge node - SNI routing, VLESS+REALITY proxy, subscription delive
 | `console.ruyin.ai` | User self-service console |
 | `admin.ruyin.ai` | Marzban console *(Marzban login)* |
 | `admin.ruyin.ai/invites` | Invite console for binding existing Marzban users |
-| `pass.ruyin.ai` | Vaultwarden password manager |
+| `pas.ruyin.ai` | Vaultwarden password manager |
 
 ---
 
@@ -104,7 +104,7 @@ EDGE_DOMAIN=vpn.ruyin.ai             # VPN proxy node host (REALITY :443)
 SUB_DOMAIN=sub.ruyin.ai              # subscription endpoint
 CONSOLE_DOMAIN=console.ruyin.ai
 ADMIN_DOMAIN=admin.ruyin.ai
-PASS_DOMAIN=pass.ruyin.ai
+PASS_DOMAIN=pas.ruyin.ai
 
 # -- Marzban admin credentials --------------------------
 MARZBAN_ADMIN_USER=admin
@@ -202,7 +202,7 @@ User-facing subscription access is handled by `https://console.ruyin.ai`. The co
 
 ### Lock Down Vaultwarden
 
-Open `https://pass.ruyin.ai/admin`, enter your `VAULTWARDEN_ADMIN_TOKEN`, then go to **Users -> Invite User** to create your account via email invite. Web registration is disabled by default - accounts must be created through the admin panel.
+Open `https://pas.ruyin.ai/admin`, enter your `VAULTWARDEN_ADMIN_TOKEN`, then go to **Users -> Invite User** to create your account via email invite. Web registration is disabled by default - accounts must be created through the admin panel.
 
 ### Optional: Harden SSH
 
@@ -350,14 +350,14 @@ Internet
    |- :80  -> nginx HTTP -> ACME challenge / 301 redirect to HTTPS
    |
    `- :443 -> nginx stream (SNI preread)
-                 |- SNI = www.microsoft.com -> Xray VLESS+REALITY (port 10443 internal)
+                 |- SNI = www.icloud.com    -> Xray VLESS+REALITY (port 10443 internal)
                  `- SNI = anything else     -> nginx HTTP block (:8443)
                                                 |- ruyin.ai          -> umbra-website (Next.js landing)
                                                 |- vpn.ruyin.ai      -> 444 (web retired; node is REALITY on :443)
                                                 |- sub.ruyin.ai      -> Marzban /sub/<token>
                                                 |- console.ruyin.ai  -> umbra-account-web (Next.js console)
                                                 |- admin.ruyin.ai    -> Marzban dashboard + umbra-account-web /invites
-                                                `- pass.ruyin.ai     -> Vaultwarden
+                                                `- pas.ruyin.ai     -> Vaultwarden
 ```
 
 See [`docs/agent.md`](docs/agent.md) for the AI-maintainer document map and [`docs/design/architecture.md`](docs/design/architecture.md) for the full architecture reference.

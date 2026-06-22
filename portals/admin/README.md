@@ -5,7 +5,7 @@ Platform management surface for Ruyin.
 ## Functions
 
 - **VPN Management** - Opens Marzban dashboard at `admin.ruyin.ai/dashboard/`
-- **Password Management** - Opens Vaultwarden admin panel at `pass.ruyin.ai/admin`
+- **Password Management** - Opens Vaultwarden admin panel at `pas.ruyin.ai/admin`
 
 ## Architecture
 

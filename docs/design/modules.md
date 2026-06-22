@@ -484,5 +484,5 @@ Real-certificate upgrade must use `bash deploy/ops.sh certs --upgrade`. It norma
 ### Cron
 
 ```cron
-17 3 * * * /srv/vxture/repo/umbra/deploy/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
+17 3 * * * /srv/umbra/deploy/ops.sh certs --renew >> /var/log/umbra-cert-renew.log 2>&1
 ```
