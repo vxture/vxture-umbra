@@ -138,6 +138,12 @@ a {
 .acct-menu {
   width: 360px;
   max-width: min(92vw, 400px);
+  /* DS PopoverContent sets its stacking via a Tailwind `z-50` utility that this
+     portal's Tailwind build does not emit, so the portaled menu had no z-index
+     and the hero band (.hero-section, z-index: 1) overlapped its lower half and
+     intercepted clicks - which radix then read as an outside click and closed
+     the menu. Pin the DS popover layer explicitly so the whole menu is on top. */
+  z-index: 1200;
 }
 
 .acct-panel {
