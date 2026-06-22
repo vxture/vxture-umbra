@@ -1,0 +1,11 @@
+{
+  "name": "umbra-portals",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "website",
+    "console",
+    "admin",
+    "packages/*"
+  ]
+}

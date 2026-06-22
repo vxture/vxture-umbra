@@ -70,9 +70,13 @@ def classify_file(path):
         return ("image", frozenset({"ruyin-console"}))
     if path.startswith("portals/admin/"):
         return ("image", frozenset({"ruyin-admin"}))
-    if path.startswith("portals/_shared/"):
-        # Shared portal source injected into every portal image at build time
-        # via the shared_context build context (mirrors brand/).
+    if path.startswith("portals/packages/") or path in {
+        "portals/package.json",
+        "portals/package-lock.json",
+        "portals/.dockerignore",
+    }:
+        # Workspace root manifests + internal shared package(s) feed all three
+        # portal images (npm workspaces; @umbra/shared is hoisted into each).
         return ("image", frozenset({"ruyin-website", "ruyin-console", "ruyin-admin"}))
     if path.startswith("brand/"):
         # The brand build-context feeds all three portal images.

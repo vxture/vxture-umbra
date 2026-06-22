@@ -93,23 +93,17 @@ jobs:
       matrix:
         include:
           - image: ruyin-website
-            context: ./portals/website
+            context: ./portals
             dockerfile: ./portals/website/Dockerfile
-            build_contexts: |
-              brand_context=./brand
-              shared_context=./portals/_shared
+            build_contexts: brand_context=./brand
           - image: ruyin-console
-            context: ./portals/console
+            context: ./portals
             dockerfile: ./portals/console/Dockerfile
-            build_contexts: |
-              brand_context=./brand
-              shared_context=./portals/_shared
+            build_contexts: brand_context=./brand
           - image: ruyin-admin
-            context: ./portals/admin
+            context: ./portals
             dockerfile: ./portals/admin/Dockerfile
-            build_contexts: |
-              brand_context=./brand
-              shared_context=./portals/_shared
+            build_contexts: brand_context=./brand
           - image: ruyin-nginx
             context: .
             dockerfile: ./docker/ruyin-nginx.Dockerfile

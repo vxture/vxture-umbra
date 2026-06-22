@@ -1,0 +1,9 @@
+# Build context is the portals/ workspace root. Keep installed deps and build
+# artifacts out of the image context; deps are reinstalled in the deps stage.
+**/node_modules
+node_modules
+**/.next
+.next
+**/*.tsbuildinfo
+**/.env
+**/.env.*
