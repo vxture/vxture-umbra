@@ -6,6 +6,7 @@ import {
   MetricCard,
   PageHeader as DsPageHeader,
   ShellBrand,
+  ShellFullscreenToggle,
   ShellLegalFooter,
   ShellLocaleSwitcher,
   ShellThemeToggle,
@@ -16,9 +17,29 @@ import type { Locale } from "@vxture/shared";
 import { persistTheme, type PrefTheme } from "@umbra/shared/preferences";
 import { useLocale } from "@umbra/shared/locale-provider";
 import { markSrc, ruyinBrand } from "../../lib/brand";
-import { OrgDropdown } from "./org-dropdown";
+import { TenantPanel } from "./tenant-panel";
 import { UserDropdown } from "./user-dropdown";
 import type { VxtureUser } from "./types";
+
+/** Element the fullscreen toggle expands; the page root carries this id. */
+const PAGE_FULLSCREEN_ID = "console-page-root";
+
+const TOOL_COPY = {
+  "en-US": {
+    display: "Display controls",
+    theme: "Switch theme",
+    language: "Language",
+    fullscreenEnter: "Enter fullscreen",
+    fullscreenExit: "Exit fullscreen",
+  },
+  "zh-CN": {
+    display: "显示设置",
+    theme: "切换主题",
+    language: "切换语言",
+    fullscreenEnter: "进入全屏",
+    fullscreenExit: "退出全屏",
+  },
+} as const;
 
 /**
  * Console chrome - the same header/footer treatment as the marketing site
@@ -38,6 +59,7 @@ export function Shell({
 }) {
   const { theme, setTheme } = useTheme();
   const { locale, setLocale } = useLocale();
+  const tt = TOOL_COPY[locale] ?? TOOL_COPY["en-US"];
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -48,7 +70,7 @@ export function Shell({
   }, []);
 
   return (
-    <div className="app-page">
+    <div id={PAGE_FULLSCREEN_ID} className="app-page">
       <header className={`site-header${isScrolled ? " is-scrolled" : ""}`}>
         <div className="site-header-inner">
           <ShellBrand
@@ -60,31 +82,47 @@ export function Shell({
           />
           <div className="site-actions">
             {actions}
+
+            {/* Grouped quick controls [theme | language | fullscreen], mirroring
+                the website / vxture-console header action group. */}
+            <div
+              className="vx-shell-header__action-group"
+              role="group"
+              aria-label={tt.display}
+            >
+              <ShellThemeToggle
+                currentTheme={theme}
+                buttonLabel={tt.theme}
+                className="vx-shell-icon-button vx-shell-icon-button--toolbar"
+                activeClassName="vx-shell-icon-button--active"
+                onThemeChange={(next) => {
+                  setTheme(next);
+                  persistTheme(next as PrefTheme);
+                }}
+              />
+              <ShellLocaleSwitcher
+                currentLocale={locale as Locale}
+                buttonLabel={tt.language}
+                buttonClassName="vx-shell-icon-button vx-shell-icon-button--toolbar"
+                activeButtonClassName="vx-shell-icon-button--active"
+                onLocaleChange={(next) => setLocale(next)}
+              />
+              <ShellFullscreenToggle
+                targetId={PAGE_FULLSCREEN_ID}
+                enterLabel={tt.fullscreenEnter}
+                exitLabel={tt.fullscreenExit}
+                className="vx-shell-icon-button vx-shell-icon-button--toolbar"
+                activeClassName="vx-shell-icon-button--active"
+              />
+            </div>
+
+            {/* Signed-in: tenant panel + account menu. */}
             {user ? (
-              // Signed-in: org/workspace + user dropdowns (theme/locale live
-              // inside the user dropdown).
               <div className="header-modules">
-                <OrgDropdown user={user} />
+                <TenantPanel user={user} />
                 <UserDropdown user={user} />
               </div>
-            ) : (
-              // Anonymous / admin views: standalone display controls.
-              <div className="site-tools" aria-label="Display controls">
-                <ShellThemeToggle
-                  currentTheme={theme}
-                  buttonLabel="Switch theme"
-                  onThemeChange={(next) => {
-                    setTheme(next);
-                    persistTheme(next as PrefTheme);
-                  }}
-                />
-                <ShellLocaleSwitcher
-                  currentLocale={locale as Locale}
-                  buttonLabel="Language"
-                  onLocaleChange={(next) => setLocale(next)}
-                />
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </header>
