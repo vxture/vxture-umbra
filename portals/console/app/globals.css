@@ -103,27 +103,110 @@ body {
   color: var(--vx-control-brand);
 }
 
-.site-tools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--vx-space-sm);
-  /* Separate the display tools (theme/locale) from the account menu / CTA area. */
-  margin-inline-end: var(--vx-space-xl);
-}
-
-/* -- Header dropdown modules (org / workspace + user) ----------------------- */
+/* -- Header dropdown modules (tenant panel + account menu) ------------------ */
 .header-modules {
   display: flex;
   align-items: center;
-  gap: 24px; /* even spacing between the header modules */
+  gap: var(--vx-space-md);
 }
 
-/* Shared trigger button for both dropdowns (DS DropdownMenuTrigger = <button>). */
-.hdr-trigger {
+/* Default account silhouette, shown when the session carries no picture (no
+   custom or imported avatar). Inline SVG so it inherits currentColor; fills the
+   avatar circle in a muted tone. See ui/default-avatar.tsx (personal-info). */
+.vx-default-avatar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--vx-color-text-muted);
+}
+
+/* -- Signed-in account menu (mirrors the website portal) --------------------
+   The DS ShellUserMenu supplies the avatar trigger, identity, badges, popover
+   chrome, separators and the native switch / sign-out actions; the DS
+   ShellPreferencePanel renders quick settings. Custom pieces: the profile info
+   row (DS 1.3.0 has no `links` prop) and the verification tag in `meta` (no
+   `statusTag` prop). Tokens only. */
+.acct-menu {
+  width: 320px;
+  max-width: min(92vw, 360px);
+  /* DS PopoverContent stacks via a Tailwind `z-50` utility this no-Tailwind
+     build does not emit, so the portaled menu would sit under the fixed header
+     (z-index 50). Pin it explicitly. */
+  z-index: 1200;
+}
+
+/* Single icon column: drop the DS action inline padding, pin both icon boxes to
+   1rem, give both the preference gap, and left-align the preference glyph so
+   every icon / label / control starts on one column. */
+.acct-menu .vx-shell-user-menu__section .vx-shell-user-menu__action {
+  padding-inline: 0;
+  gap: var(--vx-shell-preferences-row-gap);
+}
+
+.acct-menu .vx-shell-user-menu__action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.acct-menu .vx-shell-preferences__icon {
+  justify-content: flex-start;
+  width: 1rem;
+  flex-basis: 1rem;
+}
+
+/* Profile info row reuses the DS action markup so it shares the icon column. */
+.acct-row {
+  justify-content: flex-start;
+  text-decoration: none;
+}
+
+.acct-row__label {
+  flex: 0 0 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Far-right glyph; margin-left:auto pins it, padding-left keeps a gap. */
+.acct-row__trailing {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  padding-left: var(--vx-space-md);
+  color: var(--vx-color-text-muted);
+}
+
+.acct-row__go {
+  color: var(--vx-color-text-muted);
+}
+
+/* Divider inside the DS settings section; spans the same width as DS separators. */
+.acct-div {
+  height: var(--vx-control-border-width);
+  margin: 0.4rem 0;
+  background: var(--vx-color-border);
+}
+
+/* Verification tag rendered into the identity `meta` line. */
+.acct-verify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--vx-color-text-muted);
+}
+
+.acct-verify--ok {
+  color: var(--vx-color-success-600, var(--vx-control-brand));
+}
+
+/* -- Tenant info panel (Vultr-style, leftmost header module) ----------------
+   A ghost trigger (tenant name) opens the account-menu popover chrome with a
+   tenant identity header over a sectioned detail card. */
+.tenant-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--vx-space-xs);
+  max-width: 16rem;
   padding: var(--vx-space-2xs) var(--vx-space-sm);
   border: none;
   background: transparent;
@@ -133,75 +216,116 @@ body {
   cursor: pointer;
   transition: background var(--vx-duration-fast) var(--vx-ease-standard);
 }
-.hdr-trigger:hover,
-.hdr-trigger[data-state="open"] {
-  background: var(--vx-color-surface-muted);
+
+.tenant-trigger:hover,
+.tenant-trigger[data-state="open"] {
+  background: var(--vx-shell-tool-button-hover-background, var(--vx-color-surface-muted));
 }
-.hdr-trigger-text {
+
+.tenant-trigger__lead {
+  color: var(--vx-color-text-muted);
+  flex: none;
+}
+
+.tenant-trigger__text {
   font-size: var(--vx-typography-body-sm-size);
+  font-weight: 600;
   white-space: nowrap;
-  max-width: 18ch;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.hdr-trigger-caret,
-.hdr-trigger-lead {
+
+.tenant-trigger__caret {
   color: var(--vx-color-text-muted);
   flex: none;
 }
-.hdr-avatar {
-  width: 28px;
-  height: 28px;
-  flex: none;
+
+/* Tenant popover: identity header + detail rows. Reuses .acct-menu sizing. */
+.tenant-menu {
+  padding: var(--vx-space-md);
 }
 
-/* Default account silhouette, shown when the session carries no picture (no
-   custom or imported avatar). Inline SVG so it inherits currentColor; fills the
-   avatar circle in a muted tone. See ui/default-avatar.tsx. */
-.vx-default-avatar {
-  display: block;
-  width: 100%;
-  height: 100%;
-  color: var(--vx-color-text-muted);
-}
-
-/* DS DropdownMenuContent already supplies background / radius / shadow. */
-.hdr-menu {
-  min-width: 248px;
-}
-.hdr-menu-title,
-.hdr-group-title {
-  color: var(--vx-color-text-muted);
-  font-size: var(--vx-typography-body-sm-size);
-}
-.hdr-identity {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vx-space-2xs);
-}
-.hdr-identity-name {
-  font-weight: 600;
-}
-.hdr-identity-line {
-  color: var(--vx-color-text-muted);
-  font-size: var(--vx-typography-body-sm-size);
-}
-.hdr-info-row {
+.tenant-head {
   display: flex;
   align-items: center;
   gap: var(--vx-space-sm);
-  padding: var(--vx-space-2xs) var(--vx-space-sm);
 }
-.hdr-info-label {
+
+.tenant-head__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+  border-radius: var(--vx-radius-md);
+  background: color-mix(in srgb, var(--vx-control-brand) 12%, transparent);
+  color: var(--vx-control-brand);
+}
+
+.tenant-head__identity {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tenant-head__name {
+  margin: 0;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tenant-head__id {
+  margin: 0;
   color: var(--vx-color-text-muted);
   font-size: var(--vx-typography-body-sm-size);
-  flex: none;
-  min-width: 56px;
+  font-family: var(--vx-font-mono, ui-monospace, SFMono-Regular, Consolas, monospace);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.hdr-info-value {
+
+.tenant-head__type {
+  flex: none;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--vx-radius-full, 999px);
+  background: var(--vx-color-surface-muted);
+  color: var(--vx-color-text-secondary);
   font-size: var(--vx-typography-body-sm-size);
-  overflow-wrap: anywhere;
-  flex: 1 1 auto;
+}
+
+.tenant-row {
+  display: grid;
+  grid-template-columns: 1rem auto 1fr;
+  align-items: center;
+  gap: var(--vx-shell-preferences-row-gap);
+  min-height: 2.25rem;
+}
+
+.tenant-row__icon {
+  color: var(--vx-color-text-muted);
+}
+
+.tenant-row__label {
+  color: var(--vx-color-text-muted);
+  font-size: var(--vx-typography-body-sm-size);
+  white-space: nowrap;
+}
+
+.tenant-row__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tenant-row__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--vx-typography-body-sm-size);
 }
 
 /* Brand wordmark: Funnel Display at the DS heading-3 size with the DS logo
