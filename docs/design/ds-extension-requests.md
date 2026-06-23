@@ -215,6 +215,72 @@ Interim (Umbra, 2026-06-10): all three portals added `@tailwindcss/postcss` +
 compiler + preflight, which the no-Tailwind rule wanted to avoid. Once the DS
 ships the `:root` mirror, Umbra can drop the PostCSS dependency.
 
+## 7. ShellBrand: tag slot, no-link mode, brand typeface
+
+Gaps found wiring the three header brands (2026-06-23, DS 1.3.2):
+
+- **Tag slot.** The header brand needs a small light pill after the name
+  (website/console show `vxture studio`, admin shows `Operation Platform`).
+  `ShellBrand` has no tag prop, so Umbra renders the tag inside `label`
+  (now `ReactNode`) reusing the `.vx-shell-user-badge` class - a pill borrowed
+  from the account menu, semantically wrong. Add a first-class `tag?: ReactNode`
+  with its own `.vx-shell-brand__tag` pill.
+- **No-link mode.** `ShellBrand` always renders an `<a href>` (defaults to `/`).
+  The admin brand must NOT navigate, so Umbra hand-rolls the `vx-shell-brand`
+  markup as a non-anchor. Add `href?: null` (or `as="span"`) to render a
+  non-interactive brand.
+- **Brand typeface.** `.vx-shell-brand__label` does not use the brand font; every
+  portal adds `.site-brand-name` (Funnel Display at heading-3) to the label.
+  Expose a brand-wordmark type option (token-driven) so this is not per-portal.
+
+Reference: `portals/{website,console}/.../site-header|shell.tsx`,
+`portals/admin/app/ui/admin-shell.tsx`.
+
+## 8. SiteFooter (marketing / portal bottom bar)
+
+Gap: the legal footer bar (fixed content track, top hairline, copyright + a few
+policy links) is per-portal CSS (`.site-footer` / `.site-footer-inner`) wrapping
+`ShellLegalFooter`. Sibling to #1 SiteHeader: ship a `SiteFooter` that owns the
+bar layout + the `--ruyin-shell-margin-x` content track, so no portal CSS is
+needed to position or size it.
+
+Reference: `portals/website/components/site-footer.tsx` + each portal's
+`.site-footer*` rules.
+
+## 9. Header action buttons as links keep their variant color
+
+Gap: a DS `Button asChild` that renders an `<a>` loses its variant text color
+because the global `a { color: inherit }` reset outranks the button's
+zero-specificity color. Every portal re-asserts it with
+`.site-actions .vx-btn--default/ghost/outline { color: ... }`. The DS button
+should carry its color at a specificity that survives an anchor child.
+
+## 10. Popover / ShellUserMenu content stacking shipped as real CSS
+
+Gap: `PopoverContent` (and the ShellUserMenu popover) set their stacking via a
+Tailwind `z-50` utility. The no-Tailwind portals do not emit that utility, so the
+portaled menu has no z-index and is overlapped (the hero band / fixed header).
+Umbra pins it with `.acct-menu { z-index: 1200 }`. Ship the popover z-index (and
+any other component-critical utilities, e.g. `Badge` backgrounds) as real CSS in
+the DS stylesheet so no-Tailwind consumers get them. Related to #5.
+
+## 11. ShellUserMenu link with trailing value / control; tenant info panel
+
+Gaps from the account + tenant panels:
+
+- **Link trailing slot.** `ShellUserMenuLink` is label + icon + href only. The
+  website account menu's workspace row needs a trailing value (`{org}.{workspace}`)
+  and a switch glyph, so it stays a custom `.acct-row`. Add an optional
+  `value` / `trailing` slot to the menu link (or a sibling "info row").
+- **Tenant info panel.** The console header's Vultr-style tenant panel
+  (`tenant-panel.tsx` + `.tenant-*`) is fully custom - identity header + a
+  detail card (workspace / role / status / members / plan) + a settings link.
+  Consider a DS `ShellTenantMenu` (mirror of `ShellUserMenu`) so this is not
+  portal CSS.
+
+Reference: `portals/website/components/user-dropdown.tsx`,
+`portals/console/app/ui/tenant-panel.tsx`.
+
 ## Notes on tokens and theme
 
 - `brands/ruyin.css` must expose the brand gradient token (`--vx-gradient-brand`)
