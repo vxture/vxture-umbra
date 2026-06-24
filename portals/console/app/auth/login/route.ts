@@ -4,6 +4,7 @@ import { createCodeVerifier, challengeFromVerifier, randomToken } from "../lib/p
 import { buildAuthorizeUrl } from "../lib/oidc";
 import { putAuthRequest } from "../lib/session-store";
 import { safeReturnTo } from "../lib/return-to";
+import { setLoginStateCookie } from "../lib/cookie";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -37,5 +38,9 @@ export async function GET(request: NextRequest) {
 
   await putAuthRequest(cfg, state, { codeVerifier, nonce, returnTo, invite });
 
-  return NextResponse.redirect(buildAuthorizeUrl(cfg, { state, nonce, codeChallenge }));
+  // Bind `state` to this browser so a forged callback delivered to another
+  // browser (login CSRF / session fixation) is rejected at the callback.
+  const response = NextResponse.redirect(buildAuthorizeUrl(cfg, { state, nonce, codeChallenge }));
+  setLoginStateCookie(response, cfg, state);
+  return response;
 }

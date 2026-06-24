@@ -127,6 +127,12 @@ export async function putTokens(cfg: OidcConfig, rpsid: string, tokens: TokenBun
   await redis(cfg).set(tokKey(rpsid), JSON.stringify(tokens), "KEEPTTL");
 }
 
+/** Replace the stored identity claims after a refresh, preserving the session
+ * TTL. The sid (back-channel logout index) must be unchanged by the caller. */
+export async function putIdentity(cfg: OidcConfig, rpsid: string, identity: IdentityClaims): Promise<void> {
+  await redis(cfg).set(sessKey(rpsid), JSON.stringify(identity), "KEEPTTL");
+}
+
 /** Destroy a single RP session and drop it from its sid index. */
 export async function destroySession(cfg: OidcConfig, rpsid: string): Promise<void> {
   const r = redis(cfg);
