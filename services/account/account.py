@@ -191,7 +191,12 @@ def vxture_payload_from_session(rpsid: str | None) -> dict[str, Any] | None:
         "phone_verified": bool(data.get("phone_verified")),
         "account_status": str(data.get("account_status") or ""),
         "active_org": str(data.get("active_org") or ""),
+        # Display names ride the session so public_vxture_user can surface them;
+        # without forwarding these two keys the org/workspace names are always
+        # dropped and the UI falls back to the raw id. Empty until the IdP emits.
+        "active_org_name": str(data.get("active_org_name") or ""),
         "active_workspace": str(data.get("active_workspace") or ""),
+        "active_workspace_name": str(data.get("active_workspace_name") or ""),
         "roles": [str(r) for r in roles],
         "user_type": str(data.get("user_type") or ""),
     }

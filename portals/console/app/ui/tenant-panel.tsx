@@ -47,7 +47,10 @@ function TenantRow({
 export function TenantPanel({ user }: { user: VxtureUser }) {
   const t = useTranslations("tenant");
 
-  const isOrg = user.userType === "organization" || Boolean(user.orgId);
+  // Org vs personal is decided ONLY by the IdP userType claim. active_org /
+  // orgId is the active *tenant* id - every account (personal included) has one,
+  // so it must NOT be used as an "is an organization" signal.
+  const isOrg = user.userType === "organization";
   const tenantName =
     user.orgName?.trim() ||
     (isOrg ? user.orgId : "") ||
