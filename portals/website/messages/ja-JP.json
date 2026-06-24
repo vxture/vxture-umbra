@@ -1,0 +1,43 @@
+{
+  "header": {
+    "signUp": "新規登録",
+    "signIn": "ログイン",
+    "workspace": "ワークスペース",
+    "display": "表示設定",
+    "theme": "テーマ切り替え",
+    "language": "言語切り替え",
+    "fullscreenEnter": "全画面表示",
+    "fullscreenExit": "全画面解除"
+  },
+  "hero": {
+    "lead": "あなた専用のインテリジェントパートナーを構築",
+    "action": "VXTURE STUDIO"
+  },
+  "account": {
+    "account": "アカウントメニュー",
+    "verified": "認証済み",
+    "unverified": "未認証",
+    "profile": "個人情報",
+    "tenantSettings": "テナント設定",
+    "settings": "環境設定",
+    "themeSystem": "システムに従う",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "densityCompact": "コンパクト",
+    "densityDefault": "標準",
+    "densityComfortable": "ゆったり",
+    "fontSmall": "小",
+    "fontDefault": "標準",
+    "fontLarge": "大",
+    "switchUser": "ユーザー切り替え",
+    "signout": "ログアウト",
+    "fallbackName": "アカウント",
+    "roles": {
+      "owner": "オーナー",
+      "manager": "管理者",
+      "member": "メンバー"
+    },
+    "tenantOrg": "組織テナント",
+    "tenantPersonal": "個人テナント"
+  }
+}

@@ -125,6 +125,8 @@ LOCALIZED_CONTENT_PREFIXES = (
     Path("portals/website/messages"),
     Path("portals/console/messages"),
     Path("portals/admin/messages"),
+    # shared locale display names (native names are CJK localized content).
+    Path("portals/packages/shared/src/locales.ts"),
 )
 
 

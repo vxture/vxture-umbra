@@ -11,6 +11,7 @@ import {
 import type { Locale } from "@vxture/shared";
 import { persistTheme, type PrefTheme } from "@umbra/shared/preferences";
 import { useTranslations } from "@umbra/shared/i18n";
+import { UMBRA_LOCALE_OPTIONS } from "@umbra/shared/locales";
 import { ruyinBrand, markSrc } from "@/lib/brand";
 import { useLocale } from "@/lib/locale-provider";
 import { useSession } from "@/lib/session";
@@ -73,6 +74,7 @@ export function SiteHeader() {
             />
             <ShellLocaleSwitcher
               currentLocale={locale as Locale}
+              options={UMBRA_LOCALE_OPTIONS}
               buttonLabel={t("language")}
               buttonClassName="vx-shell-icon-button vx-shell-icon-button--toolbar"
               activeButtonClassName="vx-shell-icon-button--active"

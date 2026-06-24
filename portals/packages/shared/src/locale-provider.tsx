@@ -7,35 +7,34 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Locale } from "@vxture/shared";
+import { LOCALE_CONSTANTS } from "@vxture/shared";
 import {
-  DEFAULT_LOCALE,
-  SUPPORTED_LOCALES,
-  LOCALE_CONSTANTS,
-} from "@vxture/shared";
+  UMBRA_DEFAULT_LOCALE,
+  UMBRA_LOCALES,
+  isUmbraLocale,
+  type UmbraLocale,
+} from "./locales";
 import { persistLocale } from "./preferences";
 
-const LOCALE_CYCLE: Locale[] = [...SUPPORTED_LOCALES]; // ["en-US", "zh-CN"]
+const LOCALE_CYCLE: UmbraLocale[] = [...UMBRA_LOCALES]; // en-US -> zh-CN -> ja-JP
 
 interface LocaleContextValue {
-  locale: Locale;
-  setLocale: (locale: Locale) => void;
+  locale: UmbraLocale;
+  setLocale: (locale: UmbraLocale) => void;
   toggle: () => void;
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
 
-function getStoredLocale(): Locale {
-  if (typeof window === "undefined") return DEFAULT_LOCALE;
+function getStoredLocale(): UmbraLocale {
+  if (typeof window === "undefined") return UMBRA_DEFAULT_LOCALE;
   const stored = localStorage.getItem(LOCALE_CONSTANTS.STORAGE_KEY);
-  if (stored && SUPPORTED_LOCALES.includes(stored as Locale)) {
-    return stored as Locale;
-  }
-  return DEFAULT_LOCALE;
+  if (isUmbraLocale(stored)) return stored;
+  return UMBRA_DEFAULT_LOCALE;
 }
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
+  const [locale, setLocaleState] = useState<UmbraLocale>(UMBRA_DEFAULT_LOCALE);
 
   useEffect(() => {
     const initial = getStoredLocale();
@@ -43,7 +42,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = initial;
   }, []);
 
-  const setLocale = (next: Locale) => {
+  const setLocale = (next: UmbraLocale) => {
     setLocaleState(next);
     // Mirror to the parent-domain cookie (+ localStorage + lang + broadcast) so
     // the choice syncs across every *.ruyin.ai app.

@@ -11,7 +11,7 @@
  */
 
 import { createContext, useContext, type ReactNode } from "react";
-import { DEFAULT_LOCALE, type Locale } from "@vxture/shared";
+import { UMBRA_DEFAULT_LOCALE, type UmbraLocale } from "./locales";
 import { useLocale } from "./locale-provider";
 
 /** A namespaced, possibly-nested bundle of strings for one locale. */
@@ -28,11 +28,11 @@ export function I18nProvider({
   messages,
   children,
 }: {
-  messages: Partial<Record<Locale, Messages>>;
+  messages: Partial<Record<UmbraLocale, Messages>>;
   children: ReactNode;
 }) {
   const { locale } = useLocale();
-  const active = messages[locale] ?? messages[DEFAULT_LOCALE] ?? {};
+  const active = messages[locale] ?? messages[UMBRA_DEFAULT_LOCALE] ?? {};
   return (
     <MessagesContext.Provider value={active}>
       {children}

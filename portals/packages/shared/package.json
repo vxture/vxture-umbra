@@ -6,6 +6,7 @@
     "./health": "./src/health.ts",
     "./providers": "./src/providers.tsx",
     "./locale-provider": "./src/locale-provider.tsx",
+    "./locales": "./src/locales.ts",
     "./i18n": "./src/i18n.tsx",
     "./preferences": "./src/preferences.ts",
     "./preference-sync": "./src/preference-sync.tsx"

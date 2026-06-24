@@ -20,10 +20,9 @@ import {
   DEFAULT_LOCALE,
   LOCALE_CONSTANTS,
   PREFERENCE_CONSTANTS,
-  SUPPORTED_LOCALES,
   THEME_CONSTANTS,
-  type Locale,
 } from "@vxture/shared";
+import { isUmbraLocale, type UmbraLocale } from "./locales";
 
 export type PrefTheme = "system" | "light" | "dark";
 export type PrefDensity = "compact" | "default" | "comfortable";
@@ -62,8 +61,7 @@ const isDensity = (v: unknown): v is PrefDensity =>
   v === "compact" || v === "default" || v === "comfortable";
 const isFontSize = (v: unknown): v is PrefFontSize =>
   v === "small" || v === "default" || v === "large";
-const isLocale = (v: unknown): v is Locale =>
-  typeof v === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(v);
+const isLocale = isUmbraLocale;
 
 /** Highest registrable parent domain so the cookie is shared by every
  *  subdomain. Returns undefined on localhost / bare IPs (host-only cookie). */
@@ -146,7 +144,7 @@ export function applyFontSize(size: PrefFontSize): void {
 // change itself; these only persist + broadcast. Locale is mirrored for the
 // providers; font-size has no owner, so it is applied here too.
 
-export function persistLocale(locale: Locale): void {
+export function persistLocale(locale: UmbraLocale): void {
   writeCookie(COOKIE.locale, locale);
   setLocalStorage(LS.locale, locale);
   if (typeof document !== "undefined") {
@@ -209,7 +207,7 @@ if(loc){ls('${LS.locale}',loc);de.lang=loc;}
 }catch(e){}})();`;
 
 export interface PreferenceSetters {
-  setLocale?: ((locale: Locale) => void) | undefined;
+  setLocale?: ((locale: UmbraLocale) => void) | undefined;
   setMode?: ((mode: PrefTheme) => void) | undefined;
   setDensity?: ((density: PrefDensity) => void) | undefined;
 }

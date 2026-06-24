@@ -13,7 +13,7 @@ import {
   useToast,
 } from "@vxture/design-system";
 import type { IconName, StatusBadgeTone } from "@vxture/design-system";
-import type { Locale } from "@vxture/shared";
+import type { UmbraLocale } from "@umbra/shared/locales";
 import { AdminShell } from "./admin-shell";
 import { ruyinBrand } from "../../lib/brand";
 import { useLocale } from "@umbra/shared/locale-provider";
@@ -95,7 +95,7 @@ const BINDING_TONE: Record<AdminUserRow["bindingState"], StatusBadgeTone> = {
  * Intl.RelativeTimeFormat. Returns null when there is no usable timestamp so
  * the caller can fall back to the absolute string alone.
  */
-function relativeOnline(iso: string | null, locale: Locale): string | null {
+function relativeOnline(iso: string | null, locale: UmbraLocale): string | null {
   if (!iso) return null;
   const then = Date.parse(iso);
   if (Number.isNaN(then)) return null;

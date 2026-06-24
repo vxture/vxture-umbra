@@ -12,11 +12,11 @@ import {
   useTheme,
   type Density,
   type IconName,
-  type LocaleSelectOption,
   type ShellFontSizePreference,
   type ShellThemePreference,
 } from "@vxture/design-system";
-import { LOCALE_CONFIGS, SUPPORTED_LOCALES, type Locale } from "@vxture/shared";
+import type { Locale } from "@vxture/shared";
+import { UMBRA_LOCALE_OPTIONS } from "@umbra/shared/locales";
 import {
   getFontSize,
   persistDensity,
@@ -82,16 +82,11 @@ export function AdminShell({
     return () => window.removeEventListener("scroll", update);
   }, []);
 
-  const localeOptions: LocaleSelectOption[] = SUPPORTED_LOCALES.map((loc) => ({
-    locale: loc,
-    nativeName: LOCALE_CONFIGS[loc]?.nativeName ?? loc,
-  }));
-
   const accountSettings = (
     <ShellPreferencePanel
       className="acct-prefs"
-      locale={locale}
-      localeOptions={localeOptions}
+      locale={locale as Locale}
+      localeOptions={UMBRA_LOCALE_OPTIONS}
       theme={mode as ShellThemePreference}
       density={density}
       fontSize={fontSize}
@@ -201,6 +196,7 @@ export function AdminShell({
               />
               <ShellLocaleSwitcher
                 currentLocale={locale as Locale}
+                options={UMBRA_LOCALE_OPTIONS}
                 buttonLabel={m("language")}
                 buttonClassName="vx-shell-icon-button vx-shell-icon-button--toolbar"
                 activeButtonClassName="vx-shell-icon-button--active"

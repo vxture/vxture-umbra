@@ -8,7 +8,6 @@ import {
   useTheme,
   type Density,
   type IconName,
-  type LocaleSelectOption,
   type ShellFontSizePreference,
   type ShellThemePreference,
 } from "@vxture/design-system";
@@ -18,7 +17,8 @@ import {
 // `arrows-left-right` name (see docs/design/ds-extension-requests.md); swap this
 // back to <Icon name="arrows-left-right" /> once published.
 import { ArrowsLeftRightIcon } from "@phosphor-icons/react";
-import { LOCALE_CONFIGS, SUPPORTED_LOCALES, type Locale } from "@vxture/shared";
+import type { Locale } from "@vxture/shared";
+import { UMBRA_LOCALE_OPTIONS } from "@umbra/shared/locales";
 import {
   getFontSize,
   persistDensity,
@@ -140,11 +140,6 @@ export function UserDropdown({ user }: { user: SessionUser }) {
   // back to whichever part exists so personal tenants still show their workspace.
   const workspacePath = [user.orgId, user.workspaceId].filter(Boolean).join(".");
 
-  const localeOptions: LocaleSelectOption[] = SUPPORTED_LOCALES.map((loc) => ({
-    locale: loc,
-    nativeName: LOCALE_CONFIGS[loc]?.nativeName ?? loc,
-  }));
-
   const settings = (
     <>
       {/* Personal info + tenant settings in one block (no divider between). Both
@@ -180,8 +175,8 @@ export function UserDropdown({ user }: { user: SessionUser }) {
       {/* Quick settings - DS preference panel, labels omitted (icon + control) */}
       <ShellPreferencePanel
         className="acct-prefs"
-        locale={locale}
-        localeOptions={localeOptions}
+        locale={locale as Locale}
+        localeOptions={UMBRA_LOCALE_OPTIONS}
         theme={mode as ShellThemePreference}
         density={density}
         fontSize={fontSize}

@@ -1,0 +1,80 @@
+{
+  "header": {
+    "display": "表示設定",
+    "theme": "テーマ切り替え",
+    "language": "言語切り替え",
+    "fullscreenEnter": "全画面表示",
+    "fullscreenExit": "全画面解除"
+  },
+  "account": {
+    "account": "アカウントメニュー",
+    "verified": "認証済み",
+    "unverified": "未認証",
+    "profile": "個人情報",
+    "settings": "環境設定",
+    "themeSystem": "システムに従う",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "densityCompact": "コンパクト",
+    "densityDefault": "標準",
+    "densityComfortable": "ゆったり",
+    "fontSmall": "小",
+    "fontDefault": "標準",
+    "fontLarge": "大",
+    "switchUser": "ユーザー切り替え",
+    "signout": "ログアウト",
+    "fallbackName": "アカウント",
+    "roles": {
+      "owner": "オーナー",
+      "manager": "管理者",
+      "member": "メンバー"
+    },
+    "tenantOrg": "組織テナント",
+    "tenantPersonal": "個人テナント"
+  },
+  "tenant": {
+    "open": "テナント",
+    "tenantId": "テナント ID",
+    "workspace": "ワークスペース",
+    "role": "ロール",
+    "status": "ステータス",
+    "members": "メンバー",
+    "plan": "プラン",
+    "settings": "テナント設定",
+    "tenantOrg": "組織テナント",
+    "tenantPersonal": "個人テナント",
+    "personalWorkspace": "個人ワークスペース",
+    "planFree": "無料",
+    "member": "メンバー",
+    "statusActive": "有効",
+    "placeholder": "未設定",
+    "roles": {
+      "owner": "オーナー",
+      "manager": "管理者",
+      "admin": "管理者",
+      "member": "メンバー"
+    }
+  },
+  "personalInfo": {
+    "overview": "概要",
+    "contactAndId": "連絡先と識別子",
+    "accountId": "アカウント ID",
+    "email": "メール",
+    "phone": "電話",
+    "accountStatus": "アカウント状態",
+    "org": "組織",
+    "workspace": "ワークスペース",
+    "roles": "ロール",
+    "userType": "ユーザー種別",
+    "verified": "認証済み",
+    "unverified": "未認証",
+    "idFallback": "ID",
+    "idHint": "あなたのグローバル Vxture アカウント識別子(OIDC subject)。安定かつ一意で、サポート依頼時に使用できます。",
+    "copy": "コピー",
+    "copied": "コピー済み",
+    "copyOk": "アカウント ID をコピーしました",
+    "copyFail": "コピーに失敗しました",
+    "none": "-",
+    "fallbackName": "アカウント"
+  }
+}

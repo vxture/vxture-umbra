@@ -6,11 +6,11 @@ import {
   ShellUserMenu,
   useTheme,
   type Density,
-  type LocaleSelectOption,
   type ShellFontSizePreference,
   type ShellThemePreference,
 } from "@vxture/design-system";
-import { LOCALE_CONFIGS, SUPPORTED_LOCALES, type Locale } from "@vxture/shared";
+import type { Locale } from "@vxture/shared";
+import { UMBRA_LOCALE_OPTIONS } from "@umbra/shared/locales";
 import {
   getFontSize,
   persistDensity,
@@ -74,17 +74,12 @@ export function UserDropdown({ user }: { user: VxtureUser }) {
   const role = primaryRole(user);
   const isOrg = user.userType === "organization" || Boolean(user.orgId);
 
-  const localeOptions: LocaleSelectOption[] = SUPPORTED_LOCALES.map((loc) => ({
-    locale: loc,
-    nativeName: LOCALE_CONFIGS[loc]?.nativeName ?? loc,
-  }));
-
   const settings = (
     /* Quick settings - DS preference panel, row labels omitted. */
       <ShellPreferencePanel
         className="acct-prefs"
-        locale={locale}
-        localeOptions={localeOptions}
+        locale={locale as Locale}
+        localeOptions={UMBRA_LOCALE_OPTIONS}
         theme={mode as ShellThemePreference}
         density={density}
         fontSize={fontSize}
