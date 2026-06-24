@@ -76,5 +76,60 @@
     "copyFail": "复制失败",
     "none": "-",
     "fallbackName": "账号"
+  },
+  "profile": {
+    "title": "个人信息",
+    "description": "你的 Vxture 账号身份。",
+    "back": "返回"
+  },
+  "networkAccess": {
+    "title": "网络访问",
+    "unboundDesc": "绑定你的一次性邀请码以激活订阅。",
+    "activateTitle": "激活",
+    "activateDesc": "你的 Vxture 账号已激活。请输入管理员提供的邀请码。",
+    "inviteCode": "邀请码",
+    "bindInvite": "绑定邀请",
+    "boundDesc": "你的订阅已激活。将地址复制到客户端,或查看完整详情。",
+    "subUrlTitle": "订阅地址",
+    "subUrlDesc": "将此地址复制到 Clash Verge、v2rayN、Stash 或兼容客户端。",
+    "copyUrl": "复制地址",
+    "viewDetails": "查看详情",
+    "boundToast": "邀请已绑定。",
+    "bindFailToast": "邀请绑定失败。",
+    "copyToast": "订阅地址已复制。"
+  },
+  "subscription": {
+    "title": "订阅详情",
+    "noSubDesc": "你还没有有效的订阅。",
+    "activateFirst": "请先在主页激活你的网络访问。",
+    "backHome": "返回主页",
+    "back": "返回",
+    "detailsDesc": "你的访问的用量、配额、有效期与客户端地址。",
+    "usageTitle": "用量",
+    "usageDesc": "你订阅的流量、配额与有效期。",
+    "subUrlTitle": "订阅地址",
+    "subUrlDesc": "将此地址复制到 Clash Verge、v2rayN、Stash 或兼容客户端。",
+    "copyUrl": "复制地址",
+    "resetUrl": "重置地址",
+    "copyToast": "订阅地址已复制。",
+    "resetToast": "订阅地址已重置。",
+    "resetCurrentToast": "订阅地址已是最新。",
+    "resetFailToast": "订阅地址重置失败。",
+    "resetDialogTitle": "重置订阅地址?",
+    "resetDialogDesc": "这会更改客户端使用的地址。你需要在每台设备上重新复制新的地址。",
+    "cancel": "取消",
+    "metrics": {
+      "userCode": "用户编码",
+      "status": "状态",
+      "used": "已用",
+      "totalQuota": "总配额",
+      "remaining": "剩余",
+      "quotaReset": "配额重置",
+      "expire": "到期",
+      "lastOnline": "最近在线",
+      "lastClient": "最近客户端",
+      "subUpdated": "订阅更新",
+      "created": "创建时间"
+    }
   }
 }

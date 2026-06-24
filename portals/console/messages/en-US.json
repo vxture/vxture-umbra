@@ -76,5 +76,60 @@
     "copyFail": "Copy failed",
     "none": "-",
     "fallbackName": "Account"
+  },
+  "profile": {
+    "title": "Personal info",
+    "description": "Your Vxture account identity.",
+    "back": "Back"
+  },
+  "networkAccess": {
+    "title": "Network access",
+    "unboundDesc": "Bind your one-time invite code to activate your subscription.",
+    "activateTitle": "Activate",
+    "activateDesc": "Your Vxture account is active. Enter the invite code from your administrator.",
+    "inviteCode": "Invite code",
+    "bindInvite": "Bind invite",
+    "boundDesc": "Your subscription is active. Copy the URL into your client, or view full details.",
+    "subUrlTitle": "Subscription URL",
+    "subUrlDesc": "Copy this URL into Clash Verge, v2rayN, Stash, or a compatible client.",
+    "copyUrl": "Copy URL",
+    "viewDetails": "View details",
+    "boundToast": "Invite bound.",
+    "bindFailToast": "Invite could not be bound.",
+    "copyToast": "Subscription URL copied."
+  },
+  "subscription": {
+    "title": "Subscription details",
+    "noSubDesc": "You have no active subscription yet.",
+    "activateFirst": "Activate your network access from the home page first.",
+    "backHome": "Back to home",
+    "back": "Back",
+    "detailsDesc": "Usage, quota, validity, and client address for your access.",
+    "usageTitle": "Usage",
+    "usageDesc": "Traffic, quota, and validity for your subscription.",
+    "subUrlTitle": "Subscription URL",
+    "subUrlDesc": "Copy this URL into Clash Verge, v2rayN, Stash, or a compatible client.",
+    "copyUrl": "Copy URL",
+    "resetUrl": "Reset URL",
+    "copyToast": "Subscription URL copied.",
+    "resetToast": "Subscription URL reset.",
+    "resetCurrentToast": "Subscription URL already up to date.",
+    "resetFailToast": "Subscription URL could not be reset.",
+    "resetDialogTitle": "Reset subscription URL?",
+    "resetDialogDesc": "This changes the URL your clients use. You will need to copy the new URL into every device again.",
+    "cancel": "Cancel",
+    "metrics": {
+      "userCode": "User code",
+      "status": "Status",
+      "used": "Used",
+      "totalQuota": "Total quota",
+      "remaining": "Remaining",
+      "quotaReset": "Quota reset",
+      "expire": "Expire",
+      "lastOnline": "Last online",
+      "lastClient": "Last client",
+      "subUpdated": "Subscription updated",
+      "created": "Created"
+    }
   }
 }

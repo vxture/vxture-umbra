@@ -18,6 +18,7 @@ import {
   useToast,
 } from "@vxture/design-system";
 import type { MetricGridItem, StatusBadgeTone } from "@vxture/design-system";
+import { useTranslations } from "@umbra/shared/i18n";
 import { AccountGate } from "./account-gate";
 import { SectionHeading } from "./shell";
 import { fetchJson } from "./api";
@@ -41,6 +42,7 @@ function SubscriptionDetail({
   const [busy, setBusy] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const { toast } = useToast();
+  const t = useTranslations("subscription");
   const account = session.account ?? null;
 
   async function resetSubscription() {
@@ -51,17 +53,17 @@ function SubscriptionDetail({
         { method: "POST", body: "{}" },
       );
       if (payload.status === "updated") {
-        toast({ tone: "success", title: "Subscription URL reset." });
+        toast({ tone: "success", title: t("resetToast") });
       } else if (payload.status === "current") {
-        toast({ tone: "info", title: "Subscription URL already up to date." });
+        toast({ tone: "info", title: t("resetCurrentToast") });
       } else {
-        toast({ tone: "error", title: "Subscription URL could not be reset." });
+        toast({ tone: "error", title: t("resetFailToast") });
       }
       if (payload.account) {
         setSession((current) => (current ? { ...current, account: payload.account } : current));
       }
     } catch {
-      toast({ tone: "error", title: "Subscription URL could not be reset." });
+      toast({ tone: "error", title: t("resetFailToast") });
     } finally {
       setBusy(false);
       setConfirmReset(false);
@@ -73,15 +75,15 @@ function SubscriptionDetail({
       <div className="page-stack">
         <SectionHeading
           icon="chart-bar"
-          title="Subscription details"
-          description="You have no active subscription yet."
+          title={t("title")}
+          description={t("noSubDesc")}
         />
-        <p className="muted">Activate your network access from the home page first.</p>
+        <p className="muted">{t("activateFirst")}</p>
         <div className="actions">
           <Button asChild>
             <a href="/">
               <Icon name="arrow-left" size="sm" />
-              Back to home
+              {t("backHome")}
             </a>
           </Button>
         </div>
@@ -90,35 +92,35 @@ function SubscriptionDetail({
   }
 
   const metrics: MetricGridItem[] = [
-    { label: "User code", value: account.profileName },
-    { label: "Status", value: account.status },
-    { label: "Used", value: `${account.usedText} (${account.usagePercent}%)` },
-    { label: "Total quota", value: account.dataLimitText },
-    { label: "Remaining", value: account.remainingText },
-    { label: "Quota reset", value: account.resetText },
-    { label: "Expire", value: account.expireText },
-    { label: "Last online", value: account.onlineText },
+    { label: t("metrics.userCode"), value: account.profileName },
+    { label: t("metrics.status"), value: account.status },
+    { label: t("metrics.used"), value: `${account.usedText} (${account.usagePercent}%)` },
+    { label: t("metrics.totalQuota"), value: account.dataLimitText },
+    { label: t("metrics.remaining"), value: account.remainingText },
+    { label: t("metrics.quotaReset"), value: account.resetText },
+    { label: t("metrics.expire"), value: account.expireText },
+    { label: t("metrics.lastOnline"), value: account.onlineText },
   ];
-  if (account.lastClient) metrics.push({ label: "Last client", value: account.lastClient });
-  if (account.subUpdatedText) metrics.push({ label: "Subscription updated", value: account.subUpdatedText });
-  if (account.createdText) metrics.push({ label: "Created", value: account.createdText });
+  if (account.lastClient) metrics.push({ label: t("metrics.lastClient"), value: account.lastClient });
+  if (account.subUpdatedText) metrics.push({ label: t("metrics.subUpdated"), value: account.subUpdatedText });
+  if (account.createdText) metrics.push({ label: t("metrics.created"), value: account.createdText });
 
   return (
     <div className="page-stack">
       <SectionHeading
         icon="chart-bar"
-        title="Subscription details"
-        description="Usage, quota, validity, and client address for your access."
+        title={t("title")}
+        description={t("detailsDesc")}
         badge={<StatusBadge tone={statusTone(account.status)} dot>{account.status}</StatusBadge>}
       />
 
-      <SectionCard title="Usage" description="Traffic, quota, and validity for your subscription.">
+      <SectionCard title={t("usageTitle")} description={t("usageDesc")}>
         <MetricGrid items={metrics} />
       </SectionCard>
 
       <SectionCard
-        title="Subscription URL"
-        description="Copy this URL into Clash Verge, v2rayN, Stash, or a compatible client."
+        title={t("subUrlTitle")}
+        description={t("subUrlDesc")}
       >
         <div className="card-stack">
           <code className="url-box">{account.subscriptionUrl}</code>
@@ -126,15 +128,15 @@ function SubscriptionDetail({
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(account.subscriptionUrl);
-                toast({ tone: "success", title: "Subscription URL copied." });
+                toast({ tone: "success", title: t("copyToast") });
               }}
             >
               <Icon name="copy" size="sm" />
-              Copy URL
+              {t("copyUrl")}
             </Button>
             <Button variant="destructive" disabled={busy} onClick={() => setConfirmReset(true)}>
               <Icon name="clock-counter-clockwise" size="sm" />
-              Reset URL
+              {t("resetUrl")}
             </Button>
           </div>
         </div>
@@ -144,7 +146,7 @@ function SubscriptionDetail({
         <Button variant="secondary" asChild>
           <a href="/">
             <Icon name="arrow-left" size="sm" />
-            Back
+            {t("back")}
           </a>
         </Button>
       </div>
@@ -152,18 +154,15 @@ function SubscriptionDetail({
       <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset subscription URL?</DialogTitle>
-            <DialogDescription>
-              This changes the URL your clients use. You will need to copy the new URL into every
-              device again.
-            </DialogDescription>
+            <DialogTitle>{t("resetDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("resetDialogDesc")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button variant="secondary">Cancel</Button>
+              <Button variant="secondary">{t("cancel")}</Button>
             </DialogClose>
             <Button variant="destructive" disabled={busy} onClick={resetSubscription}>
-              Reset URL
+              {t("resetUrl")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -76,5 +76,60 @@
     "copyFail": "コピーに失敗しました",
     "none": "-",
     "fallbackName": "アカウント"
+  },
+  "profile": {
+    "title": "個人情報",
+    "description": "あなたの Vxture アカウント情報。",
+    "back": "戻る"
+  },
+  "networkAccess": {
+    "title": "ネットワークアクセス",
+    "unboundDesc": "使い捨ての招待コードをバインドしてサブスクリプションを有効化します。",
+    "activateTitle": "有効化",
+    "activateDesc": "あなたの Vxture アカウントは有効です。管理者から受け取った招待コードを入力してください。",
+    "inviteCode": "招待コード",
+    "bindInvite": "招待をバインド",
+    "boundDesc": "サブスクリプションは有効です。URL をクライアントにコピーするか、詳細を表示してください。",
+    "subUrlTitle": "サブスクリプション URL",
+    "subUrlDesc": "この URL を Clash Verge、v2rayN、Stash などの対応クライアントにコピーしてください。",
+    "copyUrl": "URL をコピー",
+    "viewDetails": "詳細を表示",
+    "boundToast": "招待をバインドしました。",
+    "bindFailToast": "招待をバインドできませんでした。",
+    "copyToast": "サブスクリプション URL をコピーしました。"
+  },
+  "subscription": {
+    "title": "サブスクリプション詳細",
+    "noSubDesc": "有効なサブスクリプションはまだありません。",
+    "activateFirst": "先にホームページからネットワークアクセスを有効化してください。",
+    "backHome": "ホームに戻る",
+    "back": "戻る",
+    "detailsDesc": "アクセスの使用量、クォータ、有効期限、クライアントアドレス。",
+    "usageTitle": "使用量",
+    "usageDesc": "サブスクリプションのトラフィック、クォータ、有効期限。",
+    "subUrlTitle": "サブスクリプション URL",
+    "subUrlDesc": "この URL を Clash Verge、v2rayN、Stash などの対応クライアントにコピーしてください。",
+    "copyUrl": "URL をコピー",
+    "resetUrl": "URL をリセット",
+    "copyToast": "サブスクリプション URL をコピーしました。",
+    "resetToast": "サブスクリプション URL をリセットしました。",
+    "resetCurrentToast": "サブスクリプション URL は既に最新です。",
+    "resetFailToast": "サブスクリプション URL をリセットできませんでした。",
+    "resetDialogTitle": "サブスクリプション URL をリセットしますか?",
+    "resetDialogDesc": "クライアントが使用する URL が変更されます。すべてのデバイスで新しい URL を再度コピーする必要があります。",
+    "cancel": "キャンセル",
+    "metrics": {
+      "userCode": "ユーザーコード",
+      "status": "ステータス",
+      "used": "使用済み",
+      "totalQuota": "合計クォータ",
+      "remaining": "残り",
+      "quotaReset": "クォータリセット",
+      "expire": "有効期限",
+      "lastOnline": "最終オンライン",
+      "lastClient": "最終クライアント",
+      "subUpdated": "サブスクリプション更新",
+      "created": "作成日"
+    }
   }
 }

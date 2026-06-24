@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Button, Icon, Input, SectionCard, StatusBadge, useToast } from "@vxture/design-system";
 import type { StatusBadgeTone } from "@vxture/design-system";
+import { useTranslations } from "@umbra/shared/i18n";
 import { SectionHeading } from "./shell";
 import { fetchJson } from "./api";
 import type { AccountBinding, SessionPayload } from "./types";
@@ -33,6 +34,7 @@ export function NetworkAccess({
   const [inviteCode, setInviteCode] = useState(initialInvite ?? "");
   const [busy, setBusy] = useState(false);
   const { toast } = useToast();
+  const t = useTranslations("networkAccess");
   const account = session.account ?? null;
 
   async function bindInvite() {
@@ -42,11 +44,11 @@ export function NetworkAccess({
         "/api/account/apps/vpn/bind",
         { method: "POST", body: JSON.stringify({ inviteCode }) },
       );
-      toast({ tone: "success", title: "Invite bound." });
+      toast({ tone: "success", title: t("boundToast") });
       setSession((current) => (current ? { ...current, account: payload.account ?? null } : current));
     } catch (error) {
       const payload = (error as { payload?: { message?: string } }).payload;
-      toast({ tone: "error", title: "Invite could not be bound.", description: payload?.message });
+      toast({ tone: "error", title: t("bindFailToast"), description: payload?.message });
     } finally {
       setBusy(false);
     }
@@ -57,16 +59,16 @@ export function NetworkAccess({
       <>
         <SectionHeading
           icon="shield-check"
-          title="Network access"
-          description="Bind your one-time invite code to activate your subscription."
+          title={t("title")}
+          description={t("unboundDesc")}
         />
         <SectionCard
-          title="Activate"
-          description="Your Vxture account is active. Enter the invite code from your administrator."
+          title={t("activateTitle")}
+          description={t("activateDesc")}
         >
           <div className="form">
             <label className="field">
-              Invite code
+              {t("inviteCode")}
               <Input
                 value={inviteCode}
                 onChange={(event) => setInviteCode(event.target.value)}
@@ -76,7 +78,7 @@ export function NetworkAccess({
             <div className="actions">
               <Button onClick={bindInvite} disabled={busy || !inviteCode.trim()}>
                 <Icon name="check" size="sm" />
-                Bind invite
+                {t("bindInvite")}
               </Button>
             </div>
           </div>
@@ -89,13 +91,13 @@ export function NetworkAccess({
     <>
       <SectionHeading
         icon="shield-check"
-        title="Network access"
-        description="Your subscription is active. Copy the URL into your client, or view full details."
+        title={t("title")}
+        description={t("boundDesc")}
         badge={<StatusBadge tone={statusTone(account.status)} dot>{account.status}</StatusBadge>}
       />
       <SectionCard
-        title="Subscription URL"
-        description="Copy this URL into Clash Verge, v2rayN, Stash, or a compatible client."
+        title={t("subUrlTitle")}
+        description={t("subUrlDesc")}
       >
         <div className="card-stack">
           <code className="url-box">{account.subscriptionUrl}</code>
@@ -103,16 +105,16 @@ export function NetworkAccess({
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(account.subscriptionUrl);
-                toast({ tone: "success", title: "Subscription URL copied." });
+                toast({ tone: "success", title: t("copyToast") });
               }}
             >
               <Icon name="copy" size="sm" />
-              Copy URL
+              {t("copyUrl")}
             </Button>
             <Button variant="secondary" asChild>
               <a href="/apps/vpn">
                 <Icon name="chart-bar" size="sm" />
-                View details
+                {t("viewDetails")}
               </a>
             </Button>
           </div>
