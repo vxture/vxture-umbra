@@ -195,17 +195,18 @@ body {
   background: var(--vx-color-border);
 }
 
-/* -- Tenant info panel (Vultr-style, leftmost header module) ----------------
-   A ghost trigger (tenant name) opens the account-menu popover chrome with a
-   tenant identity header over a sectioned detail card. */
+/* -- Tenant info panel (leftmost header module) ------------------------------
+   A compact trigger (tenant name + icon) opens a detail popover styled to match
+   the account menu: identity header, dividers, labelled rows, settings action. */
 .tenant-trigger {
   display: inline-flex;
   align-items: center;
   gap: var(--vx-space-xs);
+  height: 2rem; /* 32px - matches toolbar button height */
   max-width: 16rem;
-  padding: var(--vx-space-2xs) var(--vx-space-sm);
+  padding: 0 var(--vx-space-sm);
   border: none;
-  background: transparent;
+  background: var(--vx-color-surface-muted);
   border-radius: var(--vx-radius-md);
   color: var(--vx-color-text-primary);
   font: inherit;
@@ -215,12 +216,14 @@ body {
 
 .tenant-trigger:hover,
 .tenant-trigger[data-state="open"] {
-  background: var(--vx-shell-tool-button-hover-background, var(--vx-color-surface-muted));
+  background: var(--vx-color-surface-raised, var(--vx-color-surface-muted));
+  outline: 1px solid var(--vx-color-border);
+  outline-offset: -1px;
 }
 
 .tenant-trigger__lead {
-  color: var(--vx-color-text-muted);
   flex: none;
+  color: var(--vx-color-primary);
 }
 
 .tenant-trigger__text {
@@ -234,10 +237,14 @@ body {
 .tenant-trigger__caret {
   color: var(--vx-color-text-muted);
   flex: none;
+  margin-left: var(--vx-space-2xs);
 }
 
-/* Tenant popover: identity header + detail rows. Reuses .acct-menu sizing. */
+/* Tenant popover: slightly wider than the account menu to accommodate more
+   content columns. Reuses .acct-menu for z-index; overrides the width here. */
 .tenant-menu {
+  width: 360px;
+  max-width: min(92vw, 420px);
   padding: var(--vx-space-md);
 }
 
@@ -245,18 +252,20 @@ body {
   display: flex;
   align-items: center;
   gap: var(--vx-space-sm);
+  padding-bottom: var(--vx-space-2xs);
 }
 
+/* Mark: square avatar-equivalent tinted with primary, matches DS identity blocks. */
 .tenant-head__mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   flex: none;
   border-radius: var(--vx-radius-md);
-  background: color-mix(in srgb, var(--vx-control-brand) 12%, transparent);
-  color: var(--vx-control-brand);
+  background: var(--vx-color-primary-soft);
+  color: var(--vx-color-primary);
 }
 
 .tenant-head__identity {
@@ -267,6 +276,7 @@ body {
 .tenant-head__name {
   margin: 0;
   font-weight: 650;
+  font-size: var(--vx-typography-body-size);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -282,13 +292,19 @@ body {
   white-space: nowrap;
 }
 
+/* Type tag: mirrors the brand-tag pill (primary-soft bg, primary text). */
 .tenant-head__type {
   flex: none;
-  padding: 0.1rem 0.5rem;
-  border-radius: var(--vx-radius-full, 999px);
-  background: var(--vx-color-surface-muted);
-  color: var(--vx-color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  height: var(--vx-space-xl); /* 24px */
+  padding: 0 var(--vx-space-sm);
+  border-radius: var(--vx-radius-sm);
+  background: var(--vx-color-primary-soft);
+  color: var(--vx-color-primary);
   font-size: var(--vx-typography-body-sm-size);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .tenant-row {

@@ -70,9 +70,9 @@ export function TenantPanel({ user }: { user: VxtureUser }) {
     <Popover>
       <PopoverTrigger asChild>
         <button type="button" className="tenant-trigger" aria-label={t("open")}>
-          <Icon name="buildings" size="sm" className="tenant-trigger__lead" />
+          <Icon name="buildings" size={24} className="tenant-trigger__lead" />
           <span className="tenant-trigger__text">{tenantName}</span>
-          <Icon name="chevron-down" size="xs" className="tenant-trigger__caret" />
+          <Icon name="chevron-down" size={14} className="tenant-trigger__caret" />
         </button>
       </PopoverTrigger>
 
@@ -80,7 +80,7 @@ export function TenantPanel({ user }: { user: VxtureUser }) {
         {/* Identity header */}
         <div className="tenant-head">
           <span className="tenant-head__mark">
-            <Icon name="buildings" size="sm" />
+            <Icon name="buildings" size={20} />
           </span>
           <div className="tenant-head__identity">
             <p className="tenant-head__name">{tenantName}</p>
