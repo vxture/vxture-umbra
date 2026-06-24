@@ -248,11 +248,14 @@ a {
   letter-spacing: var(--vx-typography-logo-letter-spacing);
 }
 
-/* Header quick-controls pill: drop the DS padding + (transparent, height-adding)
-   border so the pill height equals the 32px toolbar buttons inside it. */
+/* Header quick-controls pill: drop the DS padding + border so the pill height
+   equals the 32px toolbar buttons inside it. Re-draw the light capsule edge with
+   an outline (outline does not add to the box height, so it stays 32px). */
 .vx-shell-header__action-group {
   padding: 0;
   border-width: 0;
+  outline: 1px solid var(--vx-color-border);
+  outline-offset: -1px;
 }
 
 /* Brand lockup: wordmark + tag, vertically centered, with a 16px gap. */
