@@ -21,15 +21,6 @@ import { useTranslations } from "@umbra/shared/i18n";
 import type { AdminInvitesPayload, AdminUserRow } from "./types";
 
 /**
- * Localized copy for the signed-in invites surface. The English side must keep
- * the literal phrases "Invite link", "Subscription URL", "Copy link", and
- * "Copy code" - a deploy contract check (06-check-deploy-contracts.py) asserts
- * they are present in this file. Covers both the signed-in surface and the
- * pre-auth login screen.
- */
-
-
-/**
  * Content-area section heading. The DS PageHeader sizes its title from
  * shell-scoped tokens (--vx-platform-page-title-size) that this portal's
  * website-style chrome does not provide, so the title would collapse to a bare
