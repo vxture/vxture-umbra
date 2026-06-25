@@ -66,6 +66,7 @@ const authReqKey = (state: string) => `authreq:${state}`;
 const sessKey = (rpsid: string) => `rpsess:${rpsid}`;
 const tokKey = (rpsid: string) => `rptok:${rpsid}`;
 const sidKey = (sid: string) => `sid:${sid}`;
+const seenLogoutKey = (jti: string) => `bclogout:${jti}`;
 
 const AUTHREQ_TTL = 600;
 
@@ -158,4 +159,18 @@ export async function destroyBySid(cfg: OidcConfig, sid: string): Promise<number
   pipe.del(sidKey(sid));
   await pipe.exec();
   return rpsids.length;
+}
+
+/**
+ * Atomically record a back-channel logout_token `jti` as seen for the token's
+ * validity window. Returns true the first time (proceed with logout), false on
+ * replay so the receiver can ack idempotently without re-processing.
+ */
+export async function markLogoutTokenSeen(
+  cfg: OidcConfig,
+  jti: string,
+  ttlSeconds: number,
+): Promise<boolean> {
+  const res = await redis(cfg).set(seenLogoutKey(jti), "1", "EX", Math.max(ttlSeconds, 1), "NX");
+  return res === "OK";
 }

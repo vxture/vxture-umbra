@@ -9,6 +9,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const ANON = { authenticated: false } as const;
+// Identity-bearing responses must never be cached by the browser or any proxy.
+const NO_STORE = { "Cache-Control": "no-store" };
 
 /**
  * Bootstrap endpoint: resolves the opaque session cookie to the current user's
@@ -18,14 +20,14 @@ const ANON = { authenticated: false } as const;
  */
 export async function GET(request: NextRequest) {
   const cfg = getOidcConfig();
-  if (!cfg) return NextResponse.json(ANON, { status: 200 });
+  if (!cfg) return NextResponse.json(ANON, { status: 200, headers: NO_STORE });
 
   const rpsid = request.cookies.get(cfg.cookieName)?.value;
-  if (!rpsid) return NextResponse.json(ANON, { status: 200 });
+  if (!rpsid) return NextResponse.json(ANON, { status: 200, headers: NO_STORE });
 
   let identity = await getIdentity(cfg, rpsid);
   if (!identity) {
-    const res = NextResponse.json(ANON, { status: 200 });
+    const res = NextResponse.json(ANON, { status: 200, headers: NO_STORE });
     clearSessionCookie(res, cfg);
     return res;
   }
@@ -50,7 +52,7 @@ export async function GET(request: NextRequest) {
       identity = fresh;
     } catch {
       await destroySession(cfg, rpsid);
-      const res = NextResponse.json(ANON, { status: 200 });
+      const res = NextResponse.json(ANON, { status: 200, headers: NO_STORE });
       clearSessionCookie(res, cfg);
       return res;
     }
@@ -76,5 +78,5 @@ export async function GET(request: NextRequest) {
       roles: identity.roles,
       userType: identity.user_type,
     },
-  });
+  }, { headers: NO_STORE });
 }
