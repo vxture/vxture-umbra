@@ -92,15 +92,12 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def _build_tls_context() -> ssl.SSLContext:
-    """Verify the internal Marzban chain + hostname against MARZBAN_CA_CERT
-    (SAN=umbra-marzban) when provisioned; fall back to unverified only when no
-    internal CA is set."""
+    """Verify the internal Marzban chain + hostname against MARZBAN_CA_CERT (the
+    internal cert, SAN=umbra-marzban). Fail closed if it is not set."""
     ca = os.environ.get("MARZBAN_CA_CERT", "").strip()
-    if ca and os.path.exists(ca):
-        return ssl.create_default_context(cafile=ca)
-    # No CA provisioned: degrade to unverified rather than failing closed.
-    # Production always sets MARZBAN_CA_CERT; this is a dev/misconfig fallback.
-    return ssl._create_unverified_context()
+    if not ca or not os.path.exists(ca):
+        raise RuntimeError("MARZBAN_CA_CERT must point to the internal Marzban certificate")
+    return ssl.create_default_context(cafile=ca)
 
 
 def open_url(url: str, headers: dict[str, str], timeout: int = 10):

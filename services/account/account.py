@@ -84,16 +84,13 @@ def require_secret(name: str, value: str) -> bytes:
 SESSION_KEY = require_secret("ACCOUNT_SESSION_SECRET", SESSION_SECRET)
 INVITE_KEY = require_secret("ACCOUNT_INVITE_SECRET", INVITE_SECRET)
 def _build_tls_context() -> ssl.SSLContext:
-    """TLS context for the internal Marzban calls. When MARZBAN_CA_CERT points to
-    the internal cert (SAN=umbra-marzban), verify the chain AND the hostname.
-    Fall back to an unverified context only when no internal CA is provisioned."""
+    """TLS context for the internal Marzban calls: verify the chain AND the
+    hostname against MARZBAN_CA_CERT (the internal cert, SAN=umbra-marzban). Fail
+    closed if it is not provisioned (production always sets it)."""
     ca = os.environ.get("MARZBAN_CA_CERT", "").strip()
-    if ca and os.path.exists(ca):
-        return ssl.create_default_context(cafile=ca)
-    # No CA provisioned: degrade to unverified rather than failing closed, so a
-    # missing internal cert cannot take down the OIDC session surface. Production
-    # always sets MARZBAN_CA_CERT; this is a dev/misconfiguration fallback.
-    return ssl._create_unverified_context()
+    if not ca or not os.path.exists(ca):
+        raise RuntimeError("MARZBAN_CA_CERT must point to the internal Marzban certificate")
+    return ssl.create_default_context(cafile=ca)
 
 
 TLS_CONTEXT = _build_tls_context()
