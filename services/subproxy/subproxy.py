@@ -60,21 +60,56 @@ def public_subscription_url(source: BaseHTTPRequestHandler) -> str:
     return f"https://{host}{source.path}"
 
 
+# Allowlist of client headers forwarded to the internal Marzban /sub endpoint.
+# User-Agent is required (Marzban picks the config format from it); the rest are
+# standard content-negotiation / caching headers. Everything else a client sends
+# (cookies, authorization, x-forwarded-*, custom headers) is dropped.
+FORWARD_REQUEST_HEADERS = {
+    "accept",
+    "accept-language",
+    "user-agent",
+    "range",
+    "if-modified-since",
+    "if-none-match",
+}
+
+
 def request_headers(source: BaseHTTPRequestHandler) -> dict[str, str]:
     headers: dict[str, str] = {}
     for key, value in source.headers.items():
-        lower = key.lower()
-        if lower in HOP_BY_HOP_HEADERS or lower == "host":
-            continue
-        headers[key] = value
+        if key.lower() in FORWARD_REQUEST_HEADERS:
+            headers[key] = value
     headers["Accept-Encoding"] = "identity"
     return headers
 
 
+def _build_tls_context() -> ssl.SSLContext:
+    """If MARZBAN_CA_CERT points to a CA bundle, verify Marzban's chain against it
+    (hostname check left off: the internal cert CN need not match the service
+    name); otherwise fall back to an explicit unverified context for the
+    self-signed cert reached over the private Docker network."""
+    ca = os.environ.get("MARZBAN_CA_CERT", "").strip()
+    if ca and os.path.exists(ca):
+        ctx = ssl.create_default_context(cafile=ca)
+        ctx.check_hostname = False
+        return ctx
+    return ssl._create_unverified_context()
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Refuse redirects: Marzban never legitimately redirects /sub, so following a
+    3xx would let a spoofed upstream bounce us to an arbitrary host (SSRF)."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=_build_tls_context()))
+
+
 def open_url(url: str, headers: dict[str, str], timeout: int = 10):
-    context = ssl._create_unverified_context()
     request = urllib.request.Request(url, headers=headers, method="GET")
-    return urllib.request.urlopen(request, timeout=timeout, context=context)
+    return _OPENER.open(request, timeout=timeout)
 
 
 def fetch_username(token: str) -> str | None:
