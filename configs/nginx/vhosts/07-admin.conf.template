@@ -41,8 +41,17 @@ server {
         include /etc/nginx/snippets/proxy-headers.conf;
     }
 
+    # Built-in admin password login: strict rate limit to slow brute force.
+    # Exact match wins over the /api/account/ prefix below for this one path.
+    location = /api/account/admin/login {
+        limit_req zone=admin_login burst=5 nodelay;
+        proxy_pass http://$account_upstream;
+        include /etc/nginx/snippets/proxy-headers.conf;
+    }
+
     # Account API: built-in admin login + invite/subscription endpoints.
     location ^~ /api/account/ {
+        limit_req zone=account_api burst=60 nodelay;
         proxy_pass http://$account_upstream;
         include /etc/nginx/snippets/proxy-headers.conf;
     }

@@ -43,9 +43,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # 127.0.0.1 healthcheck cannot reach it. Bind all interfaces instead.
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3230
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
 # Monorepo standalone output is nested under the workspace dir (admin/).
-COPY --from=builder /app/admin/.next/standalone ./
-COPY --from=builder /app/admin/.next/static ./admin/.next/static
-COPY --from=builder /app/admin/public ./admin/public
+COPY --from=builder --chown=nextjs:nextjs /app/admin/.next/standalone ./
+COPY --from=builder --chown=nextjs:nextjs /app/admin/.next/static ./admin/.next/static
+COPY --from=builder --chown=nextjs:nextjs /app/admin/public ./admin/public
+USER nextjs
 EXPOSE 3230
 CMD ["node", "admin/server.js"]
