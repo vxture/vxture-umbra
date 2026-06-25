@@ -90,7 +90,10 @@ def _build_tls_context() -> ssl.SSLContext:
     ca = os.environ.get("MARZBAN_CA_CERT", "").strip()
     if ca and os.path.exists(ca):
         return ssl.create_default_context(cafile=ca)
-    return ssl._create_unverified_context()  # NOSONAR: fallback only when no internal CA is set
+    # No CA provisioned: degrade to unverified rather than failing closed, so a
+    # missing internal cert cannot take down the OIDC session surface. Production
+    # always sets MARZBAN_CA_CERT; this is a dev/misconfiguration fallback.
+    return ssl._create_unverified_context()
 
 
 TLS_CONTEXT = _build_tls_context()

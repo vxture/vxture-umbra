@@ -98,7 +98,9 @@ def _build_tls_context() -> ssl.SSLContext:
     ca = os.environ.get("MARZBAN_CA_CERT", "").strip()
     if ca and os.path.exists(ca):
         return ssl.create_default_context(cafile=ca)
-    return ssl._create_unverified_context()  # NOSONAR: fallback only when no internal CA is set
+    # No CA provisioned: degrade to unverified rather than failing closed.
+    # Production always sets MARZBAN_CA_CERT; this is a dev/misconfig fallback.
+    return ssl._create_unverified_context()
 
 
 def open_url(url: str, headers: dict[str, str], timeout: int = 10):
