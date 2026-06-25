@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getOidcConfig } from "../lib/config";
 import { refreshTokens, verifyToken } from "../lib/oidc";
-import { getIdentity, getTokens, putTokens, destroySession } from "../lib/session-store";
-import { toTokenBundle } from "../lib/claims";
+import { getIdentity, getTokens, putTokens, putIdentity, destroySession } from "../lib/session-store";
+import { toIdentityClaims, toTokenBundle } from "../lib/claims";
 import { clearSessionCookie } from "../lib/cookie";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
   const rpsid = request.cookies.get(cfg.cookieName)?.value;
   if (!rpsid) return NextResponse.json(ANON, { status: 200 });
 
-  const identity = await getIdentity(cfg, rpsid);
+  let identity = await getIdentity(cfg, rpsid);
   if (!identity) {
     const res = NextResponse.json(ANON, { status: 200 });
     clearSessionCookie(res, cfg);
@@ -35,9 +35,19 @@ export async function GET(request: NextRequest) {
   if (tokens && tokens.access_exp - nowSec <= 60) {
     try {
       const rotated = await refreshTokens(cfg, tokens.refresh_token);
-      const idClaims = await verifyToken(cfg, rotated.id_token);
-      await verifyToken(cfg, rotated.access_token);
-      await putTokens(cfg, rpsid, toTokenBundle(rotated, idClaims));
+      const rotatedId = await verifyToken(cfg, rotated.id_token);
+      const rotatedAccess = await verifyToken(cfg, rotated.access_token);
+      if (!rotatedId.sub || rotatedId.sub !== rotatedAccess.sub) throw new Error("subject mismatch");
+      // Refresh re-derives identity so role/org changes take effect without a
+      // full re-login; the subject must stay the same and the sid (back-channel
+      // logout index) is preserved if the rotated id_token omits it.
+      const fresh = toIdentityClaims(rotatedId, rotatedAccess);
+      if (fresh.sub !== identity.sub) throw new Error("subject changed on refresh");
+      if (!fresh.sid) fresh.sid = identity.sid;
+      else if (fresh.sid !== identity.sid) throw new Error("sid changed on refresh");
+      await putIdentity(cfg, rpsid, fresh);
+      await putTokens(cfg, rpsid, toTokenBundle(rotated, rotatedId));
+      identity = fresh;
     } catch {
       await destroySession(cfg, rpsid);
       const res = NextResponse.json(ANON, { status: 200 });

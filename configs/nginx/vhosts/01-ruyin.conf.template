@@ -14,7 +14,14 @@ server {
     set $account_upstream "umbra-account:3281";
     set $account_web_upstream "umbra-account-web:3220";
 
+    # Admin API endpoints are served only on the admin vhost; fence them off on
+    # the public front door so the built-in admin surface is unreachable here.
+    location ^~ /api/account/admin/ {
+        return 404;
+    }
+
     location ^~ /api/account/ {
+        limit_req zone=account_api burst=60 nodelay;
         proxy_pass http://$account_upstream;
         include /etc/nginx/snippets/proxy-headers.conf;
     }
@@ -23,6 +30,7 @@ server {
     # back_channel_logout_uri are on the apex (RUYIN_BASE_URL=https://ruyin.ai),
     # so the apex must serve /auth/* even though the marketing site is the root.
     location ^~ /auth/ {
+        limit_req zone=auth_flow burst=30 nodelay;
         proxy_pass http://$account_web_upstream;
         include /etc/nginx/snippets/proxy-headers.conf;
     }

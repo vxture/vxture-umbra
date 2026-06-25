@@ -16,12 +16,19 @@ export interface TokenSet {
   scope?: string;
 }
 
+// Network guards: a hung IdP must not stall verification or token exchange.
+const JWKS_TIMEOUT_MS = 5000;
+const TOKEN_TIMEOUT_MS = 8000;
+
 const jwksCache = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
 
 function getJwks(cfg: OidcConfig) {
   let jwks = jwksCache.get(cfg.endpoints.jwks);
   if (!jwks) {
-    jwks = createRemoteJWKSet(new URL(cfg.endpoints.jwks));
+    jwks = createRemoteJWKSet(new URL(cfg.endpoints.jwks), {
+      timeoutDuration: JWKS_TIMEOUT_MS,
+      cooldownDuration: 30000,
+    });
     jwksCache.set(cfg.endpoints.jwks, jwks);
   }
   return jwks;
@@ -43,6 +50,11 @@ export async function verifyToken(
     audience: cfg.clientId,
     clockTolerance: 60,
   });
+  // jwtVerify enforces exp/nbf but not iat; reject tokens issued in the future
+  // beyond clock skew (defense against forged/replayed timestamps).
+  if (typeof payload.iat === "number" && payload.iat > Math.floor(Date.now() / 1000) + 60) {
+    throw new Error("iat in the future");
+  }
   if (opts.expectedNonce !== undefined) {
     if (payload.nonce !== opts.expectedNonce) {
       throw new Error("nonce mismatch");
@@ -66,6 +78,7 @@ async function postToken(cfg: OidcConfig, body: URLSearchParams): Promise<TokenS
     },
     body: body.toString(),
     cache: "no-store",
+    signal: AbortSignal.timeout(TOKEN_TIMEOUT_MS),
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
