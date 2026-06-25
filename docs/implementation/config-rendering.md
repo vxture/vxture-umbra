@@ -39,7 +39,12 @@ Do not use `user.username` in the Clash subscription template; Marzban does not 
 | `configs/nginx/vhosts/*.conf.template` | `DATA_DIR/nginx/conf.d/*.conf` |
 | `configs/nginx/snippets/*.conf` | `DATA_DIR/nginx/snippets/*.conf` |
 | `configs/xray/config.json.template` | `DATA_DIR/marzban/xray_config.json` |
+| `configs/hysteria/config.yaml.template` | `RUNTIME_DIR/hysteria/config.yaml` |
 | `configs/marzban/clash-subscription.j2` | `DATA_DIR/marzban/templates/clash/default.yml` |
+
+The xray config, the hysteria config, and the rendered Clash template are written
+`0600` because they embed secrets (the REALITY private key, the hysteria
+password); `06-check-deploy-contracts.py` locks these modes.
 
 ## Website Assets
 

@@ -30,6 +30,11 @@ The unquoted `filename=Ruyin-USER01` is intentional. Some clients display
 Marzban's quoted filename literally or with escape slashes, such as
 `\"USER01\`.
 
+The proxy forwards only an allowlist of client headers to Marzban - notably
+`User-Agent`, which Marzban uses to pick the config format - plus `Accept`,
+`Accept-Language`, `Range`, and the conditional-request headers. It refuses HTTP
+redirects, since the upstream host is fixed to the internal Marzban.
+
 ## nginx Boundary
 
 `configs/nginx/vhosts/04-sub.conf.template` exposes only:

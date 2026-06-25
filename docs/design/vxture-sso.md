@@ -69,6 +69,12 @@ have been removed.
 The RP library lives under `portals/console/app/auth/lib/`
 (`config`, `pkce`, `oidc`, `claims`, `cookie`, `return-to`, `session-store`).
 
+## Login-flow integrity
+
+- `/auth/login` sets a host-only, `/auth`-scoped `state` binding cookie; `/auth/callback` rejects any `state` that does not match it (login-CSRF / session fixation) before consuming the single-use authreq.
+- After token exchange (and on refresh), the id_token and access_token must describe the same `sub`; a future `iat` beyond skew is rejected; the JWKS fetch and token-endpoint calls have timeouts so a hung IdP cannot stall verification.
+- `/auth/session` responses are `Cache-Control: no-store`. The back-channel logout receiver is single-use per `jti` (replays are acknowledged but not re-processed, within the token's validity window) and rejects a null backchannel-logout event value.
+
 ## Session store (Redis)
 
 Four key families in `umbra-redis`:

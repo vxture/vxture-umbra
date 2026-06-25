@@ -19,6 +19,13 @@ Nginx runs two listeners (stream on 443, internal HTTP on 8443); see
 [`architecture.md`](architecture.md) "SNI Routing Detail" for the routing model
 and rationale. The implementation is below.
 
+Shared edge hardening lives in `configs/nginx`: rate-limit zones in `nginx.conf`
+(account API, the `/auth/*` handshake, and the admin login), a shared
+`snippets/security-headers.conf` included by every vhost, and a `404` for
+`/api/account/admin/*` on the apex and console vhosts so the admin API is reachable
+only on the admin vhost. See [`../specs/security.md`](../specs/security.md)
+"Edge Hardening".
+
 ### Virtual Host Configs
 
 | Template | Domain | Upstream |
@@ -309,6 +316,9 @@ All stateful services use SQLite on this 1C1G node; no PostgreSQL container. See
 | `DATA_DIR/marzban/db.sqlite3` | Marzban |
 | `DATA_DIR/account/account.db` | Account portal |
 | `DATA_DIR/vaultwarden/data/db.sqlite3` | Vaultwarden |
+
+The account portal opens its SQLite database in WAL mode with a busy timeout so
+concurrent reads proceed during a write.
 
 ### Backup
 

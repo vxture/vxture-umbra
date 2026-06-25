@@ -14,6 +14,14 @@ Root-owned files in `DATA_DIR` can break later deploys, backups, certificate syn
 
 Do not add nginx IP allow/deny or nginx Basic Auth to the admin vhost. Network restrictions block normal operator access to Marzban pages, and Basic Auth breaks Marzban's bearer-token API calls.
 
+## Edge Hardening
+
+The nginx gateway rate-limits the auth and account surfaces per client IP (resolved from the PROXY-protocol header): the account API, the OIDC RP `/auth/*` handshake, and - strictest - the built-in admin password login (`/api/account/admin/login`). The account admin API (`/api/account/admin/*`) is reachable only on the admin vhost; the apex and console vhosts return `404` for it. These limits sit on the account/auth paths only and do not touch the Marzban console paths, so the "no IP/Basic-Auth restrictions on admin" rule above still holds.
+
+All vhosts emit a shared security header set (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy, and a framing-only Content-Security-Policy). A full resource CSP is a follow-up (needs a Next.js nonce).
+
+Outbound calls from the account service and the subscription proxy to the internal Marzban refuse HTTP redirects (the upstream host is fixed to `MARZBAN_BASE_URL`), and the subproxy forwards only an allowlist of client headers. The account SQLite database runs in WAL mode. Verifying the internal Marzban TLS chain (it is currently an unverified self-signed cert over the private Docker network) is a follow-up.
+
 ## Subscriptions
 
 Only `GET /sub/<marzban-token>` is public.
