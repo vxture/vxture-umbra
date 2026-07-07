@@ -141,7 +141,7 @@ done
 log_step "HTTPS endpoints..."
 
 check_http "$APEX_DOMAIN"        "https://$APEX_DOMAIN"
-check_http_body_contains "$APEX_DOMAIN Umbra homepage" "https://$APEX_DOMAIN/" "VXTURE STUDIO"
+check_http_body_contains "$APEX_DOMAIN Umbra homepage" "https://$APEX_DOMAIN/" "vxture studio"
 check_http "$WWW_DOMAIN"         "https://$WWW_DOMAIN"
 # EDGE_DOMAIN (vpn) display retired: vpn.ruyin.ai now falls through to the
 # catch-all (444), identical to any unknown host. The proxy node on :443 is

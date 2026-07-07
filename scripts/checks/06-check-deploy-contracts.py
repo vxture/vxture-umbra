@@ -369,7 +369,7 @@ CHECKS: list[tuple[str, Path, list[str]]] = [
             "umbra-account",
             "umbra-account-web",
             "check_http_body_contains",
-            "VXTURE STUDIO",
+            "vxture studio",
             "Umbra Account",
             "$CONSOLE_DOMAIN account home",
             "$CONSOLE_DOMAIN account login",
