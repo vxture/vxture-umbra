@@ -5,6 +5,9 @@
 # including HTTPS/443.
 
 # Umbra public services. Avoid proxy loops and keep management endpoints direct.
+# ruyin.ai apex/subdomains are covered here via APEX_DOMAIN etc; vxture.com
+# (accounts.vxture.com IdP and the vxture site) is a separate owned domain and
+# is not otherwise proxy-exempt, so it needs its own suffix rule below.
 DOMAIN-SUFFIX,{{ APEX_DOMAIN }}
 DOMAIN-SUFFIX,{{ WWW_DOMAIN }}
 DOMAIN-SUFFIX,{{ EDGE_DOMAIN }}
@@ -12,6 +15,7 @@ DOMAIN-SUFFIX,{{ SUB_DOMAIN }}
 DOMAIN-SUFFIX,{{ CONSOLE_DOMAIN }}
 DOMAIN-SUFFIX,{{ ADMIN_DOMAIN }}
 DOMAIN-SUFFIX,{{ PAS_DOMAIN }}
+DOMAIN-SUFFIX,vxture.com
 
 # Microsoft / Windows / Office / Azure. REALITY camouflage and auth endpoints
 # are sensitive to proxy forcing.
