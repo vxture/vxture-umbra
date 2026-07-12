@@ -1,19 +1,50 @@
 ---
 name: cicd-deploy-flow
-description: "GitHub Actions CI/CD git flow to ship a change to worker-03, the exact promotion command, and operational gotchas"
+description: "GitHub Actions CI/CD flow to ship a change to the production node 167.179.73.161, rsync-no-clone deploy, /srv/umbra layout, promotion command, gotchas; deploy identifiers renamed worker-03 -> production/DEPLOY_*/deploy 2026-06-21"
 metadata: 
   node_type: memory
   type: project
   originSessionId: a24b8b4e-44c5-4c64-bea4-f7f29f002361
 ---
 
-# CI/CD Deploy Flow (to worker-03)
+# CI/CD Deploy Flow (to the worker node)
 
 Design doc: `docs/operations/github-actions.md`. This is the actionable runbook +
 gotchas verified in practice. Service deploy internals live in [[deployment-modules]].
 
+**2026-06-21 MIGRATION (worker-03 -> worker-04) + layout/deploy redesign (PR #106/#107, prod):**
+- **Physical server moved**: old worker-03 `207.148.95.189` -> new `vx-worker-04` `167.179.73.161`
+  (Vultr Tokyo, Ubuntu 26.04, 1 core/950MB). SSH user `stone` (root login DISABLED), same
+  `vultr-access` key. Old server kept RUNNING as rollback (decommission TBD once stable).
+  The CI job/environment/secrets initially KEPT their `worker-03`/`WORKER_03_*` names (only
+  values repointed) but were **RENAMED 2026-06-21 (PR #111)**: job `deploy-worker-03` ->
+  `deploy`, environment `worker-03` -> `production`, secrets `WORKER_03_*` -> `DEPLOY_*`,
+  concurrency `release-worker-03` -> `release-production`. The old `worker-03` env +
+  `WORKER_03_*` secrets were DELETED after the first green deploy on the new names.
+  `DEPLOY_REPO_DIR` left UNSET (release.yml default `/srv/umbra/deploy`). KEPT: retired
+  filename `deploy-worker-03.yml` + internal `WORKER_DEPLOY_DIR` (a deploy-package term).
+- **Server layout flattened/shallowed**: `/srv/vxture/{repo,data,backup}/umbra` ->
+  `/srv/umbra/{etc,deploy,runtime,data,backup}`. `etc/.env` is the persistent operator config
+  (NOT in `deploy/`, which is disposable). `runtime/` = rendered nginx config (regenerable);
+  `data/` = state (marzban db, vaultwarden, account, redis, private/reality.json, letsencrypt);
+  `REPO_DIR`=`/srv/umbra/deploy`. `01-env.sh` sources `$PROJECT_ROOT/etc/.env` (lib/../..).
+- **No git clone on the server**: release.yml's `deploy` job now `actions/checkout`s then
+  **rsyncs the deploy subset** (`deploy/`, `configs/`, `docker-compose.yml`) to `/srv/umbra/deploy`
+  (writes a `VERSION` file with the SHA) instead of `git fetch/checkout` on the host.
+- **Repo deploy dir flattened**: `deploy/worker-03/` -> `deploy/` (step scripts now at
+  `deploy/scripts/`, e.g. `deploy/scripts/19-check-clash-rules.py`; lib at `deploy/lib/`).
+- **Domain rename**: `pass.ruyin.ai` -> `pas.ruyin.ai` (vaultwarden; vhost is `{{ PASS_DOMAIN }}`-driven).
+- **GOTCHA (cost a failed deploy)**: setting a `gh secret` whose value is a `/abs/path` FROM
+  Git Bash on Windows -> MSYS mangles `/srv/umbra/deploy` into `D:/Program Files/Git/srv/umbra/deploy`.
+  Use `MSYS_NO_PATHCONV=1 gh secret set ...` or rely on the YAML default. (`WORKER_03_REPO_DIR`
+  was deleted so the release.yml default `/srv/umbra/deploy` applies.)
+- **GOTCHA**: the rsync deploy job MUST `actions/checkout` first (a separate job from `build`,
+  no implicit checkout) or rsync fails "change_dir ... No such file or directory" (fixed PR #107).
+- VPN/GFW reliability after the move: see [[reality-gfw-interference]] (swapping Vultr Tokyo IPs
+  did NOT escape the China-path interference; the node itself is healthy).
+
 **Branch protection** is enforced via modern GitHub **Rulesets** (NOT legacy branch
-protection — `branches/*/protection` returns 404; check `gh api repos/vxture/umbra/rulesets`).
+protection — `branches/*/protection` returns 404; check `gh api repos/vxture/vxture-Umbra/rulesets`).
 Two active rulesets, "Umbra main release gate" (17155095) and "Umbra develop quality
 gate" (17155096), each enforce on their branch: block deletion, block non-fast-forward,
 require linear history, and require the `quality-gate` status check with
@@ -37,12 +68,12 @@ identity.
 ```
 feature branch -> PR to develop -> ci (quality-gate) -> squash-merge to develop
   -> ci on develop -> controlled promotion develop->main (promote.yml, workflow_dispatch)
-  -> release on main PUSH: detect -> docker-build (6 images) -> deploy-worker-03 (auto SSH)
+  -> release on main PUSH: detect -> docker-build (6 images) -> deploy (auto SSH)
 ```
 NOTE (P3a+P3b, 2026-06-08): CI no longer runs on `main` (it re-tested the
 identical FF'd sha). docker-build.yml + deploy-worker-03.yml were CONSOLIDATED
 into a single `release.yml` triggered on `push: main` (event=push, github.sha)
-with three sequential jobs detect -> docker-build -> deploy-worker-03 (one
+with three sequential jobs detect -> docker-build -> deploy (one
 change-detection pass, no workflow_run hops). The promote FF push (via
 PROMOTION_TOKEN PAT) fires `on: push`, so the chain runs. To find the last
 deploy/base, query `gh run list --workflow release.yml` (NOT the old files).
@@ -78,7 +109,7 @@ expected_sha == origin/develop, main is ancestor of develop, and develop's
 
 **Gotchas:**
 - `PROMOTION_TOKEN` IS configured, so the FF push to main triggers the downstream
-  `ci -> docker-build -> deploy-worker-03` chain (GITHUB_TOKEN pushes would not).
+  `ci -> docker-build -> deploy` chain (GITHUB_TOKEN pushes would not).
 - Two timing/efficiency facts to respect (see [[cicd-efficiency-findings]]):
   - After merging a PR to develop you MUST wait for develop's `quality-gate` to go
     green BEFORE running promote.yml -- promoting too fast fails validation
@@ -108,7 +139,7 @@ expected_sha == origin/develop, main is ancestor of develop, and develop's
   use `-D` after confirming the PR is MERGED via `gh pr view`.
 - CI has an ASCII-only contract check on source/docs — non-ASCII (em-dashes `—`,
   smart quotes) fails `Static script checks`. Keep docs ASCII.
-- Clash rule renders are guarded by `deploy/worker-03/scripts/19-check-clash-rules.py`
+- Clash rule renders are guarded by `deploy/scripts/19-check-clash-rules.py`
   during deploy `verify`; a green deploy means the rendered config passed it.
 - After deploy, `git branch -vv` shows merged remotes as `: gone` (prune with
   `git fetch --prune`); local `main` can drift behind/diverge — realign with

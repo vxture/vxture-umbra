@@ -8,7 +8,7 @@ metadata:
 ---
 
 The user wants the Claude memory store versioned **inside the existing
-`vxture/umbra` GitHub repo**, not in a separate/new repository. Goal: full
+`vxture/vxture-Umbra` GitHub repo**, not in a separate/new repository. Goal: full
 version unification with local and remote in exact agreement.
 
 **Why:** they treat a consistent, single-remote repo as the foundation for
@@ -18,14 +18,14 @@ rejected ("要创建新repo？").
 **How to apply:** the memory folder at
 `~/.claude/projects/D--MyWebSite-vxturestudio-umbra/memory/` is its own git repo
 (it must stay at that path for the memory feature to read it). Point its
-`origin` at `https://github.com/vxture/umbra.git` and push to a dedicated branch
+`origin` at `https://github.com/vxture/vxture-Umbra.git` and push to a dedicated branch
 `claude-memory`. Keep local branch == `origin/claude-memory`. Never propose
 creating a new standalone GitHub repo for memory. See [[cicd-deploy-flow]] for
 the project's main-repo branch rules.
 
 **Two synced locations** (every memory edit should reach both):
 1. **Live store** `~/.claude/.../memory/` -> git repo on branch `claude-memory`
-   of `vxture/umbra`. This is what the memory feature reads.
+   of `vxture/vxture-Umbra`. This is what the memory feature reads.
 2. **Docs mirror** `docs/memory/` in the umbra working tree, on `develop`/`main`.
    Human-readable, indexed by `docs/agent.md`. This is the project-facing copy.
 
