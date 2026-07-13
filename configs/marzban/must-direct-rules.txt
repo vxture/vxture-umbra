@@ -20,22 +20,26 @@ DOMAIN-SUFFIX,vxture.com
 # Microsoft / Windows / Office / Azure. REALITY camouflage and auth endpoints
 # are sensitive to proxy forcing.
 #
-# NOTE: enterprise (work/school) auth is deliberately NOT here - it is forced
-# to PROXY in clash-subscription.j2. Org tenants geo-block direct logins from
-# CN, so microsoftonline.com / microsoftonline-p.com (Entra ID org auth) must
-# go through the proxy. Personal accounts authenticate via live.com (below) and
-# keep working on direct.
-#
-# sharepoint.com (OneDrive for Business storage) WAS forced to PROXY for the
-# same geo-block reasoning, but confirmed 2026-07-13 that forcing it through
-# the proxy breaks OneDrive for Business login/sync entirely (captured hosts:
+# microsoftonline.com / microsoftonline-p.com (Entra ID org auth) and
+# sharepoint.com (OneDrive for Business storage) were forced to PROXY under
+# the theory that org tenants geo-block direct logins from CN. Confirmed
+# 2026-07-13 this was backwards for this tenant: forcing OneDrive for Business
+# through the proxy broke login and sync entirely (captured hosts included
 # vature-my.sharepoint.com, *.aa-rt.sharepoint.com content-redirect endpoints),
-# while direct works fine end-to-end (auth included). Moved to direct here.
-# microsoftpersonalcontent.com and live.net are the OneDrive content-redirect
-# CDN and legacy Live API domains respectively; same direct requirement.
+# while direct worked end-to-end. Moving sharepoint.com to direct alone still
+# failed at the credential/auth step - the proxy node's egress IP is a Vultr
+# datacenter/hosting ASN, which Entra ID Conditional Access / Identity
+# Protection risk policies commonly flag and block, unlike the trusted
+# residential IP used when the proxy is off. So microsoftonline.com and
+# microsoftonline-p.com moved to direct too, keeping auth and storage on the
+# same (real) egress IP. microsoftpersonalcontent.com and live.net are the
+# OneDrive content-redirect CDN and legacy Live API domains respectively; same
+# direct requirement.
 DOMAIN-SUFFIX,sharepoint.com
 DOMAIN-SUFFIX,microsoftpersonalcontent.com
 DOMAIN-SUFFIX,live.net
+DOMAIN-SUFFIX,microsoftonline.com
+DOMAIN-SUFFIX,microsoftonline-p.com
 DOMAIN-SUFFIX,microsoft.com
 DOMAIN-SUFFIX,microsoft.net
 DOMAIN-SUFFIX,microsoftapps.com

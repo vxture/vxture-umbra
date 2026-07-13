@@ -66,15 +66,6 @@ rules:
   #    Source: configs/marzban/must-direct-rules.txt
 {{ CLASH_MUST_DIRECT_RULES }}
 
-  # 0a. Microsoft enterprise (work/school) auth proxy. Org tenants geo-block
-  #     direct logins from CN, so Entra ID org auth must go through the proxy.
-  #     Personal accounts stay direct via live.com (section 0). Placed before the
-  #     GEOIP,CN,DIRECT fallback so these resolve to PROXY, not direct.
-  #     sharepoint.com (OneDrive for Business storage) is DIRECT instead - see
-  #     configs/marzban/must-direct-rules.txt for why (2026-07-13).
-  - DOMAIN-SUFFIX,microsoftonline.com,PROXY
-  - DOMAIN-SUFFIX,microsoftonline-p.com,PROXY
-
   # 1. Local, LAN, link-local, and fake-ip direct
   - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
   - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
