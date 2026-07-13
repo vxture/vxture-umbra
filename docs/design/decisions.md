@@ -221,7 +221,9 @@ DeepSeek:    deepseek.com, deepseek.ai, api.deepseek.com
 
 **Reason:** Microsoft services are accessible from most networks without proxy; forcing them causes latency and auth degradation. DeepSeek is a Chinese domestic service; direct connection is faster and more stable. DeepSeek is also excluded from Clash fake-ip DNS so local tools such as Roo Code receive real DNS answers instead of `198.18.0.0/16` synthetic addresses.
 
-**Microsoft enterprise exception:** `microsoftonline.com`, `microsoftonline-p.com`, and `sharepoint.com` are deliberately NOT must-direct - they are forced to `PROXY`. Work/school (Entra ID) tenants geo-block direct logins from CN, so org auth and OneDrive for Business / SharePoint storage fail on a direct route. Personal accounts authenticate via `live.com` and keep working on direct.
+**Microsoft enterprise exception:** `microsoftonline.com` and `microsoftonline-p.com` are deliberately NOT must-direct - they are forced to `PROXY`. Work/school (Entra ID) tenants geo-block direct logins from CN, so org auth fails on a direct route. Personal accounts authenticate via `live.com` and keep working on direct.
+
+`sharepoint.com` (OneDrive for Business storage) was forced to `PROXY` under the same reasoning until 2026-07-13, when captured traffic showed the opposite: forcing it through the proxy broke OneDrive for Business login/sync entirely (`vature-my.sharepoint.com`, `*.aa-rt.sharepoint.com` content-redirect hosts), while direct routing worked end to end, auth included. It moved to must-direct alongside `microsoftpersonalcontent.com` (OneDrive content-redirect CDN) and `live.net` (legacy Live API), which showed the same requirement.
 
 Cloudflare login, dashboard, challenge, and edge service domains are forced to `PROXY` because direct routing can leave the Cloudflare account login flow stalled. Vultr hosts the VPS control plane and provider storage domains; proxying them through the same node can create management loops.
 The exact VPN/VPS endpoint IP is pinned as `IP-CIDR,108.61.182.248/32,DIRECT,no-resolve` to avoid proxy loops without requiring ASN databases during client startup.
@@ -246,6 +248,9 @@ rules:
   - DOMAIN-SUFFIX,<PAS_DOMAIN>,DIRECT
   - DOMAIN-SUFFIX,<ADMIN_DOMAIN>,DIRECT
   - DOMAIN-SUFFIX,microsoft.com,DIRECT
+  - DOMAIN-SUFFIX,sharepoint.com,DIRECT
+  - DOMAIN-SUFFIX,microsoftpersonalcontent.com,DIRECT
+  - DOMAIN-SUFFIX,live.net,DIRECT
   - DOMAIN-SUFFIX,vultr.com,DIRECT
   - DOMAIN-SUFFIX,vultrobjects.com,DIRECT
   - IP-CIDR,108.61.182.248/32,DIRECT,no-resolve
@@ -258,10 +263,9 @@ rules:
   - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
   - IP-CIDR,198.18.0.0/15,DIRECT,no-resolve
 
-  # 0a. Microsoft enterprise (work/school) auth + OneDrive for Business proxy
+  # 0a. Microsoft enterprise (work/school) auth proxy
   - DOMAIN-SUFFIX,microsoftonline.com,PROXY
   - DOMAIN-SUFFIX,microsoftonline-p.com,PROXY
-  - DOMAIN-SUFFIX,sharepoint.com,PROXY
 
   # 2. Microsoft ecosystem direct (personal accounts)
   - DOMAIN-SUFFIX,microsoft.com,DIRECT
