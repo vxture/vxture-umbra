@@ -103,6 +103,11 @@ DOMAIN-SUFFIX,deepseek.com
 DOMAIN-SUFFIX,deepseek.ai
 DOMAIN-SUFFIX,api.deepseek.com
 
+# Tudou domestic services (i-tudou.com / e-tudou.com and their subdomains).
+# Domestic endpoints; keep direct so they are not routed through the node.
+DOMAIN-SUFFIX,i-tudou.com
+DOMAIN-SUFFIX,e-tudou.com
+
 # Tailscale. Control plane, console, login, DERP relays, package repo, and
 # logging all live under tailscale.com, so one suffix covers them. ts.net is
 # the MagicDNS hostname domain (also the TLS cert SAN); letsencrypt.org issues
